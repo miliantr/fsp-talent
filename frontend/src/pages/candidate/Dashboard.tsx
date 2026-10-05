@@ -59,12 +59,12 @@ export default function CandidateDashboardPage() {
                 : <span className="badge" style={{ background: 'rgba(255,255,255,.1)', color: '#fff' }}>{t('fsp.noHistory')}</span>}
             </div>
           </div>
-          <div className="row" style={{ gap: 26 }}>
-            <div className="center"><ScoreRing value={cat?.scaled_score ?? 0} size={92} label={t('cand.dash.points')} color="#fff" />
+          <div className="row wrap" style={{ gap: 14 }}>
+            <div className="center"><ScoreRing value={cat?.scaled_score ?? 0} size={84} label={t('cand.dash.points')} color="#fff" />
               <div className="tiny" style={{ opacity: 0.8, marginTop: 6 }}>{t('cand.dash.scaledScore')}</div></div>
-            <div className="center"><ScoreRing value={Math.round((cat?.confidence ?? 0) * 100)} size={92} color="#f0b8ff" />
+            <div className="center"><ScoreRing value={Math.round((cat?.confidence ?? 0) * 100)} size={84} color="#f0b8ff" />
               <div className="tiny" style={{ opacity: 0.8, marginTop: 6 }}>{t('cand.dash.confidence')}</div></div>
-            <div className="center"><ScoreRing value={p.completeness.percent} size={92} color="#9fe6c4" />
+            <div className="center"><ScoreRing value={p.completeness.percent} size={84} color="#9fe6c4" />
               <div className="tiny" style={{ opacity: 0.8, marginTop: 6 }}>{t('cand.dash.completeness')}</div></div>
           </div>
         </div>
