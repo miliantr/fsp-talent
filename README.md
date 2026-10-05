@@ -117,7 +117,9 @@ docs/        архитектура, механики, интеграция ФС
 ```
 
 Подробнее: [docs/architecture.md](docs/architecture.md) · API: [docs/api.md](docs/api.md) ·
-развёртывание: [docs/deployment.md](docs/deployment.md).
+развёртывание: [docs/deployment.md](docs/deployment.md). Вся документация одним файлом —
+[docs/FSP_Talent_documentation.pdf](docs/FSP_Talent_documentation.pdf) (собирается
+`scripts/build_docs_pdf.py`).
 
 ## Проверки
 

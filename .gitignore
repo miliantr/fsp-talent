@@ -22,3 +22,6 @@ frontend/node_modules/.tmp/
 /ФСП спец. трек ТЗ.pdf
 /text.txt
 .claude/
+
+# Pitch deck: filled in by the team (team slide, name, repo link) and submitted separately
+/presentation/
