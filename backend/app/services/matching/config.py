@@ -23,17 +23,7 @@ ENGINE_VERSION = "1.2"
 COMPONENTS = ["skills", "test", "grade", "specialization", "fsp", "freshness", "salary",
               "experience", "format"]
 
-COMPONENT_LABELS = {
-    "skills": "Стек и навыки",
-    "test": "Результат теста",
-    "grade": "Грейд",
-    "specialization": "Специализация",
-    "fsp": "Достижения ФСП",
-    "freshness": "Актуальность профиля",
-    "salary": "Зарплатные ожидания",
-    "experience": "Опыт",
-    "format": "Формат работы",
-}
+# Display labels of components and presets are localized: app.i18n ("ref.component.*", "ref.preset.*").
 
 PRESETS: dict[str, dict[str, float]] = {
     "balanced": {"skills": 0.26, "test": 0.16, "grade": 0.22, "specialization": 0.10, "fsp": 0.10,
@@ -43,12 +33,6 @@ PRESETS: dict[str, dict[str, float]] = {
     "proven_talent": {"skills": 0.20, "test": 0.30, "grade": 0.12, "specialization": 0.08, "fsp": 0.18,
                       "freshness": 0.06, "salary": 0.03, "experience": 0.02, "format": 0.01},
 }
-PRESET_LABELS = {
-    "balanced": "Сбалансированный",
-    "skills_first": "Сначала стек",
-    "proven_talent": "Подтверждённый талант (тест + ФСП)",
-}
-
 # Neutral value of the FSP component when the candidate has no FSP history.
 FSP_NEUTRAL = 0.3
 # Freshness half-life in days.

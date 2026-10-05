@@ -10,6 +10,7 @@ from app.core.config import get_settings
 from app.core.errors import Conflict, Forbidden, NotFound, ValidationFailed
 from app.db.base import utcnow
 from app.domain.catalog import GRADE_RANK
+from app.i18n import t
 from app.models import (
     AttemptStatus,
     CandidateProfile,
@@ -33,6 +34,7 @@ from app.services.testing.scoring import (
     category_label,
     grade_attempt,
     normalize_answer,
+    recommendation,
     score_answer,
 )
 
@@ -78,7 +80,7 @@ def load_pool(db: Session, specialization: str) -> list[ItemSpec]:
     rows = db.scalars(select(Question).where(Question.specialization_id == specialization,
                                              Question.is_active.is_(True)))
     return [ItemSpec(q.id, q.code, q.specialization_id, q.competency_id, q.difficulty, q.qtype, q.text,
-                     q.options, q.correct, q.family, q.irt_a, q.irt_b, q.irt_c, q.exposure_count)
+                     q.options, q.correct, q.family, q.irt_a, q.irt_b, q.irt_c, q.exposure_count, q.i18n or {})
             for q in rows]
 
 
@@ -86,21 +88,21 @@ def start(db: Session, candidate: CandidateProfile, specialization: str, target_
           now: datetime | None = None, seed: int | None = None) -> TestAttempt:
     now = now or utcnow()
     if target_grade not in GRADE_RANK:
-        raise ValidationFailed("Неизвестный грейд")
+        raise ValidationFailed(t("error.unknown_grade"))
     if not candidate.specialization_id or not candidate.declared_grade_id:
-        raise ValidationFailed("Сначала пройдите опрос: выберите специализацию и предполагаемый грейд",
+        raise ValidationFailed(t("error.survey_required"),
                                code="survey_required")
     expire_overdue(db, candidate, now)
     elig = next(e for e in eligibility(db, candidate, specialization, now) if e.grade == target_grade)
     if not elig.allowed:
-        raise Conflict(elig.reason or "Тест сейчас недоступен", code="cooldown",
+        raise Conflict(elig.reason or t("error.test_unavailable"), code="cooldown",
                        details={"available_at": elig.available_at.isoformat() if elig.available_at else None})
 
     s = get_settings()
     weights = {c.id: c.weight for c in db.scalars(select(Competency).where(
         Competency.specialization_id == specialization))}
     if not weights:
-        raise NotFound("Специализация не найдена")
+        raise NotFound(t("error.spec_not_found"))
     blueprint = build_blueprint(specialization, target_grade, weights, s.test_length)
     seen = {it.question_id for att in _history(db, candidate.id) for it in att.items}
     seed = seed if seed is not None else random.SystemRandom().randrange(2**31)
@@ -116,7 +118,7 @@ def start(db: Session, candidate: CandidateProfile, specialization: str, target_
         attempt.items.append(TestItem(
             question_id=f.question_id, position=f.position, competency_id=f.competency,
             difficulty=f.difficulty, qtype=f.qtype, text=f.text, options=f.options, correct=f.correct,
-            irt_a=f.a, irt_b=f.b, irt_c=f.c, params=f.params, family=f.family,
+            irt_a=f.a, irt_b=f.b, irt_c=f.c, params=f.params, family=f.family, i18n=f.i18n or None,
         ))
     db.add(attempt)
     for q in db.scalars(select(Question).where(Question.id.in_([f.question_id for f in form]))):
@@ -130,7 +132,7 @@ def start(db: Session, candidate: CandidateProfile, specialization: str, target_
 def get_attempt(db: Session, candidate: CandidateProfile, attempt_id: int) -> TestAttempt:
     att = db.get(TestAttempt, attempt_id)
     if not att or att.candidate_id != candidate.id:
-        raise NotFound("Попытка не найдена")
+        raise NotFound(t("error.attempt_not_found"))
     return att
 
 
@@ -139,14 +141,14 @@ def answer(db: Session, candidate: CandidateProfile, attempt_id: int, item_id: i
     now = now or utcnow()
     att = get_attempt(db, candidate, attempt_id)
     if att.status != AttemptStatus.IN_PROGRESS:
-        raise Conflict("Попытка уже завершена", code="attempt_closed")
+        raise Conflict(t("error.attempt_closed"), code="attempt_closed")
     if now > att.deadline_at:
         _finish(db, candidate, att, now, expired=True)
         db.commit()
-        raise Conflict("Время теста истекло — попытка завершена с данными ответами", code="attempt_expired")
+        raise Conflict(t("error.attempt_expired"), code="attempt_expired")
     item = next((i for i in att.items if i.id == item_id), None)
     if not item:
-        raise NotFound("Вопрос не относится к этой попытке")
+        raise NotFound(t("error.item_not_in_attempt"))
     try:
         value = normalize_answer(item.qtype, len(item.options), raw)
     except InvalidAnswer as e:
@@ -167,7 +169,7 @@ def finish(db: Session, candidate: CandidateProfile, attempt_id: int, now: datet
     if att.status != AttemptStatus.IN_PROGRESS:
         if att.result:
             return att.result
-        raise Conflict("Попытка уже завершена", code="attempt_closed")
+        raise Conflict(t("error.attempt_closed"), code="attempt_closed")
     result = _finish(db, candidate, att, now, expired=now > att.deadline_at)
     db.commit()
     return result
@@ -226,7 +228,7 @@ def _finish(db: Session, candidate: CandidateProfile, att: TestAttempt, now: dat
         flagged=out.flagged, person_fit=out.person_fit, leak_z=out.leak_z,
         category_label=category_label(spec, verified_for_result),
         competency_scores=out.competency_scores,
-        recommendation=out.recommendation + (" Время теста истекло." if expired else ""),
+        recommendation=recommendation(out.outcome, att.target_grade_id, expired),
         created_at=now,
     )
     att.result = result
@@ -243,4 +245,4 @@ def results(db: Session, candidate: CandidateProfile) -> list[TestResult]:
 
 def ensure_owner(att: TestAttempt, candidate: CandidateProfile) -> None:
     if att.candidate_id != candidate.id:
-        raise Forbidden("Нет доступа к попытке")
+        raise Forbidden(t("error.attempt_forbidden"))

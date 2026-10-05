@@ -37,10 +37,14 @@ EXP_RE = re.compile(r"(\d{1,2}(?:[.,]\d)?)\s*\+?\s*(?:год|года|лет|yea
 _NUM = r"\d{2,3}(?:[\s ]?\d{3})?"
 SALARY_RE = re.compile(rf"({_NUM})\s*(тыс|k|к|000|₽|руб)?", re.I)
 # "190–260 тыс.", "от 180 до 250 тыс", "150k-200k": the unit usually follows only the upper bound
-SALARY_RANGE_RE = re.compile(rf"({_NUM})\s*(тыс\.?|k|к)?\s*(?:[-–—]|до)\s*({_NUM})\s*(тыс|k|к|₽|руб)?", re.I)
-# Clause markers of nice-to-have skills: "желательно Redis", "Kafka будет плюсом"
-NICE_BEFORE_RE = re.compile(r"желательн\w*|приветству\w*|nice[\s-]to[\s-]have|опционально|как плюс", re.I)
-NICE_AFTER_RE = re.compile(r"(?:будет|станет|—|-)?\s*(?:плюсом|преимуществом)|приветству\w*", re.I)
+SALARY_RANGE_RE = re.compile(rf"({_NUM})\s*(тыс\.?|k|к)?\s*(?:[-–—]|до|to)\s*({_NUM})\s*(тыс|k|к|₽|руб)?", re.I)
+# Clause markers of nice-to-have skills, in Russian and English:
+# "желательно Redis", "nice to have: Redis", "preferably Kafka" / "Kafka будет плюсом", "Kafka is a plus"
+NICE_BEFORE_RE = re.compile(r"желательн\w*|приветству\w*|опционально|как плюс|nice[\s-]to[\s-]have|"
+                            r"preferabl\w*|ideally|optional(?:ly)?|bonus", re.I)
+NICE_AFTER_RE = re.compile(r"(?:будет|станет|—|-)?\s*(?:плюсом|преимуществом)|приветству\w*|"
+                           r"(?:is|would be|will be)?\s*(?:a\s+)?(?:big\s+)?plus\b|(?:is\s+)?preferred|"
+                           r"(?:is\s+)?an advantage", re.I)
 CLAUSE_RE = re.compile(r"[;\n]|\.(?=\s|$)")
 THOUSANDS = ("тыс", "тыс.", "k", "к")
 NAME_RE = re.compile(r"^([А-ЯЁ][а-яё]+)\s+([А-ЯЁ][а-яё]+)(?:\s+[А-ЯЁ][а-яё]+)?$")
@@ -53,17 +57,20 @@ def _alias_patterns() -> list[tuple[str, re.Pattern]]:
         for alias in {slug.replace("_", " "), name.lower(), *[a.lower() for a in aliases]}:
             if len(alias) < 2:
                 continue
-            out.append((slug, re.compile(rf"(?<![\w+#]){re.escape(alias)}(?![\w+#])", re.I)))
+            # "js" must not match inside "Next.js" / "Node.js": a dot glues the alias to the previous word
+            out.append((slug, re.compile(rf"(?<![\w+#.]){re.escape(alias)}(?![\w+#])", re.I)))
     return out
 
 
 def extract_skills(text: str) -> list[str]:
+    """Skills ordered by how often they are mentioned, then by first mention (as the author listed them)."""
     found: Counter = Counter()
+    first: dict[str, int] = {}
     for slug, pat in _alias_patterns():
-        n = len(pat.findall(text))
-        if n:
-            found[slug] += n
-    return [s for s, _ in found.most_common()]
+        for m in pat.finditer(text):
+            found[slug] += 1
+            first[slug] = min(first.get(slug, m.start()), m.start())
+    return sorted(found, key=lambda s: (-found[s], first[s]))
 
 
 def detect_specialization(text: str, skills: list[str]) -> str | None:

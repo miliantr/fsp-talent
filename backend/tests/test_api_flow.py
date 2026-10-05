@@ -1,22 +1,6 @@
 """The full demo scenario through the HTTP API, plus privacy and permission checks."""
 
-from app.models import TestItem
-from tests.conftest import auth, register
-
-
-def answer_all(client, db, token, attempt, correct=True):
-    for item in attempt["items"]:
-        row = db.get(TestItem, item["id"])
-        db.refresh(row)
-        if correct:
-            ans = row.correct
-        elif row.qtype == "numeric":
-            ans = [float(row.correct[0]) + 7]
-        else:
-            ans = [next(i for i in range(len(row.options)) if i not in row.correct)]
-        r = client.post("/api/candidate/testing/answer", headers=auth(token),
-                        json={"attempt_id": attempt["id"], "item_id": item["id"], "answer": ans})
-        assert r.status_code == 200, r.text
+from tests.conftest import answer_all, auth, register
 
 
 def test_full_reverse_matching_flow(client, db):

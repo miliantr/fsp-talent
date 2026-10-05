@@ -9,6 +9,7 @@ Every disclosure is recorded in contact_access_log (152-FZ audit).
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.i18n import t
 from app.models import (
     Application,
     CandidateProfile,
@@ -49,7 +50,7 @@ def log_disclosure(db: Session, employer_id: int, candidate_id: int, reason: str
 
 
 def display_name(c: CandidateProfile, contacts_visible: bool) -> str:
-    first = c.first_name or "Кандидат"
+    first = c.first_name or t("ref.candidate")
     if contacts_visible or c.show_full_name:
         return f"{first} {c.last_name}".strip()
     return f"{first} {c.last_name[:1]}." if c.last_name else first

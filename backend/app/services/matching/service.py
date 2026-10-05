@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.errors import NotFound
 from app.db.base import utcnow
 from app.domain.catalog import SPECIALIZATIONS, spec_similarity
+from app.i18n import component_label, t
 from app.models import (
     Application,
     CandidateProfile,
@@ -21,7 +22,7 @@ from app.repositories.reference import skill_graph
 from app.services import fsp_service, presenters, privacy
 from app.services.fsp.scoring import summarize
 from app.services.matching import engine
-from app.services.matching.config import COMPONENT_LABELS, ENGINE_VERSION, get_weights
+from app.services.matching.config import ENGINE_VERSION, get_weights
 from app.services.testing import service as testing_service
 from app.services.testing.scoring import category_label
 
@@ -70,7 +71,7 @@ def job_features(j: Job) -> engine.JobFeatures:
 def get_job(db: Session, employer: EmployerProfile, job_id: int) -> Job:
     j = db.get(Job, job_id)
     if not j or j.employer_id != employer.id:
-        raise NotFound("Потребность не найдена")
+        raise NotFound(t("error.requirement_not_found"))
     return j
 
 
@@ -160,10 +161,11 @@ def list_matches(db: Session, employer: EmployerProfile, job: Job, *, grades: li
         fsp = fsp_service.summary_for(c, job.specialization_id)
         card = presenters.candidate_card(c, graph, fsp)
         card.update({
-            "match": {"percent": round(r.score * 100), "rank": r.rank, "score": r.score,
-                      "components": r.components.get("components", []),
-                      "skill_matches": r.components.get("skill_matches", []), "reasons": r.explanation,
-                      "must_gate": r.components.get("must_gate", 1.0)},
+            "match": presenters.match({
+                "percent": round(r.score * 100), "rank": r.rank, "score": r.score,
+                "components": r.components.get("components", []),
+                "skill_matches": r.components.get("skill_matches", []), "reasons": r.explanation,
+                "must_gate": r.components.get("must_gate", 1.0)}),
             "shortlisted": r.shortlisted,
             "invitation_status": invitations.get(c.id),
             "applied": c.id in applied,
@@ -182,7 +184,7 @@ def list_matches(db: Session, employer: EmployerProfile, job: Job, *, grades: li
              for s in cat_stats.values()), key=lambda s: -s["avg_percent"]),
         "computed_at": job.matched_at,
         "engine_version": ENGINE_VERSION,
-        "weights": [{"key": k, "label": COMPONENT_LABELS[k], "weight": round(v, 3)} for k, v in weights.items()],
+        "weights": [{"key": k, "label": component_label(k), "weight": round(v, 3)} for k, v in weights.items()],
     }
 
 
@@ -190,7 +192,7 @@ def set_shortlist(db: Session, job: Job, candidate_id: int, value: bool) -> None
     row = db.scalar(select(MatchResult).where(MatchResult.job_id == job.id,
                                               MatchResult.candidate_id == candidate_id))
     if not row:
-        raise NotFound("Кандидат не входит в подборку")
+        raise NotFound(t("error.candidate_not_in_selection"))
     row.shortlisted = value
     db.commit()
 
@@ -205,12 +207,12 @@ def explain(db: Session, job: Job, candidate: CandidateProfile) -> engine.MatchS
 def compare(db: Session, job: Job, a: CandidateProfile, b: CandidateProfile) -> dict:
     ma, mb = explain(db, job, a), explain(db, job, b)
     if not ma or not mb:
-        raise NotFound("Кандидаты должны иметь подтверждённую категорию")
+        raise NotFound(t("error.compare_verified_only"))
     res = engine.compare(ma, mb)
     res["a"] = {"candidate_id": a.id, "percent": ma.percent,
-                "components": [c.to_dict() for c in ma.components.values()]}
+                "components": [presenters.component(c.to_dict()) for c in ma.components.values()]}
     res["b"] = {"candidate_id": b.id, "percent": mb.percent,
-                "components": [c.to_dict() for c in mb.components.values()]}
+                "components": [presenters.component(c.to_dict()) for c in mb.components.values()]}
     return res
 
 
@@ -257,7 +259,7 @@ def search_bank(db: Session, employer: EmployerProfile, *, specialization: str |
 def candidate_detail(db: Session, employer: EmployerProfile, candidate_id: int, job: Job | None) -> dict:
     c = cand_repo.get_with_relations(db, candidate_id)
     if not c or not (c.is_searchable or (c.is_verified and privacy.has_relationship(db, employer, c))):
-        raise NotFound("Кандидат не найден или скрыл профиль")
+        raise NotFound(t("error.candidate_hidden"))
     reason = privacy.contact_reason(db, employer, c)
     visible = reason is not None
     if visible:
@@ -285,7 +287,7 @@ def candidate_detail(db: Session, employer: EmployerProfile, candidate_id: int, 
         "contacts_reason": reason,
         "contacts": privacy.contacts(c) if visible else None,
         "invitations": [presenters.invitation(i, True, privacy.contacts(c) if visible else None) for i in invs],
-        "match": match.to_dict() if match else None,
+        "match": presenters.match(match.to_dict()) if match else None,
         "requirement_id": job.id if job else None,
     })
     return card

@@ -12,6 +12,7 @@ from app.core.security import (
     verify_password,
 )
 from app.db.base import utcnow
+from app.i18n import get_locale, t
 from app.models import CandidateProfile, EmployerProfile, Role, User
 from app.services import fsp_service
 from app.services.mailer import send_email
@@ -21,24 +22,21 @@ def _issue_code(user: User) -> str:
     code = new_email_code()
     user.email_code_hash = hash_code(code)
     user.email_code_expires_at = utcnow() + timedelta(minutes=get_settings().email_code_ttl_minutes)
-    send_email(
-        user.email,
-        "Подтверждение e-mail — FSP Talent",
-        f"Ваш код подтверждения: {code}\nКод действует {get_settings().email_code_ttl_minutes} минут.",
-    )
+    send_email(user.email, t("email.verify.subject"),
+               t("email.verify.body", code=code, n=get_settings().email_code_ttl_minutes))
     return code
 
 
 def register(db: Session, email: str, password: str, role: str, consent: bool,
              first_name: str = "", last_name: str = "", company_name: str = "") -> tuple[User, str | None]:
     if role not in Role.ALL:
-        raise ValidationFailed("Неизвестная роль")
+        raise ValidationFailed(t("error.unknown_role"))
     if not consent:
-        raise ValidationFailed("Необходимо согласие на обработку персональных данных (152-ФЗ)")
+        raise ValidationFailed(t("error.consent_required"))
     email = email.strip().lower()
     if db.query(User).filter_by(email=email).first():
-        raise Conflict("Пользователь с таким e-mail уже зарегистрирован", code="email_taken")
-    user = User(email=email, password_hash=hash_password(password), role=role)
+        raise Conflict(t("error.email_taken"), code="email_taken")
+    user = User(email=email, password_hash=hash_password(password), role=role, locale=get_locale())
     db.add(user)
     db.flush()
     if role == Role.CANDIDATE:
@@ -63,13 +61,13 @@ def resend_code(db: Session, email: str) -> str | None:
 def verify_email(db: Session, email: str, code: str) -> User:
     user = db.query(User).filter_by(email=email.strip().lower()).first()
     if not user:
-        raise ValidationFailed("Неверный код подтверждения")
+        raise ValidationFailed(t("error.code_invalid"))
     if user.is_email_verified:
         return user
     if not user.email_code_hash or not user.email_code_expires_at or utcnow() > user.email_code_expires_at:
-        raise ValidationFailed("Код истёк — запросите новый", code="code_expired")
+        raise ValidationFailed(t("error.code_expired"), code="code_expired")
     if hash_code(code.strip()) != user.email_code_hash:
-        raise ValidationFailed("Неверный код подтверждения", code="code_invalid")
+        raise ValidationFailed(t("error.code_invalid"), code="code_invalid")
     user.is_email_verified = True
     user.email_code_hash = None
     user.last_login_at = utcnow()
@@ -84,11 +82,11 @@ def verify_email(db: Session, email: str, code: str) -> User:
 def login(db: Session, email: str, password: str) -> User:
     user = db.query(User).filter_by(email=email.strip().lower()).first()
     if not user or not verify_password(password, user.password_hash):
-        raise Unauthorized("Неверный e-mail или пароль", code="invalid_credentials")
+        raise Unauthorized(t("error.invalid_credentials"), code="invalid_credentials")
     if not user.is_active:
-        raise Forbidden("Учётная запись заблокирована")
+        raise Forbidden(t("error.account_blocked"))
     if not user.is_email_verified:
-        raise Forbidden("Подтвердите e-mail — код отправлен на почту", code="email_not_verified")
+        raise Forbidden(t("error.email_not_verified"), code="email_not_verified")
     user.last_login_at = utcnow()
     if user.role == Role.CANDIDATE:
         profile = db.query(CandidateProfile).filter_by(user_id=user.id).one_or_none()

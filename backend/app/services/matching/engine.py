@@ -13,6 +13,9 @@ Key ideas that make it different from keyword search:
   * missing data (no salary expectation, no experience requirement) is "unavailable" and the
     weights are renormalised instead of silently penalising the candidate;
   * every component produces a human-readable reason.
+
+Reasons and component details are language-neutral message objects (app.i18n.msg): the ranking
+snapshot is stored once and rendered in the reader's language.
 """
 
 import math
@@ -21,9 +24,9 @@ from datetime import datetime
 
 from app.db.base import utcnow
 from app.domain.catalog import GRADE_CUTS, GRADE_NAMES, GRADE_RANK, SPEC_NAMES, spec_similarity
+from app.i18n import component_label, msg, number, render
 from app.services.fsp.scoring import FSPSummary
 from app.services.matching.config import (
-    COMPONENT_LABELS,
     FRESHNESS_HALF_LIFE_DAYS,
     FSP_NEUTRAL,
     UNVERIFIED_SKILL_PRIOR,
@@ -102,14 +105,13 @@ class Component:
     value: float
     weight: float
     available: bool
-    detail: str
+    detail: dict  # message object, e.g. msg("match.detail.must", have=3, total=4)
     contribution: float = 0.0  # points of the final 0..100 score
 
     def to_dict(self) -> dict:
         return {
-            "key": self.key, "label": COMPONENT_LABELS[self.key], "value": round(self.value, 3),
-            "weight": round(self.weight, 3), "available": self.available, "detail": self.detail,
-            "contribution": round(self.contribution, 1),
+            "key": self.key, "value": round(self.value, 3), "weight": round(self.weight, 3),
+            "available": self.available, "detail_msg": self.detail, "contribution": round(self.contribution, 1),
         }
 
 
@@ -117,10 +119,14 @@ class Component:
 class Reason:
     kind: str  # positive | neutral | negative
     component: str
-    text: str
+    message: dict  # message object, rendered on read
+
+    @property
+    def text(self) -> str:
+        return render(self.message)
 
     def to_dict(self) -> dict:
-        return {"kind": self.kind, "component": self.component, "text": self.text}
+        return {"kind": self.kind, "component": self.component, **self.message}
 
 
 @dataclass
@@ -129,9 +135,10 @@ class SkillMatch:
     name: str
     importance: str
     status: str            # exact | related | missing
-    via: str | None        # candidate skill used
+    via: str | None        # candidate skill used (display name)
     verified: bool         # confirmed by a test competency
     value: float
+    via_slug: str | None = None
 
     def to_dict(self) -> dict:
         return self.__dict__ | {"value": round(self.value, 3)}
@@ -172,12 +179,13 @@ EVIDENCE_STRENGTH = 0.25
 TEST_COMPETENCY_SHARE = 0.35
 MUST_GATE_FULL = 0.92
 
-FORMAT_NAMES = {"remote": "удалённо", "office": "офис", "hybrid": "гибрид", "any": "любой"}
-
-
 def _lower_first(s: str) -> str:
-    """'Достижения ФСП' -> 'достижения ФСП' (keeps abbreviations intact)."""
-    return s[:1].lower() + s[1:]
+    """'Достижения ФСП' -> 'достижения ФСП'; a leading abbreviation ('FSP achievements') is kept."""
+    return s if s[1:2].isupper() else s[:1].lower() + s[1:]
+
+
+def _format(fmt: str) -> dict:
+    return msg(f"ref.format.{fmt}")
 
 
 GRADE_FIT = {0: 1.0, 1: 0.6, -1: 0.4}  # |diff| >= 2 is excluded by the hard gate
@@ -215,14 +223,14 @@ def match_skill(c: CandidateFeatures, need: str, importance: str, graph: SkillGr
             best, best_via, best_ver = sim * ev, have, ver
     status = "missing" if best_via is None else ("exact" if best_via == need else "related")
     return SkillMatch(need, graph.name(need), importance, status,
-                      graph.name(best_via) if best_via else None, best_ver, best)
+                      graph.name(best_via) if best_via else None, best_ver, best, best_via)
 
 
 def _skills_component(c, job, graph):
     must = [match_skill(c, s, "must", graph) for s in job.must_skills]
     nice = [match_skill(c, s, "nice", graph) for s in job.nice_skills]
     if not must and not nice:
-        return Component("skills", 0, 0, False, "Стек не указан"), []
+        return Component("skills", 0, 0, False, msg("match.detail.no_stack")), []
     must_cov = sum(m.value for m in must) / len(must) if must else None
     nice_cov = sum(m.value for m in nice) / len(nice) if nice else None
     if must_cov is not None and nice_cov is not None:
@@ -230,7 +238,7 @@ def _skills_component(c, job, graph):
     else:
         value = must_cov if must_cov is not None else nice_cov
     have = sum(1 for m in must if m.status != "missing")
-    detail = f"{have} из {len(must)} обязательных" if must else f"{len(nice)} желательных"
+    detail = msg("match.detail.must", have=have, total=len(must)) if must else msg("match.detail.nice", n=len(nice))
     return Component("skills", value, 0, True, detail), must + nice
 
 
@@ -245,7 +253,7 @@ def _test_component(c, job, graph):
     else:
         value = ability
     return Component("test", value, 0, True,
-                     f"{c.scaled_score}/100, уверенность {round(c.confidence * 100)}%")
+                     msg("match.detail.test", score=c.scaled_score, confidence=round(c.confidence * 100)))
 
 
 def _grade_component(c, job):
@@ -253,48 +261,52 @@ def _grade_component(c, job):
     value = GRADE_FIT.get(diff, 0.0)
     if diff == -1 and c.upgrade_eligible:
         value = 0.6
-    return Component("grade", value, 0, True, f"{GRADE_NAMES[c.grade]} vs {GRADE_NAMES[job.grade]}")
+    return Component("grade", value, 0, True,
+                     msg("match.detail.versus", a=GRADE_NAMES[c.grade], b=GRADE_NAMES[job.grade]))
 
 
 def _fsp_component(fsp: FSPSummary | None):
     if not fsp or not fsp.available:
-        return Component("fsp", FSP_NEUTRAL, 0, True, "нет истории — нейтральная база")
+        return Component("fsp", FSP_NEUTRAL, 0, True, msg("match.detail.fsp_none"))
     value = FSP_NEUTRAL + (1 - FSP_NEUTRAL) * fsp.strength
-    return Component("fsp", value, 0, True, f"{fsp.count} достиж., сила {round(fsp.strength * 100)}%")
+    return Component("fsp", value, 0, True, msg("match.detail.fsp", n=fsp.count, strength=round(fsp.strength * 100)))
 
 
 def _freshness_component(c, now: datetime):
     stamps = [t for t in (c.last_active_at, c.verified_at) if t]
     if not stamps:
-        return Component("freshness", 0.5, 0, True, "нет данных"), None
+        return Component("freshness", 0.5, 0, True, msg("match.detail.no_data")), None
     days = max(0, (now - max(stamps)).days)
     return Component("freshness", 0.5 ** (days / FRESHNESS_HALF_LIFE_DAYS), 0, True,
-                     "сегодня" if days == 0 else f"{days} дн. назад"), days
+                     msg("match.detail.today") if days == 0 else msg("match.detail.days_ago", n=days)), days
 
 
 def _salary_component(c, job):
     if not c.expected_salary or not job.salary_to:
-        return Component("salary", 0, 0, False, "ожидания не указаны")
+        return Component("salary", 0, 0, False, msg("match.detail.salary_none"))
     if c.expected_salary <= job.salary_to:
-        return Component("salary", 1.0, 0, True, "в вилке")
+        return Component("salary", 1.0, 0, True, msg("match.detail.salary_in"))
     over = (c.expected_salary - job.salary_to) / job.salary_to
-    return Component("salary", max(0.0, 1 - over * 2.5), 0, True, f"выше вилки на {round(over * 100)}%")
+    return Component("salary", max(0.0, 1 - over * 2.5), 0, True,
+                     msg("match.detail.salary_over", pct=round(over * 100)))
 
 
 def _experience_component(c, job):
     if job.min_experience_years <= 0:
-        return Component("experience", 0, 0, False, "не требуется")
+        return Component("experience", 0, 0, False, msg("match.detail.not_required"))
     return Component("experience", min(1.0, c.experience_years / job.min_experience_years), 0, True,
-                     f"{c.experience_years:g} из {job.min_experience_years:g} лет")
+                     msg("match.detail.experience", have=float(c.experience_years),
+                         need=float(job.min_experience_years)))
 
 
 def _format_component(c, job):
     value = FORMAT_FIT.get(job.work_format, FORMAT_FIT["any"]).get(c.work_format, 1.0)
-    detail = f"{FORMAT_NAMES.get(c.work_format, c.work_format)} / {FORMAT_NAMES.get(job.work_format, job.work_format)}"
+    detail = msg("match.detail.format", candidate=_format(c.work_format), job=_format(job.work_format))
     if job.work_format in ("office", "hybrid") and c.work_format != "remote" and job.city and c.city \
             and job.city.lower() != c.city.lower():
         value *= 0.7
-        detail += f", другой город ({c.city})"
+        detail = msg("match.detail.format_city", candidate=_format(c.work_format), job=_format(job.work_format),
+                     city=c.city)
     return Component("format", value, 0, True, detail)
 
 
@@ -322,7 +334,8 @@ def score_candidate(c: CandidateFeatures, job: JobFeatures, graph: SkillGraph,
         "test": _test_component(c, job, graph),
         "grade": _grade_component(c, job),
         "specialization": Component("specialization", spec_val, 0, True,
-                                    SPEC_NAMES.get(c.specialization, c.specialization)),
+                                    msg("match.detail.plain", value=SPEC_NAMES.get(c.specialization,
+                                                                                    c.specialization))),
         "fsp": _fsp_component(fsp),
         "freshness": fresh,
         "salary": _salary_component(c, job),
@@ -344,8 +357,7 @@ def score_candidate(c: CandidateFeatures, job: JobFeatures, graph: SkillGraph,
 
     reasons = _reasons(c, job, comps, skill_matches, fsp, days)
     if gate < 0.9:
-        reasons.append(Reason("negative", "skills",
-                              f"Не хватает обязательных навыков: итог умножен на {gate:.2f}"))
+        reasons.append(Reason("negative", "skills", msg("match.reason.must_gate", gate=round(gate, 2))))
     return MatchScore(c.id, score, comps, reasons, skill_matches, gate)
 
 
@@ -378,31 +390,25 @@ def compare(a: MatchScore, b: MatchScore) -> dict:
         cb = b.components[k]
         d = ca.contribution - cb.contribution
         if abs(d) >= 0.05:
-            deltas.append({"key": k, "label": COMPONENT_LABELS[k], "delta": round(d, 1)})
+            deltas.append({"key": k, "label": component_label(k), "delta": round(d, 1)})
     deltas.sort(key=lambda x: -abs(x["delta"]))
     plus = [d for d in deltas if d["delta"] > 0][:3]
     minus = [d for d in deltas if d["delta"] < 0][:2]
-    text = f"Разница {a.percent - b.percent:+d} п."
-    if plus:
-        text += " Преимущество: " + ", ".join(f"{_lower_first(d['label'])} ({d['delta']:+.1f})" for d in plus) + "."
-    if minus:
-        text += " Уступает: " + ", ".join(f"{_lower_first(d['label'])} ({d['delta']:+.1f})" for d in minus) + "."
+    text = render(msg("match.compare.delta", delta=_signed(a.percent - b.percent)))
+    for key, group in (("match.compare.plus", plus), ("match.compare.minus", minus)):
+        if group:
+            items = [msg("match.compare.item", label=_lower_first(d["label"]), delta=_signed(d["delta"]))
+                     for d in group]
+            text += render(msg(key, items=items))
     return {"delta_percent": a.percent - b.percent, "components": deltas, "summary": text}
 
 
+def _signed(x: float) -> str:
+    """+2.5 / −0,7 in the current locale."""
+    return ("+" if x > 0 else "−" if x < 0 else "") + number(abs(float(x)) if isinstance(x, float) else abs(x))
+
+
 # ------------------------------------------------------------------ explanations
-
-
-def plural(n: int, one: str, few: str, many: str) -> str:
-    if n % 10 == 1 and n % 100 != 11:
-        return one
-    if 2 <= n % 10 <= 4 and not 12 <= n % 100 <= 14:
-        return few
-    return many
-
-
-def _rub(x: int) -> str:
-    return f"{x:,}".replace(",", " ") + " ₽"
 
 
 def _reasons(c: CandidateFeatures, job: JobFeatures, comps: dict[str, Component],
@@ -411,71 +417,68 @@ def _reasons(c: CandidateFeatures, job: JobFeatures, comps: dict[str, Component]
     spec = comps["specialization"].value
     if spec >= 1:
         out.append(Reason("positive", "specialization",
-                          f"Специализация {SPEC_NAMES[job.specialization]} совпадает"))
+                          msg("match.reason.spec_match", spec=SPEC_NAMES[job.specialization])))
     else:
         out.append(Reason("neutral", "specialization",
-                          f"Смежная специализация: {SPEC_NAMES[c.specialization]}"))
+                          msg("match.reason.spec_adjacent", spec=SPEC_NAMES[c.specialization])))
 
     diff = GRADE_RANK[c.grade] - GRADE_RANK[job.grade]
+    grade = GRADE_NAMES[c.grade]
     if diff == 0:
-        out.append(Reason("positive", "grade", f"Подтверждённый грейд {GRADE_NAMES[c.grade]} — как требуется"))
+        out.append(Reason("positive", "grade", msg("match.reason.grade_match", grade=grade)))
     elif diff > 0:
-        out.append(Reason("neutral", "grade", f"Грейд выше требуемого: {GRADE_NAMES[c.grade]}"))
+        out.append(Reason("neutral", "grade", msg("match.reason.grade_above", grade=grade)))
     elif c.upgrade_eligible:
-        out.append(Reason("neutral", "grade",
-                          f"Грейд {GRADE_NAMES[c.grade]}, но тест показал готовность к повышению"))
+        out.append(Reason("neutral", "grade", msg("match.reason.grade_ready", grade=grade)))
     else:
-        out.append(Reason("negative", "grade", f"Грейд ниже требуемого: {GRADE_NAMES[c.grade]}"))
+        out.append(Reason("negative", "grade", msg("match.reason.grade_below", grade=grade)))
 
     if comps["skills"].available:
         must = [s for s in skills if s.importance == "must"]
         pct = round(comps["skills"].value * 100)
         verified = sum(1 for s in skills if s.verified and s.status != "missing")
         kind = "positive" if pct >= 70 else ("neutral" if pct >= 45 else "negative")
-        txt = f"Совместимость стека {pct}%"
-        if must:
-            txt += f": {sum(1 for s in must if s.status != 'missing')} из {len(must)} обязательных навыков"
-        if verified:
-            txt += f", {verified} подтверждены тестом"
-        out.append(Reason(kind, "skills", txt))
+        have = sum(1 for s in must if s.status != "missing")
+        key = "match.reason.stack" + ("_must" if must else "") + ("_verified" if verified else "")
+        out.append(Reason(kind, "skills", msg(key, pct=pct, have=have, total=len(must), verified=verified)))
         related = [s for s in skills if s.status == "related"]
         if related:
-            out.append(Reason("neutral", "skills", "Близкие навыки: " + ", ".join(
-                f"{s.via} вместо {s.name}" for s in related[:3])))
-        missing = [s.name for s in must if s.status == "missing"]
+            pairs = [msg("match.reason.related_pair", via={"skill": s.via_slug}, skill={"skill": s.skill})
+                     for s in related[:3]]
+            out.append(Reason("neutral", "skills", msg("match.reason.related", pairs=pairs)))
+        missing = [{"skill": s.skill} for s in must if s.status == "missing"]
         if missing:
-            out.append(Reason("negative", "skills", "Нет обязательных навыков: " + ", ".join(missing[:4])))
+            out.append(Reason("negative", "skills", msg("match.reason.missing_must", skills=missing[:4])))
 
     t = comps["test"]
     out.append(Reason("positive" if t.value >= 0.6 else ("neutral" if t.value >= 0.4 else "negative"),
-                      "test", f"Тест: {c.scaled_score}/100 (уверенность {round(c.confidence * 100)}%)"))
+                      "test", msg("match.reason.test", score=c.scaled_score, confidence=round(c.confidence * 100))))
 
     if fsp and fsp.available:
-        txt = f"{fsp.count} {plural(fsp.count, 'подтверждённое достижение', 'подтверждённых достижения', 'подтверждённых достижений')} ФСП"
-        if fsp.best_text:
-            txt += f": {fsp.best_text}"
-        out.append(Reason("positive", "fsp", txt))
+        out.append(Reason("positive", "fsp", msg("match.reason.fsp_best", n=fsp.count, best=fsp.best) if fsp.best
+                          else msg("match.reason.fsp", n=fsp.count)))
     else:
-        out.append(Reason("neutral", "fsp", "Нет истории ФСП — сигнал не учитывается, без штрафа"))
+        out.append(Reason("neutral", "fsp", msg("match.reason.fsp_none")))
 
     if days is not None:
         if days <= 30:
-            out.append(Reason("positive", "freshness", "Профиль активен сегодня" if days == 0 else
-                              f"Профиль активен: {days} дн. назад"))
+            out.append(Reason("positive", "freshness", msg("match.reason.active_today") if days == 0 else
+                              msg("match.reason.active_days", n=days)))
         elif days > 180:
-            out.append(Reason("negative", "freshness", f"Профиль давно не обновлялся ({days} дн.)"))
+            out.append(Reason("negative", "freshness", msg("match.reason.stale", n=days)))
 
     if comps["salary"].available and c.expected_salary:
+        salary = {"money": c.expected_salary}
         if comps["salary"].value >= 1:
-            out.append(Reason("positive", "salary", f"Ожидания {_rub(c.expected_salary)} — в вилке"))
+            out.append(Reason("positive", "salary", msg("match.reason.salary_in", salary=salary)))
         else:
             out.append(Reason("negative", "salary",
-                              f"Ожидания {_rub(c.expected_salary)} — {comps['salary'].detail}"))
+                              msg("match.reason.salary_out", salary=salary, detail=comps["salary"].detail)))
     if comps["experience"].available and comps["experience"].value < 1:
-        out.append(Reason("negative", "experience", f"Опыт {c.experience_years:g} г. при требуемых "
-                                                    f"{job.min_experience_years:g}"))
+        out.append(Reason("negative", "experience", msg("match.reason.experience", have=float(c.experience_years),
+                                                        need=float(job.min_experience_years))))
     if comps["format"].value < 0.5:
-        out.append(Reason("negative", "format", "Формат работы не совпадает"))
+        out.append(Reason("negative", "format", msg("match.reason.format")))
 
     order = {"positive": 0, "neutral": 1, "negative": 2}
     out.sort(key=lambda r: order[r.kind])

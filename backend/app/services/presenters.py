@@ -3,11 +3,11 @@ applying the privacy rules computed in services.privacy."""
 
 from app.db.base import utcnow
 from app.domain.catalog import GRADE_NAMES, SPEC_NAMES
+from app.i18n import competency_name, get_locale, has, render, skill_name, t
 from app.models import CandidateProfile, EmployerProfile, FSPProfile, Invitation, Job, TestAttempt, TestResult
-from app.repositories.reference import COMPETENCY_NAMES
 from app.services import privacy
-from app.services.fsp.scoring import LEVEL_NAMES, FSPSummary
-from app.services.testing.scoring import category_label
+from app.services.fsp.scoring import FSPSummary
+from app.services.testing.scoring import category_label, recommendation
 
 
 def category(c: CandidateProfile) -> dict | None:
@@ -29,7 +29,33 @@ def category(c: CandidateProfile) -> dict | None:
 
 
 def competency_list(scores: dict) -> list[dict]:
-    return [{"id": k, "name": COMPETENCY_NAMES.get(k, k), "score": v} for k, v in scores.items()]
+    return [{"id": k, "name": competency_name(k), "score": v} for k, v in scores.items()]
+
+
+def reason(r: dict) -> dict:
+    """A stored explanation reason {kind, component, code, params} -> with text in the current locale
+    (legacy rows that stored rendered text are passed through)."""
+    return {"kind": r.get("kind", "neutral"), "component": r.get("component", ""), "text": render(r)}
+
+
+def component(c: dict) -> dict:
+    """A stored score component -> with the label and detail in the current locale."""
+    detail = c.get("detail")
+    return {**{k: v for k, v in c.items() if k != "detail_msg"},
+            "label": t(f"ref.component.{c['key']}"),
+            "detail": render(c["detail_msg"]) if c.get("detail_msg") else detail or ""}
+
+
+def skill_match(s: dict) -> dict:
+    return {**s, "name": skill_name(s["skill"]),
+            "via": skill_name(s["via_slug"]) if s.get("via_slug") else s.get("via")}
+
+
+def match(m: dict) -> dict:
+    """A stored MatchScore.to_dict() snapshot -> localized view."""
+    return {**m, "components": [component(c) for c in m.get("components", [])],
+            "reasons": [reason(r) for r in m.get("reasons", [])],
+            "skill_matches": [skill_match(s) for s in m.get("skill_matches", [])]}
 
 
 def skills(c: CandidateProfile, graph) -> list[dict]:
@@ -37,14 +63,15 @@ def skills(c: CandidateProfile, graph) -> list[dict]:
     for cs in sorted(c.skills, key=lambda s: (-s.level, s.skill.name)):
         comp = graph.competency(cs.skill.slug, c.verified_specialization_id or c.specialization_id or "")
         score = c.competency_scores.get(comp) if comp and c.competency_scores else None
-        out.append({"slug": cs.skill.slug, "name": cs.skill.name, "level": cs.level, "years": cs.years,
+        out.append({"slug": cs.skill.slug, "name": skill_name(cs.skill.slug), "level": cs.level, "years": cs.years,
                     "verified": score is not None and score >= 60, "competency_score": score})
     return out
 
 
 def fsp_summary(s: FSPSummary) -> dict:
     return {"available": s.available, "strength": s.strength, "count": s.count, "prizes": s.prizes,
-            "best_text": s.best_text, "sport_rank": s.sport_rank, "highlights": s.highlights}
+            "best_text": render(s.best) if s.best else None, "sport_rank": s.sport_rank,
+            "highlights": [render(h) for h in s.highlights]}
 
 
 def fsp_profile(fp: FSPProfile | None) -> dict | None:
@@ -55,7 +82,8 @@ def fsp_profile(fp: FSPProfile | None) -> dict | None:
         "source": fp.source, "synced_at": fp.synced_at,
         "achievements": [{
             "id": a.external_id, "event_name": a.event_name, "discipline": a.discipline,
-            "level": a.level, "level_name": LEVEL_NAMES.get(a.level, a.level), "date": a.date,
+            "level": a.level, "level_name": t(f"fsp.level.{a.level}") if has(f"fsp.level.{a.level}") else a.level,
+            "date": a.date,
             "place": a.place, "participants_total": a.participants_total, "team_name": a.team_name,
             "role": a.role, "score": a.score, "certificate_url": a.certificate_url,
         } for a in fp.achievements],
@@ -80,7 +108,7 @@ def candidate_card(c: CandidateProfile, graph, fsp: FSPSummary, contacts_visible
 
 
 def company(e: EmployerProfile) -> dict:
-    return {"id": e.id, "name": e.company_name or "Компания", "industry": e.industry, "city": e.city,
+    return {"id": e.id, "name": e.company_name or t("ref.company"), "industry": e.industry, "city": e.city,
             "website": e.website, "description": e.description, "size": e.size}
 
 
@@ -93,7 +121,7 @@ def job(j: Job) -> dict:
         "city": j.city, "min_experience_years": j.min_experience_years, "weights_preset": j.weights_preset,
         "is_public": j.is_public, "status": j.status, "created_at": j.created_at, "updated_at": j.updated_at,
         "matched_at": j.matched_at,
-        "skills": [{"slug": s.skill.slug, "name": s.skill.name, "importance": s.importance}
+        "skills": [{"slug": s.skill.slug, "name": skill_name(s.skill.slug), "importance": s.importance}
                    for s in sorted(j.skills, key=lambda s: (s.importance != "must", s.skill.name))],
         "company": company(j.employer),
     }
@@ -107,7 +135,7 @@ def invitation(inv: Invitation, for_employer: bool, contacts: dict | None = None
         "position_title": inv.position_title, "description": inv.description,
         "salary_from": inv.salary_from, "salary_to": inv.salary_to, "work_format": inv.work_format,
         "contact_method": inv.contact_method, "match_score": inv.match_score,
-        "match_reasons": inv.match_reasons or [], "candidate_message": inv.candidate_message,
+        "match_reasons": [reason(r) for r in inv.match_reasons or []], "candidate_message": inv.candidate_message,
         "job_id": inv.job_id, "job_title": inv.job.title if inv.job else None,
         "company": company(inv.employer),
         "candidate": {
@@ -121,14 +149,22 @@ def invitation(inv: Invitation, for_employer: bool, contacts: dict | None = None
     }
 
 
+def _item_text(item) -> tuple[str, list]:
+    """Question text and options in the current locale; the option order is the same in every
+    language, so answers given in one language stay valid after switching."""
+    tr = (item.i18n or {}).get(get_locale())
+    return (tr["text"], tr["options"]) if tr else (item.text, item.options)
+
+
 def attempt_view(att: TestAttempt, now) -> dict:
     return {
         "id": att.id, "specialization_id": att.specialization_id, "target_grade": att.target_grade_id,
         "status": att.status, "started_at": att.started_at, "deadline_at": att.deadline_at, "server_time": now,
         "answered": sum(1 for i in att.items if i.answer), "total": len(att.items), "blueprint": att.blueprint,
         "items": [{"id": i.id, "position": i.position, "competency_id": i.competency_id,
-                   "competency_name": COMPETENCY_NAMES.get(i.competency_id, i.competency_id), "qtype": i.qtype,
-                   "text": i.text, "options": i.options, "answer": i.answer.answer if i.answer else None}
+                   "competency_name": competency_name(i.competency_id), "qtype": i.qtype,
+                   "text": _item_text(i)[0], "options": _item_text(i)[1],
+                   "answer": i.answer.answer if i.answer else None}
                   for i in att.items],
     }
 
@@ -140,7 +176,7 @@ def result_view(r: TestResult) -> dict:
         "outcome": r.outcome, "passed": r.passed, "verified_grade": r.verified_grade_id,
         "category_label": r.category_label, "scaled_score": r.scaled_score, "raw_percent": r.raw_percent,
         "theta": r.theta, "theta_se": r.theta_se, "confidence": r.confidence,
-        "competencies": competency_list(r.competency_scores or {}), "recommendation": r.recommendation,
+        "competencies": competency_list(r.competency_scores or {}), "recommendation": recommendation(r.outcome, att.target_grade_id, att.status == "expired"),
         "grade_changed": r.grade_changed, "grade_change_blocked": r.grade_change_blocked,
         "upgrade_eligible": r.outcome == "passed_upgrade",
         "answered": sum(1 for i in att.items if i.answer), "total": len(att.items), "created_at": r.created_at,

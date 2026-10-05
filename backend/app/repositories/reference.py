@@ -3,11 +3,9 @@ from functools import lru_cache
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.domain.catalog import COMPETENCIES, SKILLS
+from app.domain.catalog import SKILLS
 from app.models import Skill
 from app.services.matching.engine import SkillGraph, SkillInfo
-
-COMPETENCY_NAMES = {c[0]: c[2] for c in COMPETENCIES}
 
 
 @lru_cache

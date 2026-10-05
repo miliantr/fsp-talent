@@ -6,6 +6,7 @@ from app.core.config import get_settings
 from app.core.errors import NotFound
 from app.db.base import utcnow
 from app.domain.catalog import GRADE_NAMES
+from app.i18n import t
 from app.models import TestAttempt, TestResult
 from app.schemas.testing import (
     AnswerIn,
@@ -83,5 +84,5 @@ def finish(body: FinishIn, c: Candidate, db: DB):
 def result(attempt_id: int, c: Candidate, db: DB):
     att = service.get_attempt(db, c, attempt_id)
     if not att.result:
-        raise NotFound("Попытка ещё не завершена")
+        raise NotFound(t("error.attempt_not_finished"))
     return result_view(att.result)

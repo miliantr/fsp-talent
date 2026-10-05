@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from app.domain.catalog import GRADE_NAMES, GRADE_RANK
+from app.i18n import t
 
 
 @dataclass
@@ -46,7 +47,7 @@ class Eligibility:
 def check_eligibility(state: CandidateGradeState, history: list[AttemptRecord], specialization: str,
                       target: str, now: datetime, retake_days: int) -> Eligibility:
     if any(h.in_progress for h in history):
-        return Eligibility(target, False, "blocked", "Завершите текущую попытку тестирования")
+        return Eligibility(target, False, "blocked", t("test.policy.finish_current"))
 
     last_same = max(
         (h.finished_at for h in history
@@ -63,7 +64,7 @@ def check_eligibility(state: CandidateGradeState, history: list[AttemptRecord], 
         until = last_same + timedelta(days=retake_days)
         return Eligibility(
             target, False, "blocked",
-            f"Повторно пройти тест на {GRADE_NAMES[target]} можно после {until:%d.%m.%Y}", until,
+            t("test.policy.retake_after", grade=GRADE_NAMES[target], date={"date": until.isoformat()}), until,
         )
 
     verified = state.verified_grade if state.verified_specialization == specialization else None
@@ -72,7 +73,7 @@ def check_eligibility(state: CandidateGradeState, history: list[AttemptRecord], 
         if state.grade_locked_until and now < state.grade_locked_until:
             return Eligibility(
                 target, False, "blocked",
-                f"Сменить категорию можно после {state.grade_locked_until:%d.%m.%Y}",
+                t("test.policy.change_after", date={"date": state.grade_locked_until.isoformat()}),
                 state.grade_locked_until,
             )
         return Eligibility(target, True, "change")
@@ -93,8 +94,7 @@ def check_eligibility(state: CandidateGradeState, history: list[AttemptRecord], 
     if locked:
         return Eligibility(
             target, False, "blocked",
-            f"Грейд можно менять не чаще раза в период; следующая смена — после "
-            f"{state.grade_locked_until:%d.%m.%Y}",
+            t("test.policy.grade_locked", date={"date": state.grade_locked_until.isoformat()}),
             state.grade_locked_until,
         )
     return Eligibility(target, True, "upgrade" if diff > 0 else "change")

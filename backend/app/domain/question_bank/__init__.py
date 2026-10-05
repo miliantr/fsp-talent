@@ -5,7 +5,17 @@ Initial IRT parameters come from expert difficulty levels (1..5) and the item fo
 data (Rasch/JML) once real answers accumulate.
 """
 
-from app.domain.question_bank import advanced, backend, data_ml, devops, frontend
+from app.domain.question_bank import (
+    advanced,
+    backend,
+    data_ml,
+    devops,
+    en_backend,
+    en_data_ml,
+    en_devops,
+    en_frontend,
+    frontend,
+)
 from app.domain.question_bank.families import FAMILIES as BASE_FAMILIES
 from app.domain.question_bank.families import Family
 from app.domain.question_bank.families_extra import EXTRA_FAMILIES
@@ -18,6 +28,12 @@ DIFFICULTY_TO_B = {1: -2.0, 2: -1.0, 3: 0.0, 4: 1.0, 5: 2.0}
 DISCRIMINATION = {"single": 1.0, "multi": 1.3, "numeric": 1.4}
 
 _PREFIX = {"backend": "BE", "frontend": "FE", "data_ml": "ML", "devops": "DO"}
+
+# Translations keyed by item code; the option order matches the original, so the correct answers
+# and the calibration are shared across languages.
+TRANSLATIONS: dict[str, dict[str, tuple[str, list[str]]]] = {
+    "en": {**en_backend.EN, **en_frontend.EN, **en_data_ml.EN, **en_devops.EN},
+}
 
 
 def guessing(qtype: str, n_options: int) -> float:
@@ -39,8 +55,11 @@ def bank_items() -> list[dict]:
         for comp, diff, text, options, correct in items:
             counters[comp] = counters.get(comp, 0) + 1
             qtype = "multi" if isinstance(correct, list) else "single"
+            code = f"{_PREFIX[spec]}-{comp.split('_', 1)[1].upper()}-{counters[comp]:02d}"
+            i18n = {lang: {"text": tr[code][0], "options": list(tr[code][1])}
+                    for lang, tr in TRANSLATIONS.items() if code in tr}
             out.append({
-                "code": f"{_PREFIX[spec]}-{comp.split('_', 1)[1].upper()}-{counters[comp]:02d}",
+                "code": code,
                 "specialization_id": spec,
                 "competency_id": comp,
                 "difficulty": diff,
@@ -49,6 +68,7 @@ def bank_items() -> list[dict]:
                 "options": options,
                 "correct": correct if isinstance(correct, list) else [correct],
                 "family": None,
+                "i18n": i18n or None,
                 "irt_a": DISCRIMINATION[qtype],
                 "irt_b": DIFFICULTY_TO_B[diff],
                 "irt_c": guessing(qtype, len(options)),
@@ -64,6 +84,7 @@ def bank_items() -> list[dict]:
             "options": [],
             "correct": [],
             "family": fam.code,
+            "i18n": None,  # families render every language from the same parameters
             "irt_a": DISCRIMINATION[fam.qtype],
             "irt_b": DIFFICULTY_TO_B[fam.difficulty],
             "irt_c": guessing(fam.qtype, 4),
@@ -71,4 +92,4 @@ def bank_items() -> list[dict]:
     return out
 
 
-__all__ = ["DIFFICULTY_TO_B", "FAMILIES", "FAMILY_BY_CODE", "Family", "bank_items", "guessing"]
+__all__ = ["DIFFICULTY_TO_B", "FAMILIES", "FAMILY_BY_CODE", "TRANSLATIONS", "Family", "bank_items", "guessing"]

@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
+from pydantic_core import PydanticCustomError
 
 from app.schemas.common import (
     CandidateSkillView,
@@ -64,7 +65,7 @@ class RequirementIn(BaseModel):
     @model_validator(mode="after")
     def _salary(self):
         if self.salary_to < self.salary_from:
-            raise ValueError("salary_to должна быть не меньше salary_from")
+            raise PydanticCustomError("salary_range", "salary_to must not be less than salary_from")
         return self
 
 
@@ -311,7 +312,7 @@ class InvitationIn(BaseModel):
     @model_validator(mode="after")
     def _salary(self):
         if self.salary_to < self.salary_from:
-            raise ValueError("salary_to должна быть не меньше salary_from")
+            raise PydanticCustomError("salary_range", "salary_to must not be less than salary_from")
         return self
 
 

@@ -2,6 +2,7 @@ from fastapi import APIRouter, File, UploadFile
 
 from app.api.deps import DB, Candidate
 from app.api.responses import errors
+from app.i18n import t
 from app.schemas.candidate import (
     CandidateProfileIn,
     CandidateProfileOut,
@@ -143,4 +144,4 @@ def tasks(c: Candidate, db: DB):
              summary="Отправить решение или подход")
 def submit_task(task_id: int, body: SubmissionIn, c: Candidate, db: DB):
     tasks_service.submit(db, c, task_id, body.answer)
-    return Message(message="Решение отправлено")
+    return Message(message=t("message.solution_sent"))

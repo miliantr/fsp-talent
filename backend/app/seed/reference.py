@@ -44,6 +44,8 @@ def seed_questions(db: Session) -> None:
         q = latest.get(item["code"])
         fields = ("text", "options", "correct", "difficulty", "qtype", "competency_id", "irt_a", "irt_b", "irt_c")
         if q and all(getattr(q, f) == item[f] for f in fields):
+            if q.i18n != item.get("i18n"):
+                q.i18n = item.get("i18n")  # a translation does not change the item: no new version
             continue
         version = (q.version + 1) if q else 1
         if q:

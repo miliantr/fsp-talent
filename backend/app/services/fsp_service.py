@@ -8,6 +8,7 @@ from app.core.config import get_settings
 from app.core.errors import Conflict, NotFound, ValidationFailed
 from app.core.security import hash_code, new_email_code
 from app.db.base import utcnow
+from app.i18n import t
 from app.models import CandidateProfile, FSPAchievement, FSPProfile
 from app.services.fsp.registry import RegistryParticipant, get_registry
 from app.services.fsp.scoring import AchievementLike, FSPSummary, summarize
@@ -67,9 +68,9 @@ def request_link(db: Session, profile: CandidateProfile, fsp_id: str) -> dict:
     registry = get_registry()
     p = registry.get_participant(fsp_id)
     if not p:
-        raise NotFound("Участник с таким ФСП ID не найден в реестре", code="fsp_not_found")
+        raise NotFound(t("error.fsp_not_found"), code="fsp_not_found")
     if _claimed_by_other(db, profile, p.fsp_id):
-        raise Conflict("Этот ФСП ID уже привязан к другому профилю", code="fsp_taken")
+        raise Conflict(t("error.fsp_taken"), code="fsp_taken")
     if p.email and p.email.lower() == profile.user.email.lower():
         _store(db, profile, p, registry.source)
         db.commit()
@@ -80,7 +81,7 @@ def request_link(db: Session, profile: CandidateProfile, fsp_id: str) -> dict:
     profile.fsp_pending_id = p.fsp_id
     profile.fsp_code_hash = hash_code(code)
     profile.fsp_code_expires_at = utcnow() + timedelta(minutes=30)
-    send_email(p.email, "Привязка ФСП ID к FSP Talent", f"Код подтверждения: {code}")
+    send_email(p.email, t("email.fsp_link.subject"), t("email.fsp_link.body", code=code))
     db.commit()
     return {
         "status": "confirmation_required",
@@ -91,28 +92,28 @@ def request_link(db: Session, profile: CandidateProfile, fsp_id: str) -> dict:
 
 def confirm_link(db: Session, profile: CandidateProfile, code: str) -> None:
     if not profile.fsp_pending_id or not profile.fsp_code_hash:
-        raise ValidationFailed("Нет ожидающей привязки ФСП ID")
+        raise ValidationFailed(t("error.fsp_no_pending"))
     if not profile.fsp_code_expires_at or utcnow() > profile.fsp_code_expires_at:
-        raise ValidationFailed("Код истёк — запросите привязку заново", code="code_expired")
+        raise ValidationFailed(t("error.fsp_code_expired"), code="code_expired")
     if hash_code(code.strip()) != profile.fsp_code_hash:
-        raise ValidationFailed("Неверный код", code="code_invalid")
+        raise ValidationFailed(t("error.fsp_code_invalid"), code="code_invalid")
     registry = get_registry()
     p = registry.get_participant(profile.fsp_pending_id)
     if not p:
-        raise NotFound("Участник не найден в реестре")
+        raise NotFound(t("error.fsp_participant_missing"))
     if _claimed_by_other(db, profile, p.fsp_id):
-        raise Conflict("Этот ФСП ID уже привязан к другому профилю", code="fsp_taken")
+        raise Conflict(t("error.fsp_taken"), code="fsp_taken")
     _store(db, profile, p, registry.source)
     db.commit()
 
 
 def sync(db: Session, profile: CandidateProfile) -> None:
     if not profile.fsp_id:
-        raise ValidationFailed("ФСП ID не привязан")
+        raise ValidationFailed(t("error.fsp_not_linked"))
     registry = get_registry()
     p = registry.get_participant(profile.fsp_id)
     if not p:
-        raise NotFound("Участник больше не найден в реестре")
+        raise NotFound(t("error.fsp_participant_gone"))
     _store(db, profile, p, registry.source)
     db.commit()
 

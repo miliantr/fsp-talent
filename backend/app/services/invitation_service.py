@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.core.errors import Conflict, NotFound, TooManyRequests, ValidationFailed
 from app.db.base import utcnow
+from app.i18n import t
 from app.models import CandidateProfile, EmployerProfile, Invitation, InvitationStatus, Job
 from app.repositories import candidates as cand_repo
 from app.services import privacy
@@ -22,13 +23,13 @@ MAX_RANGE_RATIO = 3.0
 
 def validate_salary(salary_from: int, salary_to: int) -> None:
     if salary_from <= 0 or salary_to <= 0:
-        raise ValidationFailed("Зарплата указывается обязательно и должна быть больше нуля", code="salary_required")
+        raise ValidationFailed(t("error.salary_required"), code="salary_required")
     if salary_to < salary_from:
-        raise ValidationFailed("Верхняя граница вилки меньше нижней", code="salary_range")
+        raise ValidationFailed(t("error.salary_range_inverted"), code="salary_range")
     if salary_to > MAX_SALARY:
-        raise ValidationFailed("Слишком большая сумма", code="salary_range")
+        raise ValidationFailed(t("error.salary_too_large"), code="salary_range")
     if salary_to > salary_from * MAX_RANGE_RATIO:
-        raise ValidationFailed("Слишком широкая вилка: верхняя граница не может превышать нижнюю более чем в 3 раза",
+        raise ValidationFailed(t("error.salary_too_wide"),
                                code="salary_range")
 
 
@@ -47,31 +48,31 @@ def create(db: Session, employer: EmployerProfile, *, candidate_id: int, job_id:
            position_title: str, description: str, salary_from: int, salary_to: int,
            work_format: str, contact_method: str) -> Invitation:
     if not employer.company_name:
-        raise ValidationFailed("Заполните профиль компании перед отправкой приглашений", code="company_required")
+        raise ValidationFailed(t("error.company_required"), code="company_required")
     validate_salary(salary_from, salary_to)
     if not position_title.strip() or not description.strip() or not contact_method.strip():
-        raise ValidationFailed("Укажите должность, описание предложения и способ связи")
+        raise ValidationFailed(t("error.invitation_fields"))
 
     candidate = cand_repo.get_with_relations(db, candidate_id)
     if not candidate or not (candidate.is_searchable or privacy.has_relationship(db, employer, candidate)):
-        raise NotFound("Кандидат не найден или не принимает предложения")
+        raise NotFound(t("error.candidate_unavailable"))
     job = None
     if job_id is not None:
         job = db.get(Job, job_id)
         if not job or job.employer_id != employer.id:
-            raise NotFound("Потребность не найдена")
+            raise NotFound(t("error.requirement_not_found"))
 
     active = db.scalar(select(Invitation.id).where(
         Invitation.employer_id == employer.id, Invitation.candidate_id == candidate.id,
         Invitation.status.in_(InvitationStatus.ACTIVE), Invitation.expires_at > utcnow()).limit(1))
     if active:
-        raise Conflict("Кандидату уже отправлено активное приглашение", code="duplicate_invitation")
+        raise Conflict(t("error.duplicate_invitation"), code="duplicate_invitation")
 
     since = utcnow() - timedelta(days=1)
     sent_today = db.scalar(select(func.count(Invitation.id)).where(
         Invitation.employer_id == employer.id, Invitation.created_at >= since)) or 0
     if sent_today >= get_settings().invitations_daily_limit:
-        raise TooManyRequests("Превышен дневной лимит приглашений (защита от спама)")
+        raise TooManyRequests(t("error.invitation_limit"))
 
     score, reasons = None, []
     if job:
@@ -113,7 +114,7 @@ def for_candidate(db: Session, candidate: CandidateProfile) -> list[Invitation]:
 def _own(db: Session, candidate: CandidateProfile, inv_id: int) -> Invitation:
     inv = db.get(Invitation, inv_id)
     if not inv or inv.candidate_id != candidate.id:
-        raise NotFound("Приглашение не найдено")
+        raise NotFound(t("error.invitation_not_found"))
     expire_stale(db, [inv])
     return inv
 
@@ -132,9 +133,9 @@ def respond(db: Session, candidate: CandidateProfile, inv_id: int, accept: bool,
             message: str | None = None) -> Invitation:
     inv = _own(db, candidate, inv_id)
     if inv.status == InvitationStatus.EXPIRED:
-        raise Conflict("Срок действия приглашения истёк", code="invitation_expired")
+        raise Conflict(t("error.invitation_expired"), code="invitation_expired")
     if inv.status not in InvitationStatus.ACTIVE:
-        raise Conflict("На приглашение уже дан ответ", code="invitation_closed")
+        raise Conflict(t("error.invitation_closed"), code="invitation_closed")
     now = utcnow()
     inv.viewed_at = inv.viewed_at or now
     inv.status = InvitationStatus.ACCEPTED if accept else InvitationStatus.REJECTED
@@ -153,7 +154,7 @@ def report(db: Session, candidate: CandidateProfile, inv_id: int, reason: str | 
     if inv.status in InvitationStatus.ACTIVE:
         inv.status = InvitationStatus.REJECTED
         inv.responded_at = utcnow()
-        inv.candidate_message = f"Жалоба: {reason}" if reason else "Жалоба на приглашение"
+        inv.candidate_message = t("invitation.report", reason=reason) if reason else t("invitation.report_plain")
     db.commit()
     return inv
 
@@ -161,9 +162,9 @@ def report(db: Session, candidate: CandidateProfile, inv_id: int, reason: str | 
 def withdraw(db: Session, employer: EmployerProfile, inv_id: int) -> Invitation:
     inv = db.get(Invitation, inv_id)
     if not inv or inv.employer_id != employer.id:
-        raise NotFound("Приглашение не найдено")
+        raise NotFound(t("error.invitation_not_found"))
     if inv.status not in InvitationStatus.ACTIVE:
-        raise Conflict("Отозвать можно только активное приглашение")
+        raise Conflict(t("error.invitation_withdraw_active"))
     inv.status = InvitationStatus.WITHDRAWN
     db.commit()
     return inv

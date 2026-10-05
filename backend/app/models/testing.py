@@ -52,6 +52,9 @@ class Question(Base):
     correct: Mapped[list] = mapped_column(JSON, default=list)  # indices into options / [number]
     explanation: Mapped[str] = mapped_column(Text, default="")
     family: Mapped[str | None] = mapped_column(String(48))
+    # translations {"en": {"text": ..., "options": [...]}}; options keep the same order and the same
+    # correct indices, so one calibration (IRT parameters) serves every language
+    i18n: Mapped[dict | None] = mapped_column(JSON)
     # IRT (3PL) parameters: discrimination a, difficulty b, pseudo-guessing c.
     irt_a: Mapped[float] = mapped_column(Float, default=1.0)
     irt_b: Mapped[float] = mapped_column(Float, default=0.0)
@@ -118,6 +121,8 @@ class TestItem(Base):
     irt_c: Mapped[float] = mapped_column(Float)
     params: Mapped[dict] = mapped_column(JSON, default=dict)
     family: Mapped[str | None] = mapped_column(String(48))
+    # the rendered item in other languages (same option order): switching language mid-test is safe
+    i18n: Mapped[dict | None] = mapped_column(JSON)
 
     attempt: Mapped[TestAttempt] = relationship(back_populates="items")
     answer: Mapped["TestAnswer | None"] = relationship(

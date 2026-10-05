@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.errors import Conflict, NotFound, ValidationFailed
 from app.db.base import utcnow
+from app.i18n import t
 from app.models import Application, ApplicationStatus, CandidateProfile, EmployerProfile, Job
 from app.repositories.reference import skill_graph
 from app.services import fsp_service, presenters, privacy
@@ -47,17 +48,17 @@ def public_jobs(db: Session, candidate: CandidateProfile | None = None, speciali
 def get_public(db: Session, job_id: int) -> Job:
     j = db.get(Job, job_id)
     if not j or not j.is_public or j.status != "active":
-        raise NotFound("Вакансия не найдена")
+        raise NotFound(t("error.vacancy_not_found"))
     return j
 
 
 def apply(db: Session, candidate: CandidateProfile, job_id: int, cover_letter: str) -> Application:
     job = get_public(db, job_id)
     if not candidate.first_name:
-        raise ValidationFailed("Заполните профиль перед откликом")
+        raise ValidationFailed(t("error.profile_required_apply"))
     if db.scalar(select(Application.id).where(Application.job_id == job.id,
                                               Application.candidate_id == candidate.id)):
-        raise Conflict("Вы уже откликнулись на эту вакансию", code="duplicate_application")
+        raise Conflict(t("error.duplicate_application"), code="duplicate_application")
     score = None
     if candidate.is_verified:
         score = engine.score_candidate(matching.candidate_features(candidate), matching.job_features(job),
@@ -101,10 +102,10 @@ def employer_applications(db: Session, employer: EmployerProfile, job_id: int | 
 
 def set_application_status(db: Session, employer: EmployerProfile, app_id: int, status: str) -> Application:
     if status not in ApplicationStatus.ALL:
-        raise ValidationFailed("Неизвестный статус")
+        raise ValidationFailed(t("error.unknown_status"))
     a = db.get(Application, app_id)
     if not a or a.job.employer_id != employer.id:
-        raise NotFound("Отклик не найден")
+        raise NotFound(t("error.application_not_found"))
     a.status = status
     a.updated_at = utcnow()
     db.commit()

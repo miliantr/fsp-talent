@@ -42,6 +42,7 @@ class ItemSpec:
     b: float
     c: float
     exposure: int = 0
+    i18n: dict = field(default_factory=dict)  # {"en": {"text", "options"}}, same option order
 
 
 @dataclass
@@ -60,6 +61,7 @@ class FormItem:
     c: float
     params: dict = field(default_factory=dict)
     family: str | None = None
+    i18n: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -167,15 +169,18 @@ def select_items(blueprint: Blueprint, pool: list[ItemSpec], rng: random.Random,
 def render_item(item: ItemSpec, position: int, rng: random.Random) -> FormItem:
     if item.family:
         fam = FAMILY_BY_CODE[item.family]
-        r = fam.render(rng)
+        r = fam.render(rng)  # every language is rendered from the same random parameters
         return FormItem(item.id, item.code, position, item.competency, item.difficulty, item.qtype,
-                        r["text"], r["options"], r["correct"], item.a, item.b, item.c, r["params"], item.family)
+                        r["text"], r["options"], r["correct"], item.a, item.b, item.c, r["params"], item.family,
+                        r.get("i18n", {}))
     order = list(range(len(item.options)))
     rng.shuffle(order)
     options = [item.options[i] for i in order]
     correct = sorted(order.index(i) for i in item.correct)
+    i18n = {lang: {"text": tr["text"], "options": [tr["options"][i] for i in order]}
+            for lang, tr in (item.i18n or {}).items()}
     return FormItem(item.id, item.code, position, item.competency, item.difficulty, item.qtype,
-                    item.text, options, correct, item.a, item.b, item.c, {"option_order": order})
+                    item.text, options, correct, item.a, item.b, item.c, {"option_order": order}, None, i18n)
 
 
 def generate_form(blueprint: Blueprint, pool: list[ItemSpec], rng: random.Random,

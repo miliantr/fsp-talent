@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.errors import ValidationFailed
 from app.db.base import utcnow
 from app.domain.catalog import GRADE_RANK, SPEC_NAMES
+from app.i18n import t
 from app.models import (
     Application,
     EmployerProfile,
@@ -39,20 +40,20 @@ def company_view(e: EmployerProfile) -> dict:
 
 def _apply_job(db: Session, job: Job, data: dict) -> None:
     if data["specialization_id"] not in SPEC_NAMES:
-        raise ValidationFailed("Неизвестная специализация")
+        raise ValidationFailed(t("error.unknown_spec"))
     if data["grade_id"] not in GRADE_RANK:
-        raise ValidationFailed("Неизвестный грейд")
+        raise ValidationFailed(t("error.unknown_grade"))
     if data.get("work_format", "any") not in WorkFormat.ALL:
-        raise ValidationFailed("Неизвестный формат работы")
+        raise ValidationFailed(t("error.unknown_format"))
     if data.get("weights_preset", "balanced") not in PRESETS:
-        raise ValidationFailed("Неизвестный профиль весов")
+        raise ValidationFailed(t("error.unknown_preset"))
     invitation_service.validate_salary(data["salary_from"], data["salary_to"])
     must = list(dict.fromkeys(data.get("must_skills") or []))
     nice = [s for s in dict.fromkeys(data.get("nice_skills") or []) if s not in must]
     known = skills_by_slug(db, must + nice)
     unknown = [s for s in must + nice if s not in known]
     if unknown:
-        raise ValidationFailed(f"Неизвестные навыки: {', '.join(unknown)}")
+        raise ValidationFailed(t("error.skills_unknown", skills=unknown))
     for k in ("title", "description", "team_description", "specialization_id", "grade_id", "salary_from",
               "salary_to", "work_format", "city", "min_experience_years", "weights_preset", "is_public"):
         if k in data:

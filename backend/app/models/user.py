@@ -27,3 +27,5 @@ class User(Base):
     external_subject: Mapped[str | None] = mapped_column(String(255), unique=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime)
+    # preferred interface language (ru | en): restored on sign-in from any device
+    locale: Mapped[str] = mapped_column(String(8), default="ru", server_default="ru")

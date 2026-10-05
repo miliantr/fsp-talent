@@ -4,6 +4,7 @@ from app.api.deps import DB, CurrentUser
 from app.api.responses import errors
 from app.models import CandidateProfile, EmployerProfile, Role, User
 from app.schemas.auth import (
+    LocaleIn,
     LoginIn,
     RegisterIn,
     RegisterOut,
@@ -28,7 +29,7 @@ def user_out(db, user: User) -> UserOut:
         if e and e.company_name:
             name = e.company_name
     return UserOut(id=user.id, email=user.email, role=user.role, is_email_verified=user.is_email_verified,
-                   display_name=name)
+                   display_name=name, locale=user.locale or "ru")
 
 
 @router.post("/register", response_model=RegisterOut, status_code=status.HTTP_201_CREATED,
@@ -59,4 +60,12 @@ def login(body: LoginIn, db: DB):
 
 @router.get("/me", response_model=UserOut, responses=errors(401), summary="Текущий пользователь")
 def me(user: CurrentUser, db: DB):
+    return user_out(db, user)
+
+
+@router.put("/me/locale", response_model=UserOut, responses=errors(401, 422), summary="Сменить язык интерфейса")
+def set_locale(body: LocaleIn, user: CurrentUser, db: DB):
+    """Сохраняет выбранный язык в учётной записи: при входе с другого устройства он восстановится."""
+    user.locale = body.locale
+    db.commit()
     return user_out(db, user)

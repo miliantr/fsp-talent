@@ -3,6 +3,7 @@ from fastapi import APIRouter, Query, status
 from app.api.deps import DB, Employer
 from app.api.responses import errors
 from app.core.errors import NotFound
+from app.i18n import t
 from app.repositories import candidates as cand_repo
 from app.schemas.common import Message
 from app.schemas.employer import (
@@ -85,7 +86,7 @@ def update_requirement(job_id: int, body: RequirementIn, e: Employer, db: DB):
 @router.delete("/requirements/{job_id}", response_model=Message, responses=errors(404), summary="Закрыть потребность")
 def close_requirement(job_id: int, e: Employer, db: DB):
     employer_service.close_job(db, e, job_id)
-    return Message(message="Потребность закрыта")
+    return Message(message=t("message.requirement_closed"))
 
 
 @router.get("/requirements/{job_id}/matches", response_model=MatchListOut, responses=errors(404),
@@ -115,7 +116,7 @@ def compare(job_id: int, a: int, b: int, e: Employer, db: DB):
     job = matching.get_job(db, e, job_id)
     ca, cb = cand_repo.get_with_relations(db, a), cand_repo.get_with_relations(db, b)
     if not ca or not cb or not ca.is_searchable or not cb.is_searchable:
-        raise NotFound("Кандидат не найден")
+        raise NotFound(t("error.candidate_not_found"))
     return matching.compare(db, job, ca, cb)
 
 
@@ -169,7 +170,7 @@ def applications(e: Employer, db: DB, job_id: int | None = None):
 @router.post("/applications/{app_id}/status", response_model=Message, responses=errors(404, 422))
 def application_status(app_id: int, body: ApplicationStatusIn, e: Employer, db: DB):
     jobs_service.set_application_status(db, e, app_id, body.status)
-    return Message(message="Статус обновлён")
+    return Message(message=t("message.status_updated"))
 
 
 # ------------------------------------------------------------------ regular short tasks
@@ -181,8 +182,8 @@ def tasks(e: Employer, db: DB):
 
 @router.post("/tasks", response_model=TaskOut, status_code=status.HTTP_201_CREATED, responses=errors(422))
 def create_task(body: TaskIn, e: Employer, db: DB):
-    t = tasks_service.create(db, e, body.specialization_id, body.title, body.description)
-    return next(x for x in tasks_service.for_employer(db, e) if x["id"] == t.id)
+    task = tasks_service.create(db, e, body.specialization_id, body.title, body.description)
+    return next(x for x in tasks_service.for_employer(db, e) if x["id"] == task.id)
 
 
 @router.get("/tasks/{task_id}/submissions", response_model=list[SubmissionOut], responses=errors(404))
@@ -193,4 +194,4 @@ def task_submissions(task_id: int, e: Employer, db: DB):
 @router.post("/submissions/{submission_id}/review", response_model=Message, responses=errors(404, 422))
 def review(submission_id: int, body: ReviewIn, e: Employer, db: DB):
     tasks_service.review(db, e, submission_id, body.rating, body.comment)
-    return Message(message="Оценка сохранена")
+    return Message(message=t("message.rating_saved"))

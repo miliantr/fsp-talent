@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.errors import ValidationFailed
 from app.db.base import utcnow
 from app.domain.catalog import GRADE_RANK, SPEC_NAMES
+from app.i18n import t
 from app.models import CandidateProfile, CandidateSkill, InvitationStatus, Skill, WorkFormat
 from app.repositories.reference import skill_graph
 from app.services import fsp_service, invitation_service, presenters
@@ -17,11 +18,11 @@ PROFILE_FIELDS = ("first_name", "last_name", "phone", "telegram", "city", "headl
 
 def update_profile(db: Session, c: CandidateProfile, data: dict) -> CandidateProfile:
     if "specialization_id" in data and data["specialization_id"] and data["specialization_id"] not in SPEC_NAMES:
-        raise ValidationFailed("Неизвестная специализация")
+        raise ValidationFailed(t("error.unknown_spec"))
     if "declared_grade_id" in data and data["declared_grade_id"] and data["declared_grade_id"] not in GRADE_RANK:
-        raise ValidationFailed("Неизвестный грейд")
+        raise ValidationFailed(t("error.unknown_grade"))
     if data.get("work_format") and data["work_format"] not in WorkFormat.ALL:
-        raise ValidationFailed("Неизвестный формат работы")
+        raise ValidationFailed(t("error.unknown_format"))
     for k in PROFILE_FIELDS:
         if k in data:
             setattr(c, k, data[k])
@@ -36,13 +37,13 @@ def update_profile(db: Session, c: CandidateProfile, data: dict) -> CandidatePro
 def set_skills(db: Session, c: CandidateProfile, items: list[dict]) -> None:
     slugs = [i["slug"] for i in items]
     if len(slugs) != len(set(slugs)):
-        raise ValidationFailed("Навыки не должны повторяться")
+        raise ValidationFailed(t("error.skills_duplicate"))
     if len(slugs) > 30:
-        raise ValidationFailed("Не более 30 навыков")
+        raise ValidationFailed(t("error.skills_limit"))
     known = {s.slug: s for s in db.scalars(select(Skill).where(Skill.slug.in_(slugs)))}
     unknown = [s for s in slugs if s not in known]
     if unknown:
-        raise ValidationFailed(f"Неизвестные навыки: {', '.join(unknown)}")
+        raise ValidationFailed(t("error.skills_unknown", skills=unknown))
     c.skills.clear()
     db.flush()
     for i in items:
@@ -61,20 +62,20 @@ def update_settings(db: Session, c: CandidateProfile, data: dict) -> CandidatePr
 
 def completeness(c: CandidateProfile) -> dict:
     checks = [
-        ("name", "Имя и фамилия", bool(c.first_name and c.last_name)),
-        ("contacts", "Телефон или Telegram", bool(c.phone or c.telegram)),
-        ("city", "Город", bool(c.city)),
-        ("headline", "Заголовок профиля", bool(c.headline)),
-        ("about", "О себе (от 50 символов)", len(c.about or "") >= 50),
-        ("survey", "Опрос: специализация и грейд", bool(c.specialization_id and c.declared_grade_id)),
-        ("skills", "Не менее 3 навыков", len(c.skills) >= 3),
-        ("salary", "Зарплатные ожидания", bool(c.expected_salary)),
-        ("test", "Пройденное тестирование", c.is_verified),
-        ("publication", "Согласие на публикацию профиля", c.consent_publication_at is not None),
+        ("name", bool(c.first_name and c.last_name)),
+        ("contacts", bool(c.phone or c.telegram)),
+        ("city", bool(c.city)),
+        ("headline", bool(c.headline)),
+        ("about", len(c.about or "") >= 50),
+        ("survey", bool(c.specialization_id and c.declared_grade_id)),
+        ("skills", len(c.skills) >= 3),
+        ("salary", bool(c.expected_salary)),
+        ("test", c.is_verified),
+        ("publication", c.consent_publication_at is not None),
     ]
-    done = sum(1 for _, _, ok in checks if ok)
+    done = sum(1 for _, ok in checks if ok)
     return {"percent": round(100 * done / len(checks)),
-            "missing": [{"key": k, "title": t} for k, t, ok in checks if not ok]}
+            "missing": [{"key": k, "title": t(f"profile.missing.{k}")} for k, ok in checks if not ok]}
 
 
 def profile_view(c: CandidateProfile) -> dict:
@@ -108,14 +109,14 @@ def dashboard(db: Session, c: CandidateProfile) -> dict:
     results = testing_service.results(db, c)
     comp = completeness(c)
     steps = [
-        {"key": "profile", "title": "Заполните профиль", "done": comp["percent"] >= 50, "link": "/candidate/profile"},
-        {"key": "survey", "title": "Пройдите опрос: специализация и грейд",
-         "done": bool(c.specialization_id and c.declared_grade_id), "link": "/candidate/testing"},
-        {"key": "test", "title": "Подтвердите грейд тестом", "done": c.is_verified, "link": "/candidate/testing"},
-        {"key": "publish", "title": "Разрешите показывать профиль работодателям",
-         "done": c.consent_publication_at is not None, "link": "/candidate/settings"},
-        {"key": "fsp", "title": "Привяжите ФСП ID (необязательно)", "done": bool(c.fsp_id), "link": "/candidate/fsp"},
+        {"key": "profile", "done": comp["percent"] >= 50, "link": "/candidate/profile"},
+        {"key": "survey", "done": bool(c.specialization_id and c.declared_grade_id), "link": "/candidate/testing"},
+        {"key": "test", "done": c.is_verified, "link": "/candidate/testing"},
+        {"key": "publish", "done": c.consent_publication_at is not None, "link": "/candidate/settings"},
+        {"key": "fsp", "done": bool(c.fsp_id), "link": "/candidate/fsp"},
     ]
+    for step in steps:
+        step["title"] = t(f"profile.step.{step['key']}")
     last = results[0] if results else None
     return {
         "profile": profile_view(c),
@@ -136,15 +137,15 @@ def dashboard(db: Session, c: CandidateProfile) -> dict:
 
 def parse_resume(c: CandidateProfile, filename: str, data: bytes) -> dict:
     if len(data) > 5 * 1024 * 1024:
-        raise ValidationFailed("Файл больше 5 МБ")
+        raise ValidationFailed(t("error.file_too_large"))
     if not data.startswith(b"%PDF"):
-        raise ValidationFailed("Ожидается PDF-файл")
+        raise ValidationFailed(t("error.pdf_expected"))
     try:
         text = pdf_to_text(data)
     except Exception as e:  # malformed PDFs
-        raise ValidationFailed("Не удалось прочитать PDF") from e
+        raise ValidationFailed(t("error.pdf_unreadable")) from e
     if len(text.strip()) < 20:
-        raise ValidationFailed("В PDF не найден текст (скан?). Заполните профиль вручную.")
+        raise ValidationFailed(t("error.pdf_no_text"))
     p = parse_resume_text(text)
     graph = skill_graph()
     return {

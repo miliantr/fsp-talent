@@ -3,6 +3,9 @@
 Each family is a template with a fixed cognitive operation and difficulty; only the surface
 parameters change. Every draw renders an isomorphic variant, so the item cannot be "leaked" by
 sharing the answer: the next candidate gets different numbers with the same difficulty.
+
+A draw is rendered in every supported language from the same random parameters (`i18n`), with the
+options in the same order, so the correct answer does not depend on the interface language.
 """
 
 import math
@@ -22,11 +25,14 @@ class Family:
     render: Callable[[random.Random], dict]
 
 
-def _numeric(text: str, answer: float, params: dict) -> dict:
-    return {"text": text, "options": [], "correct": [answer], "params": params}
+def _numeric(text: str, answer: float, params: dict, en: str) -> dict:
+    return {"text": text, "options": [], "correct": [answer], "params": params,
+            "i18n": {"en": {"text": en, "options": []}}}
 
 
-def _single(text: str, correct_value: str, distractors: list[str], params: dict, rng) -> dict:
+def _single(text: str, correct_value: str, distractors: list[str], params: dict, rng, en: str,
+            en_option: Callable[[str], str] | None = None) -> dict:
+    """`en_option` maps an option to English when it contains words (units etc.)."""
     opts = [correct_value]
     for d in distractors:
         if d not in opts:
@@ -34,7 +40,9 @@ def _single(text: str, correct_value: str, distractors: list[str], params: dict,
         if len(opts) == 4:
             break
     rng.shuffle(opts)
-    return {"text": text, "options": opts, "correct": [opts.index(correct_value)], "params": params}
+    en_opts = [en_option(o) for o in opts] if en_option else list(opts)
+    return {"text": text, "options": opts, "correct": [opts.index(correct_value)], "params": params,
+            "i18n": {"en": {"text": en, "options": en_opts}}}
 
 
 # ---------------------------------------------------------------- backend
@@ -46,6 +54,7 @@ def binary_search_steps(rng: random.Random) -> dict:
         f"из {n:,} элементов?".replace(",", " "),
         ans,
         {"n": n},
+        f"How many comparisons does binary search make in the worst case on a sorted array of {n:,} elements?",
     )
 
 
@@ -70,6 +79,7 @@ def loop_complexity(rng: random.Random) -> dict:
     return _single(
         f"Какова асимптотическая сложность фрагмента?\n```python\n{code}\n```",
         ans, distractors, {"template": code}, rng,
+        f"What is the asymptotic complexity of the snippet?\n```python\n{code}\n```",
     )
 
 
@@ -78,7 +88,8 @@ def python_range_len(rng: random.Random) -> dict:
     b = a + rng.randint(11, 60)
     s = rng.randint(2, 7)
     return _numeric(
-        f"Чему равно `len(range({a}, {b}, {s}))` в Python?", len(range(a, b, s)), {"a": a, "b": b, "s": s}
+        f"Чему равно `len(range({a}, {b}, {s}))` в Python?", len(range(a, b, s)), {"a": a, "b": b, "s": s},
+        f"What is `len(range({a}, {b}, {s}))` in Python?",
     )
 
 
@@ -107,6 +118,7 @@ def css_specificity(rng: random.Random) -> dict:
     return _single(
         f"Какова специфичность селектора `{selector}` в формате (id, классы, элементы)?",
         ans, distractors, {"selector": selector}, rng,
+        f"What is the specificity of the selector `{selector}` in the format (ids, classes, elements)?",
     )
 
 
@@ -114,11 +126,10 @@ def js_array_chain(rng: random.Random) -> dict:
     arr = [rng.randint(1, 15) for _ in range(5)]
     k = rng.randint(2, 5)
     ans = sum(x * k for x in arr if x % 2 == 0)
-    return _numeric(
-        f"Чему равен результат выражения?\n```js\n[{', '.join(map(str, arr))}]\n"
-        f"  .filter(x => x % 2 === 0)\n  .map(x => x * {k})\n  .reduce((s, x) => s + x, 0)\n```",
-        ans, {"arr": arr, "k": k},
-    )
+    code = (f"```js\n[{', '.join(map(str, arr))}]\n"
+            f"  .filter(x => x % 2 === 0)\n  .map(x => x * {k})\n  .reduce((s, x) => s + x, 0)\n```")
+    return _numeric(f"Чему равен результат выражения?\n{code}", ans, {"arr": arr, "k": k},
+                    f"What is the result of the expression?\n{code}")
 
 
 # ---------------------------------------------------------------- data / ml
@@ -137,6 +148,7 @@ def precision_recall(rng: random.Random) -> dict:
     return _single(
         f"Классификатор дал TP = {tp}, FP = {fp}, FN = {fn}. Чему равен {metric} (округлите до сотых)?",
         fmt(value), [o for o in others if o != fmt(value)], {"tp": tp, "fp": fp, "fn": fn, "metric": metric}, rng,
+        f"A classifier produced TP = {tp}, FP = {fp}, FN = {fn}. What is the {metric} (round to two decimals)?",
     )
 
 
@@ -153,6 +165,9 @@ def bayes_test(rng: random.Random) -> dict:
         f"{sens * 100:g}% и специфичностью {spec * 100:g}%. Тест положительный. "
         f"Какова вероятность, что человек болен (округлите до процента)?",
         pct(post), [d for d in distractors if d != pct(post)], {"prev": prev, "sens": sens, "spec": spec}, rng,
+        f"A disease affects {prev * 100:g}% of the population. A test detects it with a sensitivity of "
+        f"{sens * 100:g}% and a specificity of {spec * 100:g}%. The test is positive. "
+        f"What is the probability that the person is ill (round to a whole percent)?",
     )
 
 
@@ -169,6 +184,8 @@ def conv_output(rng: random.Random) -> dict:
         f"Вход свёрточного слоя {w}×{w}, ядро {k}×{k}, padding = {p}, stride = {s}. "
         f"Какова ширина выходной карты признаков?",
         ans, {"w": w, "k": k, "p": p, "s": s},
+        f"A convolutional layer has a {w}×{w} input, a {k}×{k} kernel, padding = {p}, stride = {s}. "
+        f"What is the width of the output feature map?",
     )
 
 
@@ -176,10 +193,11 @@ def conv_output(rng: random.Random) -> dict:
 def cidr_hosts(rng: random.Random) -> dict:
     prefix = rng.randint(20, 29)
     octets = [10, rng.randint(0, 255), rng.randint(0, 255), 0]
+    net = f"{'.'.join(map(str, octets))}/{prefix}"
     return _numeric(
-        f"Сколько адресов для хостов доступно в подсети {'.'.join(map(str, octets))}/{prefix} "
-        f"(без адреса сети и broadcast)?",
+        f"Сколько адресов для хостов доступно в подсети {net} (без адреса сети и broadcast)?",
         2 ** (32 - prefix) - 2, {"prefix": prefix},
+        f"How many host addresses are available in the subnet {net} (excluding the network and broadcast addresses)?",
     )
 
 
@@ -197,7 +215,8 @@ def chmod_octal(rng: random.Random) -> dict:
         distractors.append("".join(str(rng.randint(0, 7)) for _ in range(3)))
     distractors = [d for d in dict.fromkeys(distractors) if d != octal]
     return _single(
-        f"Какой восьмеричной записи соответствуют права `-{s}`?", octal, distractors, {"perms": s}, rng
+        f"Какой восьмеричной записи соответствуют права `-{s}`?", octal, distractors, {"perms": s}, rng,
+        f"Which octal notation corresponds to the permissions `-{s}`?",
     )
 
 
@@ -205,11 +224,19 @@ def sla_downtime(rng: random.Random) -> dict:
     avail = rng.choice([99.0, 99.5, 99.9, 99.95, 99.99])
     days = rng.choice([30, 7])
     minutes = days * 24 * 60 * (100 - avail) / 100
-    fmt = lambda m: f"≈ {m:.1f} мин" if m < 100 else f"≈ {m / 60:.1f} ч"  # noqa: E731
+    labels = {}  # ru option -> en option
+
+    def fmt(m: float) -> str:
+        ru, en = (f"≈ {m:.1f} мин", f"≈ {m:.1f} min") if m < 100 else (f"≈ {m / 60:.1f} ч", f"≈ {m / 60:.1f} h")
+        labels[ru] = en
+        return ru
+
     distractors = [fmt(minutes * 10), fmt(minutes / 10), fmt(minutes * 2), fmt(minutes * 60)]
     return _single(
         f"SLO доступности {avail:g}% за {days} дней. Какой допустимый суммарный простой?",
         fmt(minutes), [d for d in distractors if d != fmt(minutes)], {"availability": avail, "days": days}, rng,
+        f"An availability SLO of {avail:g}% over {days} days. What is the total allowed downtime?",
+        labels.__getitem__,
     )
 
 

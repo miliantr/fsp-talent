@@ -39,6 +39,11 @@ class UserOut(BaseModel):
     role: str
     is_email_verified: bool
     display_name: str
+    locale: Literal["ru", "en"] = Field(default="ru", description="Язык интерфейса (сохраняется в учётной записи)")
+
+
+class LocaleIn(BaseModel):
+    locale: Literal["ru", "en"]
 
 
 class TokenOut(BaseModel):

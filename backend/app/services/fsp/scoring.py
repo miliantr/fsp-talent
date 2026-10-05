@@ -9,13 +9,9 @@ import math
 from dataclasses import dataclass, field
 from datetime import date
 
+from app.i18n import msg
+
 LEVEL_WEIGHT = {"international": 1.0, "all_russian": 0.85, "interregional": 0.6, "regional": 0.45}
-LEVEL_NAMES = {
-    "international": "международные",
-    "all_russian": "всероссийские",
-    "interregional": "межрегиональные",
-    "regional": "региональные",
-}
 RANK_BONUS = {"МС": 0.6, "КМС": 0.4, "I разряд": 0.25, "II разряд": 0.12, "III разряд": 0.06}
 
 # Relevance of a discipline (and team role) to the platform specialization.
@@ -50,9 +46,9 @@ class FSPSummary:
     strength: float = 0.0          # 0..1, relevance-weighted to the specialization
     count: int = 0
     prizes: int = 0
-    best_text: str | None = None
+    best: dict | None = None           # message object: "2nd place — <event> (2026)"
     sport_rank: str | None = None
-    highlights: list[str] = field(default_factory=list)
+    highlights: list[dict] = field(default_factory=list)
 
 
 def place_factor(place: int | None, total: int | None) -> float:
@@ -86,9 +82,10 @@ def achievement_points(a: AchievementLike, specialization: str, today: date) -> 
         * relevance(a, specialization)
 
 
-def describe(a: AchievementLike) -> str:
-    place = f"{a.place} место" if a.place else "участник"
-    return f"{place} — {a.event_name} ({a.date.year})"
+def describe(a: AchievementLike) -> dict:
+    """Language-neutral description; event names are registry data and stay as published."""
+    place = msg("fsp.place", place={"ordinal": a.place}) if a.place else msg("fsp.participant")
+    return msg("fsp.achievement", place=place, event=a.event_name, year=str(a.date.year))
 
 
 def summarize(achievements: list[AchievementLike] | None, specialization: str, today: date,
@@ -106,7 +103,7 @@ def summarize(achievements: list[AchievementLike] | None, specialization: str, t
         strength=round(strength, 3),
         count=len(achievements),
         prizes=prizes,
-        best_text=describe(best),
+        best=describe(best),
         sport_rank=sport_rank,
         highlights=[describe(a) for a in top],
     )

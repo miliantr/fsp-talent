@@ -4,6 +4,7 @@ import math
 from dataclasses import dataclass
 
 from app.domain.catalog import GRADE_BY_RANK, GRADE_CUTS, GRADE_NAMES, GRADE_RANK, SPEC_NAMES
+from app.i18n import t
 from app.services.testing.irt import Posterior, eap, p_correct, scaled_score
 
 
@@ -14,25 +15,25 @@ class InvalidAnswer(ValueError):
 def normalize_answer(qtype: str, n_options: int, answer: list) -> list:
     """Validates the raw answer payload for an item type and returns its canonical form."""
     if not isinstance(answer, list) or not answer:
-        raise InvalidAnswer("Ответ не может быть пустым")
+        raise InvalidAnswer(t("error.answer_empty"))
     if qtype == "numeric":
         if len(answer) != 1:
-            raise InvalidAnswer("Ожидается одно число")
+            raise InvalidAnswer(t("error.answer_one_number"))
         try:
             value = float(str(answer[0]).replace(",", ".").replace(" ", ""))
         except ValueError as e:
-            raise InvalidAnswer("Ответ должен быть числом") from e
+            raise InvalidAnswer(t("error.answer_not_number")) from e
         if not math.isfinite(value):
-            raise InvalidAnswer("Ответ должен быть конечным числом")
+            raise InvalidAnswer(t("error.answer_not_finite"))
         return [value]
     try:
         idx = sorted({int(x) for x in answer})
     except (TypeError, ValueError) as e:
-        raise InvalidAnswer("Ожидаются номера вариантов ответа") from e
+        raise InvalidAnswer(t("error.answer_option_numbers")) from e
     if any(i < 0 or i >= n_options for i in idx):
-        raise InvalidAnswer("Вариант ответа вне диапазона")
+        raise InvalidAnswer(t("error.answer_option_range"))
     if qtype == "single" and len(idx) != 1:
-        raise InvalidAnswer("Нужно выбрать ровно один вариант")
+        raise InvalidAnswer(t("error.answer_single"))
     return idx
 
 
@@ -91,6 +92,25 @@ def category_label(specialization: str, grade: str | None) -> str | None:
     return f"{SPEC_NAMES.get(specialization, specialization)} · {GRADE_NAMES.get(grade, grade)}"
 
 
+def recommendation(outcome: str, target_grade: str, expired: bool = False) -> str:
+    """Advice shown with a result, in the current locale. Derived from the stored outcome, so a
+    result reads correctly in whatever language it is opened later."""
+    grade = GRADE_NAMES[target_grade]
+    next_grade = GRADE_BY_RANK.get(GRADE_RANK[target_grade] + 1)
+    lower_grade = GRADE_BY_RANK.get(GRADE_RANK[target_grade] - 1)
+    if outcome == "needs_confirmation":
+        text = t("test.rec.needs_confirmation")
+    elif outcome == "passed_upgrade" and next_grade:
+        text = t("test.rec.passed_upgrade", grade=grade, next=GRADE_NAMES[next_grade])
+    elif outcome in ("passed", "passed_upgrade"):
+        text = t("test.rec.passed", grade=grade)
+    elif lower_grade:
+        text = t("test.rec.not_passed_lower", grade=grade, lower=GRADE_NAMES[lower_grade])
+    else:
+        text = t("test.rec.not_passed", grade=grade)
+    return text + (t("test.rec.expired") if expired else "")
+
+
 def person_fit_lz(items: list[GradedItem], theta: float) -> float | None:
     """Standardised log-likelihood lz of the response pattern (Drasgow et al., 1985).
     Strongly negative values = aberrant pattern, e.g. hard items right and easy items wrong."""
@@ -128,7 +148,6 @@ def grade_attempt(items: list[GradedItem], target_grade: str) -> Outcome:
     p_target = post.p_above(GRADE_CUTS[target_grade])
     passed = p_target >= PASS_PROBABILITY
     next_grade = GRADE_BY_RANK.get(GRADE_RANK[target_grade] + 1)
-    lower_grade = GRADE_BY_RANK.get(GRADE_RANK[target_grade] - 1)
     upgrade = passed and next_grade is not None and post.p_above(GRADE_CUTS[next_grade]) >= UPGRADE_PROBABILITY
 
     comp_credit: dict[str, list[float]] = {}
@@ -142,23 +161,16 @@ def grade_attempt(items: list[GradedItem], target_grade: str) -> Outcome:
     flagged = passed and ((lz is not None and lz < LZ_THRESHOLD) or (gap is not None and gap > LEAK_Z_THRESHOLD))
 
     if flagged:
-        rec = ("Результат требует подтверждения: профиль ответов нетипичен. Пройдите короткую "
-               "подтверждающую форму с новыми заданиями — она доступна сразу.")
         status = "needs_confirmation"
         passed = False
         upgrade = False
     elif passed and upgrade:
-        rec = (f"Уверенный результат: грейд {GRADE_NAMES[target_grade]} подтверждён, и вы можете сразу "
-               f"пройти тест на {GRADE_NAMES[next_grade]} без ожидания периода смены грейда.")
         status = "passed_upgrade"
     elif passed:
-        rec = f"Грейд {GRADE_NAMES[target_grade]} подтверждён."
         status = "passed"
     else:
-        rec = (f"Уровень {GRADE_NAMES[target_grade]} пока не подтверждён. "
-               + (f"Вы можете сразу пройти тест на {GRADE_NAMES[lower_grade]} — профиль не блокируется."
-                  if lower_grade else "Повторная попытка будет доступна после периода ожидания."))
         status = "not_passed"
+    rec = recommendation(status, target_grade)
     return Outcome(
         theta=round(post.theta, 3),
         theta_se=round(post.se, 3),
