@@ -392,8 +392,8 @@ def language_part(d: Demo) -> None:
     d.click(d.btn("English"), after=2.0)
     d.show(pg.locator(".cand").first)
     d.say("Та же подборка на английском: причины, факторы и вилка формируются на языке читателя", 4.0)
-    d.click(d.btn("Русский"), after=1.5)
     d.say("")
+    d.click(d.btn("Русский"), after=1.5)
     d.logout()
 
 
