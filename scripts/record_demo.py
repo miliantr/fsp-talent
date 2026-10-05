@@ -382,6 +382,21 @@ def application_part(d: Demo) -> None:
     d.logout()
 
 
+def language_part(d: Demo) -> None:
+    pg = d.pg
+    d.card("5 · Два языка", "Интерфейс, объяснения подбора и тест — на русском и английском")
+    d.login("hr@demo.ru")
+    d.nav("Потребности и подборки")
+    d.click(pg.get_by_text("Python-разработчик, платёжный шлюз"), after=1.5)
+    d.say("Переключатель RU / EN есть на любом экране; выбор сохраняется в учётной записи", 2.6)
+    d.click(d.btn("English"), after=2.0)
+    d.show(pg.locator(".cand").first)
+    d.say("Та же подборка на английском: причины, факторы и вилка формируются на языке читателя", 4.0)
+    d.click(d.btn("Русский"), after=1.5)
+    d.say("")
+    d.logout()
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--out", default=str(ROOT / "presentation" / "FSP_Talent_demo"))
@@ -411,6 +426,7 @@ def main() -> None:
                 employer_part(d)
                 accept_part(d)
                 application_part(d)
+                language_part(d)
                 d.card("FSP Talent", "docker compose up --build → http://localhost:8080 · документация: docs/", 4.5)
             except Exception:
                 page.screenshot(path=str(ROOT / "presentation" / "record_demo_error.png"))
