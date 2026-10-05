@@ -14,6 +14,24 @@ def test_need_text_is_parsed_into_structured_requirement():
     assert p.work_format == "remote" and p.experience_years == 2
 
 
+def test_salary_range_with_unit_only_after_upper_bound():
+    for text in ("Вилка 190–260 тыс., гибрид", "от 190 до 260 тыс", "190k-260k"):
+        p = parse_need_text(text)
+        assert (p.salary_from, p.salary_to) == (190_000, 260_000), text
+
+
+def test_nice_to_have_skills_are_separated_from_must_have():
+    p = parse_need_text("Python, FastAPI, PostgreSQL, Docker, желательно Redis. Kafka будет плюсом")
+    assert p.nice_skills == ["redis", "kafka"]
+    assert p.skills[:4] == ["python", "fastapi", "postgresql", "docker"]  # must-have first
+    assert parse_need_text("Go, Kubernetes; знание Kafka приветствуется").nice_skills == ["kafka"]
+
+
+def test_phone_number_is_not_read_as_salary():
+    p = parse_resume_text("Олимпиев Олег\n+7 916 555-12-34\nОжидания от 220 000 ₽")
+    assert p.salary_from == 220_000 and p.phone == "+79165551234"
+
+
 def test_resume_text_contacts_and_skills():
     text = "Петров Иван\nivan@example.com, +7 999 123-45-67, t.me/ivan_dev\nSenior Frontend: React, TypeScript, Next.js"
     p = parse_resume_text(text)

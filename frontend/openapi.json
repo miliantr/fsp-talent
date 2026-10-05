@@ -7744,7 +7744,7 @@
      },
      "skills": {
       "items": {
-       "$ref": "#/components/schemas/SkillRefOut"
+       "$ref": "#/components/schemas/ParsedSkillOut"
       },
       "type": "array",
       "title": "Skills"
@@ -7805,6 +7805,33 @@
      "min_experience_years"
     ],
     "title": "ParseNeedOut"
+   },
+   "ParsedSkillOut": {
+    "properties": {
+     "slug": {
+      "type": "string",
+      "title": "Slug"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "importance": {
+      "type": "string",
+      "enum": [
+       "must",
+       "nice"
+      ],
+      "title": "Importance",
+      "default": "must"
+     }
+    },
+    "type": "object",
+    "required": [
+     "slug",
+     "name"
+    ],
+    "title": "ParsedSkillOut"
    },
    "PresetOut": {
     "properties": {
@@ -8943,24 +8970,6 @@
      "name"
     ],
     "title": "SkillRef"
-   },
-   "SkillRefOut": {
-    "properties": {
-     "slug": {
-      "type": "string",
-      "title": "Slug"
-     },
-     "name": {
-      "type": "string",
-      "title": "Name"
-     }
-    },
-    "type": "object",
-    "required": [
-     "slug",
-     "name"
-    ],
-    "title": "SkillRefOut"
    },
    "SpecializationOut": {
     "properties": {

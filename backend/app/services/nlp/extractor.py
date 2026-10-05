@@ -34,7 +34,15 @@ EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
 PHONE_RE = re.compile(r"(?:\+7|8)[\s(-]*\d{3}[\s)-]*\d{3}[\s-]*\d{2}[\s-]*\d{2}")
 TG_RE = re.compile(r"(?:t\.me/|telegram[:\s]*|tg[:\s]*)@?([A-Za-z][\w]{4,31})|(?<![\w.])@([A-Za-z][\w]{4,31})\b")
 EXP_RE = re.compile(r"(\d{1,2}(?:[.,]\d)?)\s*\+?\s*(?:год|года|лет|years?|yrs)", re.I)
-SALARY_RE = re.compile(r"(\d{2,3}(?:[\s ]?\d{3})?)\s*(тыс|k|к|000|₽|руб)?", re.I)
+_NUM = r"\d{2,3}(?:[\s ]?\d{3})?"
+SALARY_RE = re.compile(rf"({_NUM})\s*(тыс|k|к|000|₽|руб)?", re.I)
+# "190–260 тыс.", "от 180 до 250 тыс", "150k-200k": the unit usually follows only the upper bound
+SALARY_RANGE_RE = re.compile(rf"({_NUM})\s*(тыс\.?|k|к)?\s*(?:[-–—]|до)\s*({_NUM})\s*(тыс|k|к|₽|руб)?", re.I)
+# Clause markers of nice-to-have skills: "желательно Redis", "Kafka будет плюсом"
+NICE_BEFORE_RE = re.compile(r"желательн\w*|приветству\w*|nice[\s-]to[\s-]have|опционально|как плюс", re.I)
+NICE_AFTER_RE = re.compile(r"(?:будет|станет|—|-)?\s*(?:плюсом|преимуществом)|приветству\w*", re.I)
+CLAUSE_RE = re.compile(r"[;\n]|\.(?=\s|$)")
+THOUSANDS = ("тыс", "тыс.", "k", "к")
 NAME_RE = re.compile(r"^([А-ЯЁ][а-яё]+)\s+([А-ЯЁ][а-яё]+)(?:\s+[А-ЯЁ][а-яё]+)?$")
 
 
@@ -94,12 +102,36 @@ def detect_format(text: str) -> str | None:
     return None
 
 
+def nice_to_have(text: str) -> list[str]:
+    """Skills mentioned as optional: after a prefix marker ("желательно X") or before a postfix one
+    ("X будет плюсом") within the same clause."""
+    found: list[str] = []
+    for clause in CLAUSE_RE.split(text):
+        after = before = ""
+        if m := NICE_BEFORE_RE.search(clause) or NICE_AFTER_RE.search(clause):
+            after = clause[m.end():]
+            before = clause[: m.start()].split(",")[-1]  # a postfix marker covers only the last item
+        side = (after, before) if NICE_BEFORE_RE.search(clause) else (before, after)
+        skills = extract_skills(side[0]) or extract_skills(side[1])  # "приветствуется" goes either way
+        found += [s for s in skills if s not in found]
+    return found
+
+
+def _amount(num: str, unit: str | None) -> int:
+    v = int(re.sub(r"\D", "", num))
+    return v * 1000 if unit and unit.lower() in THOUSANDS else v
+
+
 def detect_salary(text: str) -> tuple[int | None, int | None]:
+    text = EMAIL_RE.sub(" ", PHONE_RE.sub(" ", text))  # phone digits are not a salary
+    for lo_num, lo_unit, hi_num, hi_unit in SALARY_RANGE_RE.findall(text):
+        hi = _amount(hi_num, hi_unit)
+        lo = _amount(lo_num, lo_unit or (hi_unit if int(re.sub(r"\D", "", lo_num)) < 1000 else None))
+        if 20_000 <= lo <= hi <= 2_000_000:
+            return lo, hi
     vals = []
     for num, unit in SALARY_RE.findall(text):
-        v = int(re.sub(r"\D", "", num))
-        if unit and unit.lower() in ("тыс", "k", "к"):
-            v *= 1000
+        v = _amount(num, unit)
         if 20_000 <= v <= 2_000_000:
             vals.append(v)
     if not vals:
@@ -109,7 +141,8 @@ def detect_salary(text: str) -> tuple[int | None, int | None]:
 
 @dataclass
 class ParsedText:
-    skills: list[str] = field(default_factory=list)
+    skills: list[str] = field(default_factory=list)  # must-have first, then nice-to-have
+    nice_skills: list[str] = field(default_factory=list)
     specialization: str | None = None
     grade: str | None = None
     experience_years: float | None = None
@@ -125,8 +158,10 @@ class ParsedText:
 
 def parse_need_text(text: str) -> ParsedText:
     skills = extract_skills(text)
+    nice = [s for s in nice_to_have(text) if s in skills]
+    skills = [s for s in skills if s not in nice] + nice
     s_from, s_to = detect_salary(text)
-    return ParsedText(skills=skills, specialization=detect_specialization(text, skills),
+    return ParsedText(skills=skills, nice_skills=nice, specialization=detect_specialization(text, skills),
                       grade=detect_grade(text), experience_years=detect_experience(text),
                       work_format=detect_format(text), salary_from=s_from, salary_to=s_to)
 

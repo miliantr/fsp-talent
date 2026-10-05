@@ -114,7 +114,8 @@ def parse_need(text: str) -> dict:
     graph = skill_graph()
     return {
         "specialization_id": p.specialization, "grade_id": p.grade,
-        "skills": [{"slug": s, "name": graph.name(s)} for s in p.skills[:12]],
+        "skills": [{"slug": s, "name": graph.name(s), "importance": "nice" if s in p.nice_skills else "must"}
+                   for s in p.skills[:12]],
         "salary_from": p.salary_from, "salary_to": p.salary_to, "work_format": p.work_format,
         "min_experience_years": p.experience_years,
     }

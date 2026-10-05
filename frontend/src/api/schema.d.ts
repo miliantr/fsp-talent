@@ -1938,7 +1938,7 @@ export interface components {
             /** Grade Id */
             grade_id: string | null;
             /** Skills */
-            skills: components["schemas"]["SkillRefOut"][];
+            skills: components["schemas"]["ParsedSkillOut"][];
             /** Salary From */
             salary_from: number | null;
             /** Salary To */
@@ -1947,6 +1947,19 @@ export interface components {
             work_format: string | null;
             /** Min Experience Years */
             min_experience_years: number | null;
+        };
+        /** ParsedSkillOut */
+        ParsedSkillOut: {
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: string;
+            /**
+             * Importance
+             * @default must
+             * @enum {string}
+             */
+            importance: "must" | "nice";
         };
         /** PresetOut */
         PresetOut: {
@@ -2362,13 +2375,6 @@ export interface components {
         };
         /** SkillRef */
         SkillRef: {
-            /** Slug */
-            slug: string;
-            /** Name */
-            name: string;
-        };
-        /** SkillRefOut */
-        SkillRefOut: {
             /** Slug */
             slug: string;
             /** Name */

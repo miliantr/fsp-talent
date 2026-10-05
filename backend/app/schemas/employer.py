@@ -117,10 +117,14 @@ class SkillRefOut(BaseModel):
     name: str
 
 
+class ParsedSkillOut(SkillRefOut):
+    importance: Literal["must", "nice"] = "must"
+
+
 class ParseNeedOut(BaseModel):
     specialization_id: str | None
     grade_id: str | None
-    skills: list[SkillRefOut]
+    skills: list[ParsedSkillOut]  # must-have first; "желательно X" / "X будет плюсом" -> nice
     salary_from: int | None
     salary_to: int | None
     work_format: str | None

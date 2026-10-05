@@ -47,14 +47,15 @@ export default function RequirementForm() {
     setErr(null)
     try {
       const p = await api<ParseNeedOut>('/employer/requirements/parse', { method: 'POST', body: { text } })
-      const skills = p.skills.map((s) => s.slug)
+      const must = p.skills.filter((s) => s.importance !== 'nice').map((s) => s.slug)
+      const nice = p.skills.filter((s) => s.importance === 'nice').map((s) => s.slug)
       setForm((f) => ({
         ...f,
         description: f.description || text,
         specialization_id: p.specialization_id ?? f.specialization_id,
         grade_id: p.grade_id ?? f.grade_id,
-        must_skills: Array.from(new Set([...f.must_skills, ...skills.slice(0, 5)])),
-        nice_skills: Array.from(new Set([...f.nice_skills, ...skills.slice(5).filter((s) => !f.must_skills.includes(s))])),
+        must_skills: Array.from(new Set([...f.must_skills, ...must.slice(0, 6)])),
+        nice_skills: Array.from(new Set([...f.nice_skills, ...must.slice(6), ...nice].filter((s) => !f.must_skills.includes(s)))),
         salary_from: p.salary_from ? String(p.salary_from) : f.salary_from,
         salary_to: p.salary_to ? String(p.salary_to) : f.salary_to,
         work_format: p.work_format ?? f.work_format,
