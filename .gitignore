@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+backend/*.db
+
+# Node
+node_modules/
+frontend/dist/
+frontend/node_modules/.tmp/
+
+# Env / IDE
+.env
+.idea/
+.vscode/
+*.log
+
+# Organizer materials and local tooling (not part of the solution source)
+/ЛЦТ_2026_Шаблон презентации ФСП.pptx
+/ФСП спец. трек ТЗ.pdf
+/text.txt
+.claude/

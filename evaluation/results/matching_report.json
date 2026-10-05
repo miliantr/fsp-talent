@@ -1,0 +1,111 @@
+{
+  "seed": 11,
+  "jobs": 60,
+  "candidates": 600,
+  "k": 10,
+  "results": {
+    "Random (same specialization)": {
+      "P@5": 0.193,
+      "P@10": 0.202,
+      "R@10": 0.062,
+      "MRR": 0.311,
+      "NDCG@10": 0.168,
+      "jobs": 60
+    },
+    "Keyword search over CV": {
+      "P@5": 0.377,
+      "P@10": 0.412,
+      "R@10": 0.169,
+      "MRR": 0.655,
+      "NDCG@10": 0.461,
+      "jobs": 60
+    },
+    "Keyword + declared grade": {
+      "P@5": 0.7,
+      "P@10": 0.608,
+      "R@10": 0.273,
+      "MRR": 0.817,
+      "NDCG@10": 0.692,
+      "jobs": 60
+    },
+    "FSP Talent engine (balanced)": {
+      "P@5": 0.88,
+      "P@10": 0.807,
+      "R@10": 0.346,
+      "MRR": 0.933,
+      "NDCG@10": 0.808,
+      "jobs": 60
+    },
+    "— no testing at all (self-declared grade)": {
+      "P@5": 0.813,
+      "P@10": 0.747,
+      "R@10": 0.325,
+      "MRR": 0.929,
+      "NDCG@10": 0.771,
+      "jobs": 60
+    },
+    "— verified grade only (no θ, no competencies)": {
+      "P@5": 0.887,
+      "P@10": 0.817,
+      "R@10": 0.352,
+      "MRR": 0.992,
+      "NDCG@10": 0.833,
+      "jobs": 60
+    },
+    "— without skill graph": {
+      "P@5": 0.873,
+      "P@10": 0.782,
+      "R@10": 0.343,
+      "MRR": 0.958,
+      "NDCG@10": 0.824,
+      "jobs": 60
+    },
+    "— without FSP signal": {
+      "P@5": 0.89,
+      "P@10": 0.818,
+      "R@10": 0.352,
+      "MRR": 0.942,
+      "NDCG@10": 0.819,
+      "jobs": 60
+    },
+    "— without must-have gate": {
+      "P@5": 0.883,
+      "P@10": 0.808,
+      "R@10": 0.345,
+      "MRR": 0.933,
+      "NDCG@10": 0.804,
+      "jobs": 60
+    },
+    "Preset: skills_first": {
+      "P@5": 0.717,
+      "P@10": 0.662,
+      "R@10": 0.302,
+      "MRR": 0.795,
+      "NDCG@10": 0.674,
+      "jobs": 60
+    },
+    "Preset: proven_talent": {
+      "P@5": 0.673,
+      "P@10": 0.625,
+      "R@10": 0.287,
+      "MRR": 0.816,
+      "NDCG@10": 0.631,
+      "jobs": 60
+    }
+  },
+  "fsp_fairness": {
+    "with_fsp": 0.036,
+    "without_fsp": 0.045,
+    "n": {
+      "with_fsp": 484,
+      "without_fsp": 420
+    }
+  },
+  "label_distribution": {
+    "0": 32275,
+    "1": 1910,
+    "2": 911,
+    "3": 904
+  },
+  "runtime_sec": 22.2
+}

@@ -1,0 +1,2913 @@
+{
+ "source": "synthetic snapshot of the FSP registry (hackathon mock)",
+ "generated_at": "2026-10-05",
+ "participants": [
+  {
+   "fsp_id": "FSP-100777",
+   "full_name": "Демидов Алексей",
+   "email": "candidate@demo.ru",
+   "region": "г. Москва",
+   "sport_rank": "I разряд",
+   "achievements": [
+    {
+     "id": "ACH-2025-31415",
+     "event_name": "Всероссийские соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2026-05-08",
+     "place": 2,
+     "participants_total": 180,
+     "team_name": "Byte Busters",
+     "role": "backend",
+     "score": 91.5,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-31415"
+    },
+    {
+     "id": "ACH-2024-27182",
+     "event_name": "Кубок ФСП по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2025-08-11",
+     "place": 5,
+     "participants_total": 120,
+     "team_name": "Byte Busters",
+     "role": "backend",
+     "score": 84.0,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-27182"
+    },
+    {
+     "id": "ACH-2024-16180",
+     "event_name": "Региональный этап по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "regional",
+     "date": "2025-02-12",
+     "place": 3,
+     "participants_total": 90,
+     "team_name": null,
+     "role": null,
+     "score": 77.0,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-16180"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104218",
+   "full_name": "Зайцев Олег",
+   "email": "cand04@talent.demo",
+   "region": "г. Москва",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-10672",
+     "event_name": "Всероссийские соревнования по программированию БАС",
+     "discipline": "Программирование беспилотных авиационных систем",
+     "level": "all_russian",
+     "date": "2025-09-24",
+     "place": null,
+     "participants_total": 80,
+     "team_name": "Бит и Байт",
+     "role": null,
+     "score": 95.6,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-10672"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104255",
+   "full_name": "Семёнов Роман",
+   "email": "cand06@talent.demo",
+   "region": "г. Санкт-Петербург",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-94626",
+     "event_name": "Региональные соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "regional",
+     "date": "2025-11-15",
+     "place": null,
+     "participants_total": 120,
+     "team_name": "Green Threads",
+     "role": "backend",
+     "score": 93.0,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-94626"
+    },
+    {
+     "id": "ACH-2024-71302",
+     "event_name": "Всероссийские соревнования по кибербезопасности",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "all_russian",
+     "date": "2024-12-25",
+     "place": null,
+     "participants_total": 120,
+     "team_name": "Green Threads",
+     "role": null,
+     "score": 47.2,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-71302"
+    },
+    {
+     "id": "ACH-2024-79862",
+     "event_name": "Межрегиональный хакатон «Код города»",
+     "discipline": "Продуктовое программирование",
+     "level": "interregional",
+     "date": "2024-03-18",
+     "place": 11,
+     "participants_total": 60,
+     "team_name": "Квантовый скачок",
+     "role": null,
+     "score": 51.2,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-79862"
+    },
+    {
+     "id": "ACH-2024-94630",
+     "event_name": "Чемпионат по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "all_russian",
+     "date": "2024-01-19",
+     "place": 7,
+     "participants_total": 40,
+     "team_name": "Green Threads",
+     "role": null,
+     "score": 91.0,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-94630"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104260",
+   "full_name": "Яковлева Анна",
+   "email": "cand08@talent.demo",
+   "region": "г. Санкт-Петербург",
+   "sport_rank": "I разряд",
+   "achievements": [
+    {
+     "id": "ACH-2025-31249",
+     "event_name": "Всероссийские соревнования по программированию БАС",
+     "discipline": "Программирование беспилотных авиационных систем",
+     "level": "all_russian",
+     "date": "2025-12-19",
+     "place": 1,
+     "participants_total": 80,
+     "team_name": null,
+     "role": "captain",
+     "score": 71.4,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-31249"
+    },
+    {
+     "id": "ACH-2025-99976",
+     "event_name": "Межрегиональные соревнования по программированию робототехники",
+     "discipline": "Программирование робототехники",
+     "level": "interregional",
+     "date": "2025-12-05",
+     "place": 17,
+     "participants_total": 60,
+     "team_name": "Green Threads",
+     "role": null,
+     "score": 95.4,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-99976"
+    },
+    {
+     "id": "ACH-2025-53325",
+     "event_name": "Региональный этап по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "regional",
+     "date": "2025-01-07",
+     "place": 7,
+     "participants_total": 40,
+     "team_name": "NullPointer",
+     "role": null,
+     "score": 59.1,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-53325"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104264",
+   "full_name": "Соколов Никита",
+   "email": "cand09@talent.demo",
+   "region": "Самарская область",
+   "sport_rank": "III разряд",
+   "achievements": [
+    {
+     "id": "ACH-2026-33501",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2026-02-04",
+     "place": 25,
+     "participants_total": 80,
+     "team_name": null,
+     "role": null,
+     "score": 97.7,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-33501"
+    },
+    {
+     "id": "ACH-2024-17373",
+     "event_name": "Чемпионат по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "all_russian",
+     "date": "2024-10-25",
+     "place": null,
+     "participants_total": 80,
+     "team_name": null,
+     "role": "captain",
+     "score": 68.2,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-17373"
+    },
+    {
+     "id": "ACH-2024-57176",
+     "event_name": "Всероссийские соревнования по программированию БАС",
+     "discipline": "Программирование беспилотных авиационных систем",
+     "level": "all_russian",
+     "date": "2024-05-11",
+     "place": null,
+     "participants_total": 60,
+     "team_name": null,
+     "role": null,
+     "score": 60.6,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-57176"
+    },
+    {
+     "id": "ACH-2023-50919",
+     "event_name": "Региональный этап по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "regional",
+     "date": "2023-05-05",
+     "place": 37,
+     "participants_total": 120,
+     "team_name": "Ctrl+Alt+Win",
+     "role": null,
+     "score": 69.1,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-50919"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104273",
+   "full_name": "Степанов Денис",
+   "email": "cand12@talent.demo",
+   "region": "Самарская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2026-74856",
+     "event_name": "Всероссийские соревнования по кибербезопасности",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "all_russian",
+     "date": "2026-02-08",
+     "place": 1,
+     "participants_total": 200,
+     "team_name": null,
+     "role": "captain",
+     "score": 50.1,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-74856"
+    },
+    {
+     "id": "ACH-2024-72178",
+     "event_name": "Чемпионат по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "all_russian",
+     "date": "2024-08-24",
+     "place": 1,
+     "participants_total": 200,
+     "team_name": null,
+     "role": "captain",
+     "score": 89.7,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-72178"
+    },
+    {
+     "id": "ACH-2023-62831",
+     "event_name": "Всероссийские соревнования по программированию БАС",
+     "discipline": "Программирование беспилотных авиационных систем",
+     "level": "all_russian",
+     "date": "2023-10-31",
+     "place": 5,
+     "participants_total": 80,
+     "team_name": "Kernel Panic",
+     "role": null,
+     "score": 53.2,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-62831"
+    },
+    {
+     "id": "ACH-2023-60020",
+     "event_name": "Региональный этап по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "regional",
+     "date": "2023-04-16",
+     "place": 6,
+     "participants_total": 80,
+     "team_name": "Stack Overflowers",
+     "role": null,
+     "score": 79.4,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-60020"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104297",
+   "full_name": "Никитин Фёдор",
+   "email": "cand13@talent.demo",
+   "region": "Томская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-80642",
+     "event_name": "Межрегиональные соревнования по программированию робототехники",
+     "discipline": "Программирование робототехники",
+     "level": "interregional",
+     "date": "2025-07-18",
+     "place": 4,
+     "participants_total": 350,
+     "team_name": null,
+     "role": null,
+     "score": 49.3,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-80642"
+    },
+    {
+     "id": "ACH-2025-52809",
+     "event_name": "Всероссийские соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2025-02-02",
+     "place": null,
+     "participants_total": 40,
+     "team_name": "Byte Busters",
+     "role": "backend",
+     "score": 87.4,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-52809"
+    },
+    {
+     "id": "ACH-2023-64345",
+     "event_name": "Чемпионат по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "all_russian",
+     "date": "2023-03-03",
+     "place": 5,
+     "participants_total": 60,
+     "team_name": null,
+     "role": null,
+     "score": 91.1,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-64345"
+    },
+    {
+     "id": "ACH-2022-53312",
+     "event_name": "Всероссийские соревнования по программированию БАС",
+     "discipline": "Программирование беспилотных авиационных систем",
+     "level": "all_russian",
+     "date": "2022-12-18",
+     "place": 3,
+     "participants_total": 200,
+     "team_name": "Квантовый скачок",
+     "role": null,
+     "score": 40.6,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2022-53312"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104320",
+   "full_name": "Воробьёва Дарья",
+   "email": "cand14@talent.demo",
+   "region": "Самарская область",
+   "sport_rank": "КМС",
+   "achievements": [
+    {
+     "id": "ACH-2025-12853",
+     "event_name": "Всероссийские соревнования по кибербезопасности",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "all_russian",
+     "date": "2025-11-07",
+     "place": 22,
+     "participants_total": 80,
+     "team_name": null,
+     "role": null,
+     "score": 90.2,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-12853"
+    },
+    {
+     "id": "ACH-2024-38612",
+     "event_name": "Региональный этап по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "regional",
+     "date": "2024-11-22",
+     "place": null,
+     "participants_total": 80,
+     "team_name": null,
+     "role": null,
+     "score": 91.8,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-38612"
+    },
+    {
+     "id": "ACH-2023-90794",
+     "event_name": "Всероссийские соревнования по программированию БАС",
+     "discipline": "Программирование беспилотных авиационных систем",
+     "level": "all_russian",
+     "date": "2023-11-22",
+     "place": null,
+     "participants_total": 350,
+     "team_name": "Green Threads",
+     "role": null,
+     "score": 75.7,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-90794"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104348",
+   "full_name": "Николаев Арсений",
+   "email": "cand15@talent.demo",
+   "region": "Новосибирская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-96111",
+     "event_name": "Межрегиональные соревнования по программированию робототехники",
+     "discipline": "Программирование робототехники",
+     "level": "interregional",
+     "date": "2025-11-11",
+     "place": 16,
+     "participants_total": 200,
+     "team_name": null,
+     "role": null,
+     "score": 91.9,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-96111"
+    },
+    {
+     "id": "ACH-2024-26775",
+     "event_name": "Чемпионат по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "all_russian",
+     "date": "2024-08-06",
+     "place": 4,
+     "participants_total": 60,
+     "team_name": null,
+     "role": "captain",
+     "score": 85.1,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-26775"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104352",
+   "full_name": "Козлов Владимир",
+   "email": "cand16@talent.demo",
+   "region": "Томская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-39445",
+     "event_name": "Кубок ФСП по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2025-03-31",
+     "place": 17,
+     "participants_total": 120,
+     "team_name": "Ctrl+Alt+Win",
+     "role": "captain",
+     "score": 72.2,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-39445"
+    },
+    {
+     "id": "ACH-2024-92489",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2024-11-12",
+     "place": null,
+     "participants_total": 120,
+     "team_name": null,
+     "role": null,
+     "score": 73.5,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-92489"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104360",
+   "full_name": "Фёдоров Михаил",
+   "email": "cand18@talent.demo",
+   "region": "Томская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2023-72735",
+     "event_name": "Всероссийские соревнования по программированию БАС",
+     "discipline": "Программирование беспилотных авиационных систем",
+     "level": "all_russian",
+     "date": "2023-02-27",
+     "place": 36,
+     "participants_total": 120,
+     "team_name": null,
+     "role": null,
+     "score": 48.1,
+     "specialization_hint": "frontend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-72735"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104391",
+   "full_name": "Лебедев Павел",
+   "email": "cand19@talent.demo",
+   "region": "Новосибирская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2023-38647",
+     "event_name": "Межрегиональные соревнования по программированию робототехники",
+     "discipline": "Программирование робототехники",
+     "level": "interregional",
+     "date": "2023-10-20",
+     "place": 8,
+     "participants_total": 120,
+     "team_name": "Byte Busters",
+     "role": null,
+     "score": 87.1,
+     "specialization_hint": "frontend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-38647"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104410",
+   "full_name": "Сорокина Наталья",
+   "email": "cand20@talent.demo",
+   "region": "г. Санкт-Петербург",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2026-38646",
+     "event_name": "Региональный этап по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "regional",
+     "date": "2026-05-24",
+     "place": null,
+     "participants_total": 40,
+     "team_name": null,
+     "role": null,
+     "score": 82.8,
+     "specialization_hint": "frontend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-38646"
+    },
+    {
+     "id": "ACH-2026-46585",
+     "event_name": "Всероссийские соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2026-03-25",
+     "place": 5,
+     "participants_total": 80,
+     "team_name": "Kernel Panic",
+     "role": "frontend",
+     "score": 77.1,
+     "specialization_hint": "frontend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-46585"
+    },
+    {
+     "id": "ACH-2023-77566",
+     "event_name": "Всероссийские соревнования по кибербезопасности",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "all_russian",
+     "date": "2023-12-24",
+     "place": 63,
+     "participants_total": 200,
+     "team_name": null,
+     "role": "captain",
+     "score": 79.0,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-77566"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104438",
+   "full_name": "Волков Илья",
+   "email": "cand21@talent.demo",
+   "region": "Краснодарский край",
+   "sport_rank": "III разряд",
+   "achievements": [
+    {
+     "id": "ACH-2025-28177",
+     "event_name": "Межрегиональный хакатон «Код города»",
+     "discipline": "Продуктовое программирование",
+     "level": "interregional",
+     "date": "2025-12-13",
+     "place": 77,
+     "participants_total": 350,
+     "team_name": "Byte Busters",
+     "role": null,
+     "score": 77.8,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-28177"
+    },
+    {
+     "id": "ACH-2025-84303",
+     "event_name": "Всероссийские соревнования по кибербезопасности",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "all_russian",
+     "date": "2025-11-13",
+     "place": 1,
+     "participants_total": 40,
+     "team_name": null,
+     "role": null,
+     "score": 89.4,
+     "specialization_hint": "frontend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-84303"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104459",
+   "full_name": "Александрова Софья",
+   "email": "cand24@talent.demo",
+   "region": "Нижегородская область",
+   "sport_rank": "I разряд",
+   "achievements": [
+    {
+     "id": "ACH-2024-69264",
+     "event_name": "Всероссийские соревнования по программированию БАС",
+     "discipline": "Программирование беспилотных авиационных систем",
+     "level": "all_russian",
+     "date": "2024-08-25",
+     "place": null,
+     "participants_total": 200,
+     "team_name": "Green Threads",
+     "role": null,
+     "score": 84.1,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-69264"
+    },
+    {
+     "id": "ACH-2023-53940",
+     "event_name": "Региональный этап по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "regional",
+     "date": "2023-03-24",
+     "place": 9,
+     "participants_total": 60,
+     "team_name": null,
+     "role": null,
+     "score": 77.0,
+     "specialization_hint": "frontend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-53940"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104489",
+   "full_name": "Морозов Андрей",
+   "email": "cand28@talent.demo",
+   "region": "Томская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2026-63803",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2026-03-04",
+     "place": 13,
+     "participants_total": 40,
+     "team_name": null,
+     "role": null,
+     "score": 59.1,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-63803"
+    },
+    {
+     "id": "ACH-2026-16166",
+     "event_name": "Всероссийские соревнования по кибербезопасности",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "all_russian",
+     "date": "2026-01-17",
+     "place": 3,
+     "participants_total": 40,
+     "team_name": null,
+     "role": null,
+     "score": 44.1,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-16166"
+    },
+    {
+     "id": "ACH-2025-11437",
+     "event_name": "Всероссийские соревнования по программированию БАС",
+     "discipline": "Программирование беспилотных авиационных систем",
+     "level": "all_russian",
+     "date": "2025-08-26",
+     "place": 3,
+     "participants_total": 60,
+     "team_name": null,
+     "role": null,
+     "score": 87.5,
+     "specialization_hint": "frontend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-11437"
+    },
+    {
+     "id": "ACH-2023-78649",
+     "event_name": "Межрегиональные соревнования по программированию робототехники",
+     "discipline": "Программирование робототехники",
+     "level": "interregional",
+     "date": "2023-03-17",
+     "place": 6,
+     "participants_total": 80,
+     "team_name": "Квантовый скачок",
+     "role": null,
+     "score": 71.6,
+     "specialization_hint": "frontend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-78649"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104493",
+   "full_name": "Попов Иван",
+   "email": "cand30@talent.demo",
+   "region": "Свердловская область",
+   "sport_rank": "III разряд",
+   "achievements": [
+    {
+     "id": "ACH-2026-37032",
+     "event_name": "Кубок ФСП по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2026-08-02",
+     "place": 15,
+     "participants_total": 80,
+     "team_name": "Kernel Panic",
+     "role": "ml",
+     "score": 53.7,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-37032"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104501",
+   "full_name": "Павлов Глеб",
+   "email": "cand33@talent.demo",
+   "region": "Республика Татарстан",
+   "sport_rank": "III разряд",
+   "achievements": [
+    {
+     "id": "ACH-2025-99538",
+     "event_name": "Межрегиональный хакатон «Код города»",
+     "discipline": "Продуктовое программирование",
+     "level": "interregional",
+     "date": "2025-03-08",
+     "place": 4,
+     "participants_total": 60,
+     "team_name": "NullPointer",
+     "role": "ml",
+     "score": 75.3,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-99538"
+    },
+    {
+     "id": "ACH-2023-83696",
+     "event_name": "Региональные соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "regional",
+     "date": "2023-07-30",
+     "place": 3,
+     "participants_total": 80,
+     "team_name": "NullPointer",
+     "role": "captain",
+     "score": 67.8,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-83696"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104538",
+   "full_name": "Сергеева Полина",
+   "email": "cand35@talent.demo",
+   "region": "г. Москва",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2024-22291",
+     "event_name": "Региональный этап по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "regional",
+     "date": "2024-10-23",
+     "place": 6,
+     "participants_total": 60,
+     "team_name": "Green Threads",
+     "role": null,
+     "score": 81.0,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-22291"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104542",
+   "full_name": "Максимова Валерия",
+   "email": "cand36@talent.demo",
+   "region": "Свердловская область",
+   "sport_rank": "I разряд",
+   "achievements": [
+    {
+     "id": "ACH-2025-94586",
+     "event_name": "Кубок ФСП по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2025-05-02",
+     "place": 3,
+     "participants_total": 80,
+     "team_name": "Kernel Panic",
+     "role": "ml",
+     "score": 52.8,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-94586"
+    },
+    {
+     "id": "ACH-2024-47506",
+     "event_name": "Региональные соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "regional",
+     "date": "2024-03-07",
+     "place": 103,
+     "participants_total": 350,
+     "team_name": "Квантовый скачок",
+     "role": null,
+     "score": 52.1,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-47506"
+    },
+    {
+     "id": "ACH-2023-62879",
+     "event_name": "Всероссийские соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2023-12-12",
+     "place": 91,
+     "participants_total": 350,
+     "team_name": "NullPointer",
+     "role": "ml",
+     "score": 78.7,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-62879"
+    },
+    {
+     "id": "ACH-2023-56021",
+     "event_name": "Всероссийские соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2023-12-08",
+     "place": 4,
+     "participants_total": 40,
+     "team_name": "Сибирский код",
+     "role": "ml",
+     "score": 88.2,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-56021"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104563",
+   "full_name": "Королёва Елизавета",
+   "email": "cand37@talent.demo",
+   "region": "Новосибирская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2026-60801",
+     "event_name": "Чемпионат по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "all_russian",
+     "date": "2026-03-22",
+     "place": 6,
+     "participants_total": 120,
+     "team_name": null,
+     "role": null,
+     "score": 84.7,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-60801"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104574",
+   "full_name": "Борисов Даниил",
+   "email": "cand38@talent.demo",
+   "region": "Республика Татарстан",
+   "sport_rank": "III разряд",
+   "achievements": [
+    {
+     "id": "ACH-2026-92089",
+     "event_name": "Кубок ФСП по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2026-05-11",
+     "place": null,
+     "participants_total": 40,
+     "team_name": "Мыслящие машины",
+     "role": "ml",
+     "score": 41.1,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-92089"
+    },
+    {
+     "id": "ACH-2025-87904",
+     "event_name": "Всероссийские соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2025-06-25",
+     "place": 10,
+     "participants_total": 200,
+     "team_name": "Сибирский код",
+     "role": "ml",
+     "score": 98.2,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-87904"
+    },
+    {
+     "id": "ACH-2023-58529",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2023-02-18",
+     "place": 1,
+     "participants_total": 40,
+     "team_name": null,
+     "role": null,
+     "score": 40.5,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-58529"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104579",
+   "full_name": "Дмитриева Ксения",
+   "email": "cand39@talent.demo",
+   "region": "Нижегородская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2026-77002",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2026-05-12",
+     "place": 10,
+     "participants_total": 40,
+     "team_name": null,
+     "role": null,
+     "score": 86.6,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-77002"
+    },
+    {
+     "id": "ACH-2025-68079",
+     "event_name": "Всероссийские соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2025-06-29",
+     "place": 10,
+     "participants_total": 40,
+     "team_name": "NullPointer",
+     "role": null,
+     "score": 60.2,
+     "specialization_hint": "devops",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-68079"
+    },
+    {
+     "id": "ACH-2025-87941",
+     "event_name": "Всероссийские соревнования по кибербезопасности",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "all_russian",
+     "date": "2025-06-15",
+     "place": 17,
+     "participants_total": 120,
+     "team_name": null,
+     "role": "captain",
+     "score": 51.8,
+     "specialization_hint": "devops",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-87941"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104615",
+   "full_name": "Киселёва Юлия",
+   "email": "cand41@talent.demo",
+   "region": "Томская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-50648",
+     "event_name": "Межрегиональные соревнования по программированию робототехники",
+     "discipline": "Программирование робототехники",
+     "level": "interregional",
+     "date": "2025-11-05",
+     "place": 5,
+     "participants_total": 60,
+     "team_name": "Сибирский код",
+     "role": null,
+     "score": 48.2,
+     "specialization_hint": "devops",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-50648"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104621",
+   "full_name": "Полякова Ирина",
+   "email": "cand44@talent.demo",
+   "region": "Нижегородская область",
+   "sport_rank": "I разряд",
+   "achievements": [
+    {
+     "id": "ACH-2023-19515",
+     "event_name": "Всероссийские соревнования по кибербезопасности",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "all_russian",
+     "date": "2023-12-09",
+     "place": null,
+     "participants_total": 350,
+     "team_name": null,
+     "role": null,
+     "score": 53.6,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-19515"
+    },
+    {
+     "id": "ACH-2023-12088",
+     "event_name": "Всероссийские соревнования по кибербезопасности",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "all_russian",
+     "date": "2023-07-17",
+     "place": 10,
+     "participants_total": 40,
+     "team_name": null,
+     "role": null,
+     "score": 53.1,
+     "specialization_hint": "devops",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-12088"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104625",
+   "full_name": "Белова Диана",
+   "email": "cand45@talent.demo",
+   "region": "Республика Татарстан",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-34219",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2025-11-12",
+     "place": 8,
+     "participants_total": 60,
+     "team_name": "Kernel Panic",
+     "role": null,
+     "score": 88.2,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-34219"
+    },
+    {
+     "id": "ACH-2024-49967",
+     "event_name": "Всероссийские соревнования по кибербезопасности",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "all_russian",
+     "date": "2024-07-31",
+     "place": 7,
+     "participants_total": 120,
+     "team_name": null,
+     "role": null,
+     "score": 71.2,
+     "specialization_hint": "devops",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-49967"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104653",
+   "full_name": "Кузьмина Алина",
+   "email": "cand46@talent.demo",
+   "region": "Республика Татарстан",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2026-54271",
+     "event_name": "Всероссийские соревнования по кибербезопасности",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "all_russian",
+     "date": "2026-04-30",
+     "place": 20,
+     "participants_total": 80,
+     "team_name": null,
+     "role": null,
+     "score": 53.7,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-54271"
+    },
+    {
+     "id": "ACH-2024-80699",
+     "event_name": "Всероссийские соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2024-04-04",
+     "place": 3,
+     "participants_total": 120,
+     "team_name": "Kernel Panic",
+     "role": null,
+     "score": 89.6,
+     "specialization_hint": "devops",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-80699"
+    },
+    {
+     "id": "ACH-2023-62596",
+     "event_name": "Всероссийские соревнования по кибербезопасности",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "all_russian",
+     "date": "2023-03-26",
+     "place": 4,
+     "participants_total": 120,
+     "team_name": "404 Team",
+     "role": null,
+     "score": 75.9,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-62596"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-104671",
+   "full_name": "Андреев Константин",
+   "email": "cand47@talent.demo",
+   "region": "Республика Татарстан",
+   "sport_rank": "КМС",
+   "achievements": [
+    {
+     "id": "ACH-2025-31905",
+     "event_name": "Всероссийские соревнования по кибербезопасности",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "all_russian",
+     "date": "2025-11-18",
+     "place": 39,
+     "participants_total": 120,
+     "team_name": null,
+     "role": null,
+     "score": 41.0,
+     "specialization_hint": "devops",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-31905"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-200001",
+   "full_name": "Олимпиев Олег",
+   "email": "olymp@demo.ru",
+   "region": "г. Москва",
+   "sport_rank": "КМС",
+   "achievements": [
+    {
+     "id": "ACH-2025-42562",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2025-04-22",
+     "place": 2,
+     "participants_total": 120,
+     "team_name": "NullPointer",
+     "role": null,
+     "score": 71.8,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-42562"
+    },
+    {
+     "id": "ACH-2023-54408",
+     "event_name": "Региональные соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "regional",
+     "date": "2023-06-02",
+     "place": 2,
+     "participants_total": 60,
+     "team_name": "NullPointer",
+     "role": null,
+     "score": 86.5,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-54408"
+    },
+    {
+     "id": "ACH-2023-87123",
+     "event_name": "Кубок ФСП по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2023-02-28",
+     "place": 3,
+     "participants_total": 200,
+     "team_name": "Kernel Panic",
+     "role": "backend",
+     "score": 87.3,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-87123"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-200002",
+   "full_name": "Хакатонова Ева",
+   "email": "hack@demo.ru",
+   "region": "г. Санкт-Петербург",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-67896",
+     "event_name": "Региональный этап по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "regional",
+     "date": "2025-09-11",
+     "place": 5,
+     "participants_total": 60,
+     "team_name": null,
+     "role": null,
+     "score": 96.6,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-67896"
+    },
+    {
+     "id": "ACH-2024-20637",
+     "event_name": "Всероссийские соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2024-03-31",
+     "place": 3,
+     "participants_total": 40,
+     "team_name": "Квантовый скачок",
+     "role": "frontend",
+     "score": 48.6,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-20637"
+    },
+    {
+     "id": "ACH-2024-36707",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2024-03-19",
+     "place": 1,
+     "participants_total": 40,
+     "team_name": "Green Threads",
+     "role": "captain",
+     "score": 76.3,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-36707"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-200003",
+   "full_name": "Нейронов Лев",
+   "email": "ml@demo.ru",
+   "region": "Томская область",
+   "sport_rank": "I разряд",
+   "achievements": [
+    {
+     "id": "ACH-2025-88599",
+     "event_name": "Межрегиональный хакатон «Код города»",
+     "discipline": "Продуктовое программирование",
+     "level": "interregional",
+     "date": "2025-11-11",
+     "place": 8,
+     "participants_total": 80,
+     "team_name": "Дедлайн",
+     "role": "ml",
+     "score": 96.5,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-88599"
+    },
+    {
+     "id": "ACH-2025-17261",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2025-06-21",
+     "place": 3,
+     "participants_total": 80,
+     "team_name": null,
+     "role": null,
+     "score": 72.7,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-17261"
+    },
+    {
+     "id": "ACH-2024-29072",
+     "event_name": "Кубок ФСП по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2024-04-19",
+     "place": 2,
+     "participants_total": 60,
+     "team_name": "Kernel Panic",
+     "role": null,
+     "score": 69.9,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-29072"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300000",
+   "full_name": "Фёдоров Михаил",
+   "email": "participant0@fsp-registry.example",
+   "region": "Нижегородская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2026-58889",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2026-05-22",
+     "place": 18,
+     "participants_total": 120,
+     "team_name": null,
+     "role": null,
+     "score": 66.6,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-58889"
+    },
+    {
+     "id": "ACH-2026-54228",
+     "event_name": "Кубок ФСП по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2026-05-01",
+     "place": 4,
+     "participants_total": 200,
+     "team_name": "Kernel Panic",
+     "role": "backend",
+     "score": 60.2,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-54228"
+    },
+    {
+     "id": "ACH-2024-38652",
+     "event_name": "Региональные соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "regional",
+     "date": "2024-11-02",
+     "place": 95,
+     "participants_total": 350,
+     "team_name": "Дедлайн",
+     "role": "backend",
+     "score": 55.0,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-38652"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300001",
+   "full_name": "Зайцев Олег",
+   "email": "participant1@fsp-registry.example",
+   "region": "Томская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-47000",
+     "event_name": "Чемпионат по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "all_russian",
+     "date": "2025-09-14",
+     "place": null,
+     "participants_total": 120,
+     "team_name": "Ctrl+Alt+Win",
+     "role": null,
+     "score": 99.2,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-47000"
+    },
+    {
+     "id": "ACH-2024-72534",
+     "event_name": "Кубок ФСП по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2024-10-19",
+     "place": 5,
+     "participants_total": 200,
+     "team_name": "Green Threads",
+     "role": "backend",
+     "score": 93.8,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-72534"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300002",
+   "full_name": "Егоров Тимур",
+   "email": "participant2@fsp-registry.example",
+   "region": "Республика Татарстан",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-97164",
+     "event_name": "Региональный этап по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "regional",
+     "date": "2025-07-07",
+     "place": null,
+     "participants_total": 40,
+     "team_name": null,
+     "role": null,
+     "score": 55.7,
+     "specialization_hint": "frontend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-97164"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300003",
+   "full_name": "Зайцев Олег",
+   "email": "participant3@fsp-registry.example",
+   "region": "Республика Татарстан",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-10169",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2025-06-18",
+     "place": 4,
+     "participants_total": 40,
+     "team_name": null,
+     "role": null,
+     "score": 98.7,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-10169"
+    },
+    {
+     "id": "ACH-2024-19905",
+     "event_name": "Чемпионат по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "all_russian",
+     "date": "2024-11-15",
+     "place": null,
+     "participants_total": 60,
+     "team_name": null,
+     "role": null,
+     "score": 65.0,
+     "specialization_hint": "frontend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-19905"
+    },
+    {
+     "id": "ACH-2023-83449",
+     "event_name": "Всероссийские соревнования по программированию БАС",
+     "discipline": "Программирование беспилотных авиационных систем",
+     "level": "all_russian",
+     "date": "2023-12-22",
+     "place": 33,
+     "participants_total": 120,
+     "team_name": null,
+     "role": null,
+     "score": 77.9,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-83449"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300004",
+   "full_name": "Степанов Денис",
+   "email": "participant4@fsp-registry.example",
+   "region": "Новосибирская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-27126",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2025-11-16",
+     "place": 3,
+     "participants_total": 60,
+     "team_name": null,
+     "role": null,
+     "score": 81.7,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-27126"
+    },
+    {
+     "id": "ACH-2025-45858",
+     "event_name": "Всероссийские соревнования по программированию БАС",
+     "discipline": "Программирование беспилотных авиационных систем",
+     "level": "all_russian",
+     "date": "2025-06-07",
+     "place": 3,
+     "participants_total": 350,
+     "team_name": null,
+     "role": null,
+     "score": 82.0,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-45858"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300005",
+   "full_name": "Павлов Глеб",
+   "email": "participant5@fsp-registry.example",
+   "region": "Республика Татарстан",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-25357",
+     "event_name": "Межрегиональный хакатон «Код города»",
+     "discipline": "Продуктовое программирование",
+     "level": "interregional",
+     "date": "2025-07-16",
+     "place": 13,
+     "participants_total": 40,
+     "team_name": "Stack Overflowers",
+     "role": "devops",
+     "score": 56.5,
+     "specialization_hint": "devops",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-25357"
+    },
+    {
+     "id": "ACH-2023-19456",
+     "event_name": "Региональные соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "regional",
+     "date": "2023-10-30",
+     "place": 3,
+     "participants_total": 200,
+     "team_name": "Мыслящие машины",
+     "role": "devops",
+     "score": 40.2,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-19456"
+    },
+    {
+     "id": "ACH-2023-16224",
+     "event_name": "Чемпионат по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "all_russian",
+     "date": "2023-04-20",
+     "place": 15,
+     "participants_total": 200,
+     "team_name": "Byte Busters",
+     "role": null,
+     "score": 53.8,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-16224"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300006",
+   "full_name": "Степанов Денис",
+   "email": "participant6@fsp-registry.example",
+   "region": "Самарская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-29210",
+     "event_name": "Региональный этап по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "regional",
+     "date": "2025-12-22",
+     "place": 101,
+     "participants_total": 350,
+     "team_name": null,
+     "role": null,
+     "score": 83.8,
+     "specialization_hint": "frontend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-29210"
+    },
+    {
+     "id": "ACH-2025-26475",
+     "event_name": "Региональный этап по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "regional",
+     "date": "2025-12-17",
+     "place": 102,
+     "participants_total": 350,
+     "team_name": null,
+     "role": "captain",
+     "score": 42.0,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-26475"
+    },
+    {
+     "id": "ACH-2025-90607",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2025-04-19",
+     "place": null,
+     "participants_total": 60,
+     "team_name": null,
+     "role": null,
+     "score": 49.7,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-90607"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300007",
+   "full_name": "Лебедев Павел",
+   "email": "participant7@fsp-registry.example",
+   "region": "Новосибирская область",
+   "sport_rank": "III разряд",
+   "achievements": [
+    {
+     "id": "ACH-2025-68186",
+     "event_name": "Межрегиональные соревнования по программированию робототехники",
+     "discipline": "Программирование робототехники",
+     "level": "interregional",
+     "date": "2025-08-31",
+     "place": 13,
+     "participants_total": 40,
+     "team_name": "Мыслящие машины",
+     "role": null,
+     "score": 75.1,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-68186"
+    },
+    {
+     "id": "ACH-2023-48762",
+     "event_name": "Межрегиональный хакатон «Код города»",
+     "discipline": "Продуктовое программирование",
+     "level": "interregional",
+     "date": "2023-06-25",
+     "place": null,
+     "participants_total": 60,
+     "team_name": "404 Team",
+     "role": "backend",
+     "score": 65.6,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-48762"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300008",
+   "full_name": "Алексеев Сергей",
+   "email": "participant8@fsp-registry.example",
+   "region": "Краснодарский край",
+   "sport_rank": "III разряд",
+   "achievements": [
+    {
+     "id": "ACH-2026-59368",
+     "event_name": "Региональный этап по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "regional",
+     "date": "2026-05-28",
+     "place": null,
+     "participants_total": 350,
+     "team_name": null,
+     "role": null,
+     "score": 72.9,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-59368"
+    },
+    {
+     "id": "ACH-2025-78697",
+     "event_name": "Всероссийские соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2025-08-15",
+     "place": 14,
+     "participants_total": 80,
+     "team_name": "Квантовый скачок",
+     "role": null,
+     "score": 49.8,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-78697"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300009",
+   "full_name": "Семёнов Роман",
+   "email": "participant9@fsp-registry.example",
+   "region": "Краснодарский край",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-85989",
+     "event_name": "Межрегиональный хакатон «Код города»",
+     "discipline": "Продуктовое программирование",
+     "level": "interregional",
+     "date": "2025-07-27",
+     "place": 11,
+     "participants_total": 60,
+     "team_name": "Квантовый скачок",
+     "role": "backend",
+     "score": 96.0,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-85989"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300010",
+   "full_name": "Лебедев Павел",
+   "email": "participant10@fsp-registry.example",
+   "region": "г. Санкт-Петербург",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-40490",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2025-09-13",
+     "place": 39,
+     "participants_total": 120,
+     "team_name": null,
+     "role": null,
+     "score": 82.9,
+     "specialization_hint": "devops",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-40490"
+    },
+    {
+     "id": "ACH-2025-99981",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2025-08-18",
+     "place": null,
+     "participants_total": 60,
+     "team_name": "Ctrl+Alt+Win",
+     "role": null,
+     "score": 88.0,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-99981"
+    },
+    {
+     "id": "ACH-2024-61829",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2024-03-27",
+     "place": 5,
+     "participants_total": 200,
+     "team_name": null,
+     "role": null,
+     "score": 59.4,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-61829"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300011",
+   "full_name": "Павлов Глеб",
+   "email": "participant11@fsp-registry.example",
+   "region": "г. Санкт-Петербург",
+   "sport_rank": "III разряд",
+   "achievements": [
+    {
+     "id": "ACH-2026-96906",
+     "event_name": "Всероссийские соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2026-04-26",
+     "place": 2,
+     "participants_total": 120,
+     "team_name": "404 Team",
+     "role": "frontend",
+     "score": 94.0,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-96906"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300012",
+   "full_name": "Смирнов Алексей",
+   "email": "participant12@fsp-registry.example",
+   "region": "Новосибирская область",
+   "sport_rank": "III разряд",
+   "achievements": [
+    {
+     "id": "ACH-2024-12367",
+     "event_name": "Региональные соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "regional",
+     "date": "2024-06-20",
+     "place": null,
+     "participants_total": 60,
+     "team_name": "Мыслящие машины",
+     "role": null,
+     "score": 54.7,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-12367"
+    },
+    {
+     "id": "ACH-2023-44128",
+     "event_name": "Кубок ФСП по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2023-08-15",
+     "place": 11,
+     "participants_total": 60,
+     "team_name": "Kernel Panic",
+     "role": "ml",
+     "score": 96.6,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-44128"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300013",
+   "full_name": "Попов Иван",
+   "email": "participant13@fsp-registry.example",
+   "region": "г. Москва",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2026-94542",
+     "event_name": "Региональные соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "regional",
+     "date": "2026-03-15",
+     "place": null,
+     "participants_total": 80,
+     "team_name": "Byte Busters",
+     "role": "backend",
+     "score": 79.4,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-94542"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300014",
+   "full_name": "Захаров Георгий",
+   "email": "participant14@fsp-registry.example",
+   "region": "Томская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-37871",
+     "event_name": "Кубок ФСП по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2025-03-27",
+     "place": null,
+     "participants_total": 80,
+     "team_name": "Stack Overflowers",
+     "role": "ml",
+     "score": 71.3,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-37871"
+    },
+    {
+     "id": "ACH-2025-74773",
+     "event_name": "Чемпионат по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "all_russian",
+     "date": "2025-01-05",
+     "place": 7,
+     "participants_total": 40,
+     "team_name": null,
+     "role": null,
+     "score": 82.2,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-74773"
+    },
+    {
+     "id": "ACH-2024-25294",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2024-08-30",
+     "place": 52,
+     "participants_total": 200,
+     "team_name": "Kernel Panic",
+     "role": "captain",
+     "score": 53.2,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-25294"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300015",
+   "full_name": "Зайцев Олег",
+   "email": "participant15@fsp-registry.example",
+   "region": "Самарская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2026-66323",
+     "event_name": "Региональные соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "regional",
+     "date": "2026-07-11",
+     "place": null,
+     "participants_total": 60,
+     "team_name": "404 Team",
+     "role": "ml",
+     "score": 48.1,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-66323"
+    },
+    {
+     "id": "ACH-2026-87467",
+     "event_name": "Всероссийские соревнования по программированию БАС",
+     "discipline": "Программирование беспилотных авиационных систем",
+     "level": "all_russian",
+     "date": "2026-03-20",
+     "place": 8,
+     "participants_total": 40,
+     "team_name": null,
+     "role": null,
+     "score": 69.4,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-87467"
+    },
+    {
+     "id": "ACH-2026-93131",
+     "event_name": "Кубок ФСП по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2026-02-16",
+     "place": 4,
+     "participants_total": 350,
+     "team_name": "Сибирский код",
+     "role": "captain",
+     "score": 41.2,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-93131"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300016",
+   "full_name": "Морозов Андрей",
+   "email": "participant16@fsp-registry.example",
+   "region": "Республика Татарстан",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2024-26833",
+     "event_name": "Всероссийские соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2024-05-27",
+     "place": 67,
+     "participants_total": 350,
+     "team_name": "404 Team",
+     "role": "frontend",
+     "score": 53.1,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-26833"
+    },
+    {
+     "id": "ACH-2023-49831",
+     "event_name": "Межрегиональный хакатон «Код города»",
+     "discipline": "Продуктовое программирование",
+     "level": "interregional",
+     "date": "2023-08-24",
+     "place": 24,
+     "participants_total": 120,
+     "team_name": "404 Team",
+     "role": null,
+     "score": 85.2,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-49831"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300017",
+   "full_name": "Зайцев Олег",
+   "email": "participant17@fsp-registry.example",
+   "region": "Томская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-20965",
+     "event_name": "Всероссийские соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2025-12-31",
+     "place": 3,
+     "participants_total": 120,
+     "team_name": "Byte Busters",
+     "role": "ml",
+     "score": 96.0,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-20965"
+    },
+    {
+     "id": "ACH-2025-85092",
+     "event_name": "Всероссийские соревнования по программированию БАС",
+     "discipline": "Программирование беспилотных авиационных систем",
+     "level": "all_russian",
+     "date": "2025-10-14",
+     "place": 3,
+     "participants_total": 40,
+     "team_name": "Дедлайн",
+     "role": null,
+     "score": 64.0,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-85092"
+    },
+    {
+     "id": "ACH-2025-34946",
+     "event_name": "Чемпионат по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "all_russian",
+     "date": "2025-10-05",
+     "place": 3,
+     "participants_total": 350,
+     "team_name": "Сибирский код",
+     "role": null,
+     "score": 53.8,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-34946"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300018",
+   "full_name": "Морозов Андрей",
+   "email": "participant18@fsp-registry.example",
+   "region": "г. Санкт-Петербург",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2023-81075",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2023-11-28",
+     "place": 15,
+     "participants_total": 80,
+     "team_name": null,
+     "role": "captain",
+     "score": 42.6,
+     "specialization_hint": "frontend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-81075"
+    },
+    {
+     "id": "ACH-2023-78566",
+     "event_name": "Всероссийские соревнования по программированию БАС",
+     "discipline": "Программирование беспилотных авиационных систем",
+     "level": "all_russian",
+     "date": "2023-01-28",
+     "place": null,
+     "participants_total": 350,
+     "team_name": null,
+     "role": null,
+     "score": 97.6,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-78566"
+    },
+    {
+     "id": "ACH-2023-34898",
+     "event_name": "Чемпионат по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "all_russian",
+     "date": "2023-01-01",
+     "place": null,
+     "participants_total": 350,
+     "team_name": "NullPointer",
+     "role": null,
+     "score": 97.9,
+     "specialization_hint": "frontend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-34898"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300019",
+   "full_name": "Степанов Денис",
+   "email": "participant19@fsp-registry.example",
+   "region": "Самарская область",
+   "sport_rank": "III разряд",
+   "achievements": [
+    {
+     "id": "ACH-2026-81984",
+     "event_name": "Региональный этап по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "regional",
+     "date": "2026-01-13",
+     "place": null,
+     "participants_total": 60,
+     "team_name": "Ctrl+Alt+Win",
+     "role": null,
+     "score": 65.4,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-81984"
+    },
+    {
+     "id": "ACH-2024-16002",
+     "event_name": "Всероссийские соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2024-02-25",
+     "place": 8,
+     "participants_total": 40,
+     "team_name": "NullPointer",
+     "role": "frontend",
+     "score": 97.3,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-16002"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300020",
+   "full_name": "Кузнецов Дмитрий",
+   "email": "participant20@fsp-registry.example",
+   "region": "г. Санкт-Петербург",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2024-43942",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2024-06-25",
+     "place": 48,
+     "participants_total": 200,
+     "team_name": "Kernel Panic",
+     "role": null,
+     "score": 61.1,
+     "specialization_hint": "frontend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-43942"
+    },
+    {
+     "id": "ACH-2023-26282",
+     "event_name": "Кубок ФСП по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2023-04-09",
+     "place": 8,
+     "participants_total": 40,
+     "team_name": "Бит и Байт",
+     "role": "frontend",
+     "score": 57.4,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-26282"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300021",
+   "full_name": "Семёнов Роман",
+   "email": "participant21@fsp-registry.example",
+   "region": "Республика Татарстан",
+   "sport_rank": "III разряд",
+   "achievements": [
+    {
+     "id": "ACH-2026-81842",
+     "event_name": "Чемпионат по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "all_russian",
+     "date": "2026-06-12",
+     "place": null,
+     "participants_total": 350,
+     "team_name": null,
+     "role": "captain",
+     "score": 64.7,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-81842"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300022",
+   "full_name": "Фёдоров Михаил",
+   "email": "participant22@fsp-registry.example",
+   "region": "Республика Татарстан",
+   "sport_rank": "III разряд",
+   "achievements": [
+    {
+     "id": "ACH-2026-56537",
+     "event_name": "Всероссийские соревнования по программированию БАС",
+     "discipline": "Программирование беспилотных авиационных систем",
+     "level": "all_russian",
+     "date": "2026-03-16",
+     "place": 6,
+     "participants_total": 40,
+     "team_name": null,
+     "role": null,
+     "score": 86.5,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-56537"
+    },
+    {
+     "id": "ACH-2025-72668",
+     "event_name": "Кубок ФСП по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2025-04-26",
+     "place": 3,
+     "participants_total": 80,
+     "team_name": "Ctrl+Alt+Win",
+     "role": "ml",
+     "score": 92.8,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-72668"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300023",
+   "full_name": "Кузнецов Дмитрий",
+   "email": "participant23@fsp-registry.example",
+   "region": "г. Москва",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2024-75092",
+     "event_name": "Всероссийские соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2024-01-11",
+     "place": 4,
+     "participants_total": 120,
+     "team_name": "Ctrl+Alt+Win",
+     "role": "backend",
+     "score": 53.0,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-75092"
+    },
+    {
+     "id": "ACH-2023-27849",
+     "event_name": "Региональные соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "regional",
+     "date": "2023-10-21",
+     "place": 55,
+     "participants_total": 200,
+     "team_name": "404 Team",
+     "role": "backend",
+     "score": 81.9,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-27849"
+    },
+    {
+     "id": "ACH-2023-69984",
+     "event_name": "Региональные соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "regional",
+     "date": "2023-07-09",
+     "place": 9,
+     "participants_total": 60,
+     "team_name": "404 Team",
+     "role": "captain",
+     "score": 58.1,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-69984"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300024",
+   "full_name": "Кузнецов Дмитрий",
+   "email": "participant24@fsp-registry.example",
+   "region": "Краснодарский край",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2026-42781",
+     "event_name": "Чемпионат по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "all_russian",
+     "date": "2026-06-05",
+     "place": 18,
+     "participants_total": 200,
+     "team_name": "Ctrl+Alt+Win",
+     "role": null,
+     "score": 82.7,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-42781"
+    },
+    {
+     "id": "ACH-2025-77166",
+     "event_name": "Региональные соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "regional",
+     "date": "2025-08-08",
+     "place": null,
+     "participants_total": 350,
+     "team_name": "404 Team",
+     "role": "ml",
+     "score": 44.8,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-77166"
+    },
+    {
+     "id": "ACH-2024-56985",
+     "event_name": "Всероссийские соревнования по программированию БАС",
+     "discipline": "Программирование беспилотных авиационных систем",
+     "level": "all_russian",
+     "date": "2024-05-23",
+     "place": 3,
+     "participants_total": 60,
+     "team_name": null,
+     "role": null,
+     "score": 62.5,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-56985"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300025",
+   "full_name": "Петров Артём",
+   "email": "participant25@fsp-registry.example",
+   "region": "Томская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2024-40156",
+     "event_name": "Региональные соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "regional",
+     "date": "2024-04-24",
+     "place": 2,
+     "participants_total": 120,
+     "team_name": "Мыслящие машины",
+     "role": "devops",
+     "score": 43.6,
+     "specialization_hint": "devops",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-40156"
+    },
+    {
+     "id": "ACH-2023-51448",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2023-08-13",
+     "place": 61,
+     "participants_total": 350,
+     "team_name": "Kernel Panic",
+     "role": null,
+     "score": 45.4,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-51448"
+    },
+    {
+     "id": "ACH-2023-16324",
+     "event_name": "Всероссийские соревнования по кибербезопасности",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "all_russian",
+     "date": "2023-02-20",
+     "place": 25,
+     "participants_total": 350,
+     "team_name": null,
+     "role": null,
+     "score": 75.2,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-16324"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300026",
+   "full_name": "Андреев Константин",
+   "email": "participant26@fsp-registry.example",
+   "region": "Республика Татарстан",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-73370",
+     "event_name": "Межрегиональные соревнования по программированию робототехники",
+     "discipline": "Программирование робототехники",
+     "level": "interregional",
+     "date": "2025-11-01",
+     "place": null,
+     "participants_total": 120,
+     "team_name": null,
+     "role": null,
+     "score": 67.3,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-73370"
+    },
+    {
+     "id": "ACH-2024-88178",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2024-03-12",
+     "place": null,
+     "participants_total": 60,
+     "team_name": null,
+     "role": null,
+     "score": 56.6,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-88178"
+    },
+    {
+     "id": "ACH-2023-14385",
+     "event_name": "Межрегиональные соревнования по программированию робототехники",
+     "discipline": "Программирование робототехники",
+     "level": "interregional",
+     "date": "2023-11-19",
+     "place": 13,
+     "participants_total": 200,
+     "team_name": null,
+     "role": null,
+     "score": 67.3,
+     "specialization_hint": "devops",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-14385"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300027",
+   "full_name": "Павлов Глеб",
+   "email": "participant27@fsp-registry.example",
+   "region": "Республика Татарстан",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-81801",
+     "event_name": "Всероссийские соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2025-11-30",
+     "place": 6,
+     "participants_total": 350,
+     "team_name": "Квантовый скачок",
+     "role": null,
+     "score": 99.5,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-81801"
+    },
+    {
+     "id": "ACH-2025-12650",
+     "event_name": "Межрегиональный хакатон «Код города»",
+     "discipline": "Продуктовое программирование",
+     "level": "interregional",
+     "date": "2025-03-05",
+     "place": 21,
+     "participants_total": 200,
+     "team_name": "Мыслящие машины",
+     "role": "backend",
+     "score": 43.6,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-12650"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300028",
+   "full_name": "Михайлов Егор",
+   "email": "participant28@fsp-registry.example",
+   "region": "Новосибирская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-62420",
+     "event_name": "Всероссийские соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2025-05-26",
+     "place": 12,
+     "participants_total": 350,
+     "team_name": "404 Team",
+     "role": "backend",
+     "score": 90.3,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-62420"
+    },
+    {
+     "id": "ACH-2025-72425",
+     "event_name": "Региональные соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "regional",
+     "date": "2025-02-11",
+     "place": 14,
+     "participants_total": 60,
+     "team_name": "Мыслящие машины",
+     "role": null,
+     "score": 94.0,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-72425"
+    },
+    {
+     "id": "ACH-2023-94978",
+     "event_name": "Всероссийские соревнования по кибербезопасности",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "all_russian",
+     "date": "2023-11-27",
+     "place": null,
+     "participants_total": 80,
+     "team_name": null,
+     "role": null,
+     "score": 55.3,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-94978"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300029",
+   "full_name": "Волков Илья",
+   "email": "participant29@fsp-registry.example",
+   "region": "г. Москва",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-58846",
+     "event_name": "Региональный этап по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "regional",
+     "date": "2025-08-13",
+     "place": null,
+     "participants_total": 350,
+     "team_name": "Бит и Байт",
+     "role": null,
+     "score": 56.2,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-58846"
+    },
+    {
+     "id": "ACH-2025-42190",
+     "event_name": "Региональные соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "regional",
+     "date": "2025-05-11",
+     "place": null,
+     "participants_total": 40,
+     "team_name": "Byte Busters",
+     "role": null,
+     "score": 88.2,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-42190"
+    },
+    {
+     "id": "ACH-2025-97206",
+     "event_name": "Чемпионат по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "all_russian",
+     "date": "2025-04-21",
+     "place": 6,
+     "participants_total": 120,
+     "team_name": "Green Threads",
+     "role": null,
+     "score": 44.3,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-97206"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300030",
+   "full_name": "Борисов Даниил",
+   "email": "participant30@fsp-registry.example",
+   "region": "Нижегородская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-85921",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2025-08-24",
+     "place": null,
+     "participants_total": 80,
+     "team_name": null,
+     "role": null,
+     "score": 79.4,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-85921"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300031",
+   "full_name": "Морозов Андрей",
+   "email": "participant31@fsp-registry.example",
+   "region": "Томская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2024-41343",
+     "event_name": "Межрегиональный хакатон «Код города»",
+     "discipline": "Продуктовое программирование",
+     "level": "interregional",
+     "date": "2024-10-30",
+     "place": 14,
+     "participants_total": 80,
+     "team_name": "Byte Busters",
+     "role": "ml",
+     "score": 65.9,
+     "specialization_hint": "data_ml",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-41343"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300032",
+   "full_name": "Орлов Матвей",
+   "email": "participant32@fsp-registry.example",
+   "region": "Самарская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2024-57164",
+     "event_name": "Межрегиональные соревнования по программированию робототехники",
+     "discipline": "Программирование робототехники",
+     "level": "interregional",
+     "date": "2024-06-10",
+     "place": 3,
+     "participants_total": 350,
+     "team_name": "Бит и Байт",
+     "role": null,
+     "score": 92.5,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-57164"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300033",
+   "full_name": "Семёнов Роман",
+   "email": "participant33@fsp-registry.example",
+   "region": "Свердловская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2024-71220",
+     "event_name": "Всероссийские соревнования по кибербезопасности",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "all_russian",
+     "date": "2024-09-09",
+     "place": null,
+     "participants_total": 80,
+     "team_name": null,
+     "role": "captain",
+     "score": 50.5,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-71220"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300034",
+   "full_name": "Фёдоров Михаил",
+   "email": "participant34@fsp-registry.example",
+   "region": "г. Москва",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2026-45278",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2026-06-29",
+     "place": 1,
+     "participants_total": 40,
+     "team_name": null,
+     "role": null,
+     "score": 86.8,
+     "specialization_hint": "devops",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-45278"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300035",
+   "full_name": "Лебедев Павел",
+   "email": "participant35@fsp-registry.example",
+   "region": "Республика Татарстан",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2024-32816",
+     "event_name": "Региональные соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "regional",
+     "date": "2024-08-11",
+     "place": null,
+     "participants_total": 200,
+     "team_name": "Дедлайн",
+     "role": "backend",
+     "score": 89.2,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-32816"
+    },
+    {
+     "id": "ACH-2023-51443",
+     "event_name": "Региональные соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "regional",
+     "date": "2023-07-04",
+     "place": 4,
+     "participants_total": 350,
+     "team_name": "Дедлайн",
+     "role": "backend",
+     "score": 76.7,
+     "specialization_hint": "backend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-51443"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300036",
+   "full_name": "Степанов Денис",
+   "email": "participant36@fsp-registry.example",
+   "region": "Новосибирская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2023-65853",
+     "event_name": "Международный турнир по информационной безопасности (CTF)",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "international",
+     "date": "2023-02-01",
+     "place": 2,
+     "participants_total": 60,
+     "team_name": null,
+     "role": null,
+     "score": 97.0,
+     "specialization_hint": "devops",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-65853"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300037",
+   "full_name": "Соловьёв Руслан",
+   "email": "participant37@fsp-registry.example",
+   "region": "Новосибирская область",
+   "sport_rank": "III разряд",
+   "achievements": [
+    {
+     "id": "ACH-2026-32463",
+     "event_name": "Кубок ФСП по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2026-03-17",
+     "place": 5,
+     "participants_total": 60,
+     "team_name": "Бит и Байт",
+     "role": "frontend",
+     "score": 92.5,
+     "specialization_hint": "frontend",
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-32463"
+    },
+    {
+     "id": "ACH-2024-91190",
+     "event_name": "Всероссийские соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2024-01-20",
+     "place": null,
+     "participants_total": 350,
+     "team_name": "404 Team",
+     "role": "frontend",
+     "score": 98.3,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2024-91190"
+    },
+    {
+     "id": "ACH-2023-55124",
+     "event_name": "Межрегиональный хакатон «Код города»",
+     "discipline": "Продуктовое программирование",
+     "level": "interregional",
+     "date": "2023-08-02",
+     "place": null,
+     "participants_total": 200,
+     "team_name": "Stack Overflowers",
+     "role": "frontend",
+     "score": 87.6,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2023-55124"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300038",
+   "full_name": "Николаев Арсений",
+   "email": "participant38@fsp-registry.example",
+   "region": "Свердловская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2025-76731",
+     "event_name": "Всероссийские соревнования по кибербезопасности",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "all_russian",
+     "date": "2025-06-27",
+     "place": 4,
+     "participants_total": 200,
+     "team_name": null,
+     "role": null,
+     "score": 97.0,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-76731"
+    },
+    {
+     "id": "ACH-2025-97563",
+     "event_name": "Всероссийские соревнования по кибербезопасности",
+     "discipline": "Программирование систем информационной безопасности",
+     "level": "all_russian",
+     "date": "2025-06-03",
+     "place": null,
+     "participants_total": 60,
+     "team_name": "Kernel Panic",
+     "role": null,
+     "score": 75.6,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-97563"
+    }
+   ]
+  },
+  {
+   "fsp_id": "FSP-300039",
+   "full_name": "Павлов Глеб",
+   "email": "participant39@fsp-registry.example",
+   "region": "Томская область",
+   "sport_rank": null,
+   "achievements": [
+    {
+     "id": "ACH-2026-77083",
+     "event_name": "Межрегиональные соревнования по программированию робототехники",
+     "discipline": "Программирование робототехники",
+     "level": "interregional",
+     "date": "2026-06-18",
+     "place": 20,
+     "participants_total": 60,
+     "team_name": "NullPointer",
+     "role": null,
+     "score": 66.0,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2026-77083"
+    },
+    {
+     "id": "ACH-2025-91584",
+     "event_name": "Чемпионат по алгоритмическому программированию",
+     "discipline": "Алгоритмическое программирование",
+     "level": "all_russian",
+     "date": "2025-05-23",
+     "place": null,
+     "participants_total": 120,
+     "team_name": "Byte Busters",
+     "role": null,
+     "score": 56.8,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-91584"
+    },
+    {
+     "id": "ACH-2025-83596",
+     "event_name": "Всероссийские соревнования по продуктовому программированию",
+     "discipline": "Продуктовое программирование",
+     "level": "all_russian",
+     "date": "2025-01-26",
+     "place": null,
+     "participants_total": 120,
+     "team_name": "NullPointer",
+     "role": "frontend",
+     "score": 85.7,
+     "specialization_hint": null,
+     "certificate_url": "https://registry.fsp.example/certificates/ACH-2025-83596"
+    }
+   ]
+  }
+ ]
+}

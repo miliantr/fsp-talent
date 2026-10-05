@@ -1,0 +1,54 @@
+name: fsp-talent
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-fsp_talent}
+      POSTGRES_USER: ${POSTGRES_USER:-fsp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fsp_password}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fsp} -d ${POSTGRES_DB:-fsp_talent}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:v1.21
+    ports:
+      - "8025:8025"   # web UI with all e-mails sent by the platform
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-fsp}:${POSTGRES_PASSWORD:-fsp_password}@db:5432/${POSTGRES_DB:-fsp_talent}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production-please-32b+}
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      EMAIL_DEV_EXPOSE_CODE: ${EMAIL_DEV_EXPOSE_CODE:-true}
+      FSP_REGISTRY_MODE: ${FSP_REGISTRY_MODE:-mock}
+      FSP_REGISTRY_URL: http://backend:8000/api/mock-fsp/v1
+      CORS_ORIGINS: http://localhost:8080
+      TEST_LENGTH: ${TEST_LENGTH:-20}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"   # API + Swagger UI at /api/docs
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "8080:80"     # the web application
+    restart: unless-stopped
+
+volumes:
+  pgdata:

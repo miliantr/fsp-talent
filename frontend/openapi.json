@@ -1,0 +1,9543 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "FSP Talent API",
+  "description": "\n**FSP Talent** — платформа подбора ИТ-специалистов с обратной механикой: кандидаты автоматически\nкатегоризируются по объективно подтверждённому профилю (опрос → тест на заявленный грейд →\nкатегория «специализация · грейд» + достижения ФСП), а работодатель описывает потребность,\nполучает ранжированную и объяснимую подборку и сам приглашает кандидата с зарплатной вилкой.\n\nАвторизация: `Authorization: Bearer <JWT>` (получить через `/auth/login` или `/auth/verify-email`).\nОшибки возвращаются в формате `ApiError {code, message, details}`.\n",
+  "version": "1.0.0"
+ },
+ "paths": {
+  "/api/auth/register": {
+   "post": {
+    "tags": [
+     "Аутентификация"
+    ],
+    "summary": "Регистрация по e-mail",
+    "description": "Создаёт учётную запись кандидата или работодателя и отправляет 6-значный код подтверждения e-mail.",
+    "operationId": "register_api_auth_register_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RegisterIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/RegisterOut"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Конфликт состояния (кулдаун, дубликат, закрытая сущность)",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Ошибка валидации",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/auth/verify-email": {
+   "post": {
+    "tags": [
+     "Аутентификация"
+    ],
+    "summary": "Подтверждение e-mail",
+    "operationId": "verify_email_api_auth_verify_email_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/VerifyIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TokenOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Ошибка валидации",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/auth/resend-code": {
+   "post": {
+    "tags": [
+     "Аутентификация"
+    ],
+    "summary": "Повторная отправка кода",
+    "operationId": "resend_code_api_auth_resend_code_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ResendIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/RegisterOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/auth/login": {
+   "post": {
+    "tags": [
+     "Аутентификация"
+    ],
+    "summary": "Вход",
+    "operationId": "login_api_auth_login_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/LoginIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TokenOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/auth/me": {
+   "get": {
+    "tags": [
+     "Аутентификация"
+    ],
+    "summary": "Текущий пользователь",
+    "operationId": "me_api_auth_me_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/UserOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/reference": {
+   "get": {
+    "tags": [
+     "Справочники"
+    ],
+    "summary": "Специализации, грейды, компетенции, навыки",
+    "operationId": "reference_api_reference_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ReferenceOut"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/candidate/dashboard": {
+   "get": {
+    "tags": [
+     "Кабинет кандидата"
+    ],
+    "summary": "Сводка: категория, грейд, шаги, приглашения",
+    "operationId": "dashboard_api_candidate_dashboard_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CandidateDashboard"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/candidate/profile": {
+   "get": {
+    "tags": [
+     "Кабинет кандидата"
+    ],
+    "summary": "Профиль и резюме",
+    "operationId": "get_profile_api_candidate_profile_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CandidateProfileOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   },
+   "put": {
+    "tags": [
+     "Кабинет кандидата"
+    ],
+    "summary": "Обновить профиль, опрос (специализация, грейд) и навыки",
+    "operationId": "update_profile_api_candidate_profile_put",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CandidateProfileIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CandidateProfileOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Ошибка валидации",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/candidate/resume/parse": {
+   "post": {
+    "tags": [
+     "Кабинет кандидата"
+    ],
+    "summary": "Распознать PDF-резюме (данные не сохраняются до подтверждения)",
+    "operationId": "parse_resume_api_candidate_resume_parse_post",
+    "requestBody": {
+     "content": {
+      "multipart/form-data": {
+       "schema": {
+        "$ref": "#/components/schemas/Body_parse_resume_api_candidate_resume_parse_post"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ResumeParseOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Ошибка валидации",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/candidate/settings": {
+   "get": {
+    "tags": [
+     "Кабинет кандидата"
+    ],
+    "summary": "Настройки приватности и согласия",
+    "operationId": "get_settings_api_candidate_settings_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CandidateSettings"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   },
+   "put": {
+    "tags": [
+     "Кабинет кандидата"
+    ],
+    "summary": "Изменить приватность и согласия",
+    "operationId": "update_settings_api_candidate_settings_put",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CandidateSettingsIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CandidateSettings"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/candidate/fsp": {
+   "get": {
+    "tags": [
+     "Кабинет кандидата"
+    ],
+    "summary": "Достижения ФСП (пустой список — это нормально)",
+    "operationId": "get_fsp_api_candidate_fsp_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FSPOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/candidate/fsp/link": {
+   "post": {
+    "tags": [
+     "Кабинет кандидата"
+    ],
+    "summary": "Привязать ФСП ID (при несовпадении e-mail — подтверждение кодом)",
+    "operationId": "link_fsp_api_candidate_fsp_link_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/FSPLinkIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FSPLinkOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Конфликт состояния (кулдаун, дубликат, закрытая сущность)",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   },
+   "delete": {
+    "tags": [
+     "Кабинет кандидата"
+    ],
+    "summary": "Отвязать ФСП ID",
+    "operationId": "unlink_fsp_api_candidate_fsp_link_delete",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FSPOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/candidate/fsp/confirm": {
+   "post": {
+    "tags": [
+     "Кабинет кандидата"
+    ],
+    "summary": "Подтвердить привязку ФСП ID кодом",
+    "operationId": "confirm_fsp_api_candidate_fsp_confirm_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/FSPConfirmIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FSPOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Конфликт состояния (кулдаун, дубликат, закрытая сущность)",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Ошибка валидации",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/candidate/fsp/sync": {
+   "post": {
+    "tags": [
+     "Кабинет кандидата"
+    ],
+    "summary": "Обновить данные из реестра",
+    "operationId": "sync_fsp_api_candidate_fsp_sync_post",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FSPOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Ошибка валидации",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/candidate/invitations": {
+   "get": {
+    "tags": [
+     "Кабинет кандидата"
+    ],
+    "summary": "Входящие приглашения",
+    "operationId": "invitations_api_candidate_invitations_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/InvitationOut"
+         },
+         "type": "array",
+         "title": "Response Invitations Api Candidate Invitations Get"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/candidate/invitations/{inv_id}": {
+   "get": {
+    "tags": [
+     "Кабинет кандидата"
+    ],
+    "summary": "Открыть приглашение (статус → «просмотрено»)",
+    "operationId": "open_invitation_api_candidate_invitations__inv_id__get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "inv_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Inv Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/InvitationOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/candidate/invitations/{inv_id}/accept": {
+   "post": {
+    "tags": [
+     "Кабинет кандидата"
+    ],
+    "summary": "Принять приглашение — работодатель получит контакты",
+    "operationId": "accept_api_candidate_invitations__inv_id__accept_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "inv_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Inv Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RespondIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/InvitationOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Конфликт состояния (кулдаун, дубликат, закрытая сущность)",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/candidate/invitations/{inv_id}/reject": {
+   "post": {
+    "tags": [
+     "Кабинет кандидата"
+    ],
+    "summary": "Отклонить приглашение",
+    "operationId": "reject_api_candidate_invitations__inv_id__reject_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "inv_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Inv Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RespondIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/InvitationOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Конфликт состояния (кулдаун, дубликат, закрытая сущность)",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/candidate/invitations/{inv_id}/report": {
+   "post": {
+    "tags": [
+     "Кабинет кандидата"
+    ],
+    "summary": "Пожаловаться на недобросовестное предложение",
+    "operationId": "report_api_candidate_invitations__inv_id__report_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "inv_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Inv Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ReportIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/InvitationOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/candidate/tasks": {
+   "get": {
+    "tags": [
+     "Кабинет кандидата"
+    ],
+    "summary": "Короткие задания от работодателей",
+    "operationId": "tasks_api_candidate_tasks_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/TaskOut"
+         },
+         "type": "array",
+         "title": "Response Tasks Api Candidate Tasks Get"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/candidate/tasks/{task_id}/submit": {
+   "post": {
+    "tags": [
+     "Кабинет кандидата"
+    ],
+    "summary": "Отправить решение или подход",
+    "operationId": "submit_task_api_candidate_tasks__task_id__submit_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "task_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Task Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SubmissionIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Message"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Конфликт состояния (кулдаун, дубликат, закрытая сущность)",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Ошибка валидации",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/candidate/testing": {
+   "get": {
+    "tags": [
+     "Тестирование"
+    ],
+    "summary": "Статус: доступные тесты по грейдам, кулдауны, активная попытка, история",
+    "operationId": "status__api_candidate_testing_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "specialization_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Specialization Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TestingStatusOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/candidate/testing/start": {
+   "post": {
+    "tags": [
+     "Тестирование"
+    ],
+    "summary": "Сгенерировать индивидуальный вариант теста",
+    "operationId": "start_api_candidate_testing_start_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/StartIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AttemptOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Конфликт состояния (кулдаун, дубликат, закрытая сущность)",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Ошибка валидации",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/candidate/testing/attempts/{attempt_id}": {
+   "get": {
+    "tags": [
+     "Тестирование"
+    ],
+    "summary": "Вопросы попытки (без правильных ответов)",
+    "operationId": "get_attempt_api_candidate_testing_attempts__attempt_id__get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "attempt_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Attempt Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AttemptOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/candidate/testing/answer": {
+   "post": {
+    "tags": [
+     "Тестирование"
+    ],
+    "summary": "Сохранить ответ",
+    "operationId": "answer_api_candidate_testing_answer_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AnswerIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/AnswerOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Конфликт состояния (кулдаун, дубликат, закрытая сущность)",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Ошибка валидации",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/candidate/testing/finish": {
+   "post": {
+    "tags": [
+     "Тестирование"
+    ],
+    "summary": "Завершить тест: грейд, категория, компетенции, уверенность",
+    "operationId": "finish_api_candidate_testing_finish_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/FinishIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ResultOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Конфликт состояния (кулдаун, дубликат, закрытая сущность)",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/candidate/testing/results/{attempt_id}": {
+   "get": {
+    "tags": [
+     "Тестирование"
+    ],
+    "summary": "Результат попытки",
+    "operationId": "result_api_candidate_testing_results__attempt_id__get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "attempt_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Attempt Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ResultOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/employer/dashboard": {
+   "get": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Сводка: потребности, воронка приглашений",
+    "operationId": "dashboard_api_employer_dashboard_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/EmployerDashboard"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/employer/profile": {
+   "get": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Профиль компании",
+    "operationId": "get_company_api_employer_profile_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CompanyOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   },
+   "put": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Обновить профиль компании",
+    "operationId": "update_company_api_employer_profile_put",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CompanyIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CompanyOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Ошибка валидации",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/employer/requirements": {
+   "get": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Описанные потребности",
+    "operationId": "list_requirements_api_employer_requirements_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/RequirementOut"
+         },
+         "type": "array",
+         "title": "Response List Requirements Api Employer Requirements Get"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   },
+   "post": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Описать потребность — подборка формируется сразу",
+    "operationId": "create_requirement_api_employer_requirements_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RequirementIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/RequirementOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Ошибка валидации",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/employer/requirements/parse": {
+   "post": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Разобрать текстовое описание потребности (специализация, грейд, стек, вилка)",
+    "operationId": "parse_requirement_api_employer_requirements_parse_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ParseNeedIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ParseNeedOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/employer/requirements/{job_id}": {
+   "get": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Get Requirement",
+    "operationId": "get_requirement_api_employer_requirements__job_id__get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "job_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Job Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/RequirementOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Уточнить потребность (подборка пересчитывается)",
+    "operationId": "update_requirement_api_employer_requirements__job_id__put",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "job_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Job Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RequirementIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/RequirementOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Ошибка валидации",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Закрыть потребность",
+    "operationId": "close_requirement_api_employer_requirements__job_id__delete",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "job_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Job Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Message"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/employer/requirements/{job_id}/matches": {
+   "get": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Ранжированная подборка с объяснением и группировкой по категориям",
+    "description": "Фильтры уточняют уже полученную подборку: снимок ранжирования хранится в БД\n(match_results), поэтому подборка и отметки shortlist не теряются.",
+    "operationId": "matches_api_employer_requirements__job_id__matches_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "job_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Job Id"
+      }
+     },
+     {
+      "name": "grades",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       },
+       "default": [],
+       "title": "Grades"
+      }
+     },
+     {
+      "name": "categories",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       },
+       "default": [],
+       "title": "Categories"
+      }
+     },
+     {
+      "name": "skills",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       },
+       "default": [],
+       "title": "Skills"
+      }
+     },
+     {
+      "name": "has_fsp",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "boolean"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Has Fsp"
+      }
+     },
+     {
+      "name": "min_score",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer",
+         "maximum": 100,
+         "minimum": 0
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Min Score"
+      }
+     },
+     {
+      "name": "shortlisted",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "boolean"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Shortlisted"
+      }
+     },
+     {
+      "name": "refresh",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "default": false,
+       "title": "Refresh"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 200,
+       "minimum": 1,
+       "default": 50,
+       "title": "Limit"
+      }
+     },
+     {
+      "name": "offset",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "minimum": 0,
+       "default": 0,
+       "title": "Offset"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/MatchListOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/employer/requirements/{job_id}/shortlist/{candidate_id}": {
+   "post": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Shortlist",
+    "operationId": "shortlist_api_employer_requirements__job_id__shortlist__candidate_id__post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "job_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Job Id"
+      }
+     },
+     {
+      "name": "candidate_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Candidate Id"
+      }
+     },
+     {
+      "name": "value",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "default": true,
+       "title": "Value"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Message"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/employer/requirements/{job_id}/compare": {
+   "get": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Почему кандидат A выше кандидата B",
+    "operationId": "compare_api_employer_requirements__job_id__compare_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "job_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Job Id"
+      }
+     },
+     {
+      "name": "a",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "A"
+      }
+     },
+     {
+      "name": "b",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "B"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CompareOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/employer/candidates": {
+   "get": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Банк кандидатов с фильтрами",
+    "operationId": "candidates_api_employer_candidates_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "specialization_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Specialization Id"
+      }
+     },
+     {
+      "name": "grades",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       },
+       "default": [],
+       "title": "Grades"
+      }
+     },
+     {
+      "name": "categories",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       },
+       "default": [],
+       "title": "Categories"
+      }
+     },
+     {
+      "name": "skills",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "array",
+       "items": {
+        "type": "string"
+       },
+       "default": [],
+       "title": "Skills"
+      }
+     },
+     {
+      "name": "has_fsp",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "boolean"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Has Fsp"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 200,
+       "minimum": 1,
+       "default": 50,
+       "title": "Limit"
+      }
+     },
+     {
+      "name": "offset",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "minimum": 0,
+       "default": 0,
+       "title": "Offset"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/BankOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/employer/candidates/{candidate_id}": {
+   "get": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Профиль кандидата (контакты — только после принятия приглашения или отклика)",
+    "operationId": "candidate_api_employer_candidates__candidate_id__get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "candidate_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Candidate Id"
+      }
+     },
+     {
+      "name": "requirement_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Requirement Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CandidateDetail"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/employer/invitations": {
+   "get": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "История приглашений и статусы",
+    "operationId": "invitations_api_employer_invitations_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "status",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Status"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/InvitationOut"
+         },
+         "title": "Response Invitations Api Employer Invitations Get"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Пригласить кандидата (зарплата обязательна)",
+    "operationId": "invite_api_employer_invitations_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/InvitationIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/InvitationOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Конфликт состояния (кулдаун, дубликат, закрытая сущность)",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Ошибка валидации",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "429": {
+      "description": "Превышен лимит",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/employer/invitations/{inv_id}/withdraw": {
+   "post": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Withdraw",
+    "operationId": "withdraw_api_employer_invitations__inv_id__withdraw_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "inv_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Inv Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/InvitationOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Конфликт состояния (кулдаун, дубликат, закрытая сущность)",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/employer/applications": {
+   "get": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Отклики на вакансии",
+    "operationId": "applications_api_employer_applications_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "job_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Job Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/EmployerApplicationOut"
+         },
+         "title": "Response Applications Api Employer Applications Get"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/employer/applications/{app_id}/status": {
+   "post": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Application Status",
+    "operationId": "application_status_api_employer_applications__app_id__status_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "app_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "App Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ApplicationStatusIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Message"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Ошибка валидации",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/employer/tasks": {
+   "get": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Короткие задания компании",
+    "operationId": "tasks_api_employer_tasks_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/TaskOut"
+         },
+         "type": "array",
+         "title": "Response Tasks Api Employer Tasks Get"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   },
+   "post": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Create Task",
+    "operationId": "create_task_api_employer_tasks_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/TaskIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TaskOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Ошибка валидации",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/employer/tasks/{task_id}/submissions": {
+   "get": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Task Submissions",
+    "operationId": "task_submissions_api_employer_tasks__task_id__submissions_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "task_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Task Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/SubmissionOut"
+         },
+         "title": "Response Task Submissions Api Employer Tasks  Task Id  Submissions Get"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/employer/submissions/{submission_id}/review": {
+   "post": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Review",
+    "operationId": "review_api_employer_submissions__submission_id__review_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "submission_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Submission Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ReviewIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Message"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Ошибка валидации",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/jobs": {
+   "get": {
+    "tags": [
+     "Вакансии и отклики"
+    ],
+    "summary": "Опубликованные вакансии (для кандидата — с % совпадения)",
+    "operationId": "jobs_api_jobs_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "specialization_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Specialization Id"
+      }
+     },
+     {
+      "name": "grade_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Grade Id"
+      }
+     },
+     {
+      "name": "q",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Q"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/PublicJobOut"
+         },
+         "title": "Response Jobs Api Jobs Get"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/jobs/{job_id}": {
+   "get": {
+    "tags": [
+     "Вакансии и отклики"
+    ],
+    "summary": "Job",
+    "operationId": "job_api_jobs__job_id__get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "job_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Job Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PublicJobOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/applications": {
+   "get": {
+    "tags": [
+     "Вакансии и отклики"
+    ],
+    "summary": "Мои отклики",
+    "operationId": "my_applications_api_applications_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/ApplicationOut"
+         },
+         "type": "array",
+         "title": "Response My Applications Api Applications Get"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   },
+   "post": {
+    "tags": [
+     "Вакансии и отклики"
+    ],
+    "summary": "Откликнуться на вакансию",
+    "operationId": "apply_api_applications_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ApplicationIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApplicationOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Конфликт состояния (кулдаун, дубликат, закрытая сущность)",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Ошибка валидации",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/api/mock-fsp/v1/participants/{fsp_id}": {
+   "get": {
+    "tags": [
+     "Мок реестра ФСП"
+    ],
+    "summary": "Участник ФСП по ФСП ID",
+    "operationId": "participant_api_mock_fsp_v1_participants__fsp_id__get",
+    "parameters": [
+     {
+      "name": "fsp_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Fsp Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/mock-fsp/v1/participants": {
+   "get": {
+    "tags": [
+     "Мок реестра ФСП"
+    ],
+    "summary": "Поиск участника по e-mail",
+    "operationId": "by_email_api_mock_fsp_v1_participants_get",
+    "parameters": [
+     {
+      "name": "email",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Email"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/mock-fsp/v1/stats": {
+   "get": {
+    "tags": [
+     "Мок реестра ФСП"
+    ],
+    "summary": "Сводка мок-реестра",
+    "operationId": "stats_api_mock_fsp_v1_stats_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/health": {
+   "get": {
+    "tags": [
+     "Служебное"
+    ],
+    "summary": "Health",
+    "operationId": "health_api_health_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "AnswerIn": {
+    "properties": {
+     "attempt_id": {
+      "type": "integer",
+      "title": "Attempt Id"
+     },
+     "item_id": {
+      "type": "integer",
+      "title": "Item Id"
+     },
+     "answer": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "integer"
+        },
+        {
+         "type": "number"
+        },
+        {
+         "type": "string"
+        }
+       ]
+      },
+      "type": "array",
+      "maxItems": 10,
+      "minItems": 1,
+      "title": "Answer"
+     }
+    },
+    "type": "object",
+    "required": [
+     "attempt_id",
+     "item_id",
+     "answer"
+    ],
+    "title": "AnswerIn"
+   },
+   "AnswerOut": {
+    "properties": {
+     "item_id": {
+      "type": "integer",
+      "title": "Item Id"
+     },
+     "saved": {
+      "type": "boolean",
+      "title": "Saved"
+     },
+     "answered": {
+      "type": "integer",
+      "title": "Answered"
+     },
+     "total": {
+      "type": "integer",
+      "title": "Total"
+     }
+    },
+    "type": "object",
+    "required": [
+     "item_id",
+     "saved",
+     "answered",
+     "total"
+    ],
+    "title": "AnswerOut"
+   },
+   "ApiError": {
+    "properties": {
+     "code": {
+      "type": "string",
+      "title": "Code"
+     },
+     "message": {
+      "type": "string",
+      "title": "Message"
+     },
+     "details": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Details",
+      "default": {}
+     }
+    },
+    "type": "object",
+    "required": [
+     "code",
+     "message"
+    ],
+    "title": "ApiError"
+   },
+   "ApplicationIn": {
+    "properties": {
+     "job_id": {
+      "type": "integer",
+      "title": "Job Id"
+     },
+     "cover_letter": {
+      "type": "string",
+      "maxLength": 3000,
+      "title": "Cover Letter",
+      "default": ""
+     }
+    },
+    "type": "object",
+    "required": [
+     "job_id"
+    ],
+    "title": "ApplicationIn"
+   },
+   "ApplicationJobRef": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "title"
+    ],
+    "title": "ApplicationJobRef"
+   },
+   "ApplicationOut": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     },
+     "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Updated At"
+     },
+     "cover_letter": {
+      "type": "string",
+      "title": "Cover Letter"
+     },
+     "match_percent": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Match Percent"
+     },
+     "job": {
+      "$ref": "#/components/schemas/RequirementOut"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "status",
+     "created_at",
+     "updated_at",
+     "cover_letter",
+     "match_percent",
+     "job"
+    ],
+    "title": "ApplicationOut"
+   },
+   "ApplicationStatusIn": {
+    "properties": {
+     "status": {
+      "type": "string",
+      "enum": [
+       "viewed",
+       "accepted",
+       "rejected"
+      ],
+      "title": "Status"
+     }
+    },
+    "type": "object",
+    "required": [
+     "status"
+    ],
+    "title": "ApplicationStatusIn"
+   },
+   "AttemptBrief": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "specialization_id": {
+      "type": "string",
+      "title": "Specialization Id"
+     },
+     "target_grade": {
+      "type": "string",
+      "title": "Target Grade"
+     },
+     "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Started At"
+     },
+     "deadline_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Deadline At"
+     },
+     "answered": {
+      "type": "integer",
+      "title": "Answered"
+     },
+     "total": {
+      "type": "integer",
+      "title": "Total"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "specialization_id",
+     "target_grade",
+     "started_at",
+     "deadline_at",
+     "answered",
+     "total"
+    ],
+    "title": "AttemptBrief"
+   },
+   "AttemptOut": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "specialization_id": {
+      "type": "string",
+      "title": "Specialization Id"
+     },
+     "target_grade": {
+      "type": "string",
+      "title": "Target Grade"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Started At"
+     },
+     "deadline_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Deadline At"
+     },
+     "server_time": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Server Time"
+     },
+     "answered": {
+      "type": "integer",
+      "title": "Answered"
+     },
+     "total": {
+      "type": "integer",
+      "title": "Total"
+     },
+     "blueprint": {
+      "$ref": "#/components/schemas/BlueprintOut"
+     },
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/ItemOut"
+      },
+      "type": "array",
+      "title": "Items"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "specialization_id",
+     "target_grade",
+     "status",
+     "started_at",
+     "deadline_at",
+     "server_time",
+     "answered",
+     "total",
+     "blueprint",
+     "items"
+    ],
+    "title": "AttemptOut"
+   },
+   "BankOut": {
+    "properties": {
+     "total": {
+      "type": "integer",
+      "title": "Total"
+     },
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/CandidateCard"
+      },
+      "type": "array",
+      "title": "Items"
+     },
+     "categories": {
+      "items": {
+       "$ref": "#/components/schemas/CategoryCount"
+      },
+      "type": "array",
+      "title": "Categories"
+     }
+    },
+    "type": "object",
+    "required": [
+     "total",
+     "items",
+     "categories"
+    ],
+    "title": "BankOut"
+   },
+   "BlueprintOut": {
+    "properties": {
+     "specialization": {
+      "type": "string",
+      "title": "Specialization"
+     },
+     "target_grade": {
+      "type": "string",
+      "title": "Target Grade"
+     },
+     "length": {
+      "type": "integer",
+      "title": "Length"
+     },
+     "competency_quota": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "type": "object",
+      "title": "Competency Quota"
+     },
+     "difficulty_counts": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "type": "object",
+      "title": "Difficulty Counts"
+     }
+    },
+    "type": "object",
+    "required": [
+     "specialization",
+     "target_grade",
+     "length",
+     "competency_quota",
+     "difficulty_counts"
+    ],
+    "title": "BlueprintOut"
+   },
+   "Body_parse_resume_api_candidate_resume_parse_post": {
+    "properties": {
+     "file": {
+      "type": "string",
+      "contentMediaType": "application/octet-stream",
+      "title": "File"
+     }
+    },
+    "type": "object",
+    "required": [
+     "file"
+    ],
+    "title": "Body_parse_resume_api_candidate_resume_parse_post"
+   },
+   "CandidateCard": {
+    "properties": {
+     "candidate_id": {
+      "type": "integer",
+      "title": "Candidate Id"
+     },
+     "display_name": {
+      "type": "string",
+      "title": "Display Name"
+     },
+     "headline": {
+      "type": "string",
+      "title": "Headline"
+     },
+     "city": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "City"
+     },
+     "experience_years": {
+      "type": "number",
+      "title": "Experience Years"
+     },
+     "work_format": {
+      "type": "string",
+      "title": "Work Format"
+     },
+     "expected_salary": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expected Salary"
+     },
+     "category": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Category"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "skills": {
+      "items": {
+       "$ref": "#/components/schemas/CandidateSkillView"
+      },
+      "type": "array",
+      "title": "Skills"
+     },
+     "fsp": {
+      "$ref": "#/components/schemas/FSPSummaryView"
+     },
+     "last_active_days": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Active Days"
+     },
+     "match": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/MatchOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "shortlisted": {
+      "type": "boolean",
+      "title": "Shortlisted",
+      "default": false
+     },
+     "invitation_status": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Invitation Status"
+     },
+     "applied": {
+      "type": "boolean",
+      "title": "Applied",
+      "default": false
+     },
+     "profile_strength": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Profile Strength"
+     }
+    },
+    "type": "object",
+    "required": [
+     "candidate_id",
+     "display_name",
+     "headline",
+     "city",
+     "experience_years",
+     "work_format",
+     "expected_salary",
+     "category",
+     "skills",
+     "fsp",
+     "last_active_days"
+    ],
+    "title": "CandidateCard"
+   },
+   "CandidateDashboard": {
+    "properties": {
+     "profile": {
+      "$ref": "#/components/schemas/CandidateProfileOut"
+     },
+     "invitations": {
+      "$ref": "#/components/schemas/InvitationCounters"
+     },
+     "last_result": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/LastResult"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "steps": {
+      "items": {
+       "$ref": "#/components/schemas/Step"
+      },
+      "type": "array",
+      "title": "Steps"
+     },
+     "searchable": {
+      "type": "boolean",
+      "title": "Searchable"
+     }
+    },
+    "type": "object",
+    "required": [
+     "profile",
+     "invitations",
+     "last_result",
+     "steps",
+     "searchable"
+    ],
+    "title": "CandidateDashboard"
+   },
+   "CandidateDetail": {
+    "properties": {
+     "candidate_id": {
+      "type": "integer",
+      "title": "Candidate Id"
+     },
+     "display_name": {
+      "type": "string",
+      "title": "Display Name"
+     },
+     "headline": {
+      "type": "string",
+      "title": "Headline"
+     },
+     "city": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "City"
+     },
+     "experience_years": {
+      "type": "number",
+      "title": "Experience Years"
+     },
+     "work_format": {
+      "type": "string",
+      "title": "Work Format"
+     },
+     "expected_salary": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expected Salary"
+     },
+     "category": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Category"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "skills": {
+      "items": {
+       "$ref": "#/components/schemas/CandidateSkillView"
+      },
+      "type": "array",
+      "title": "Skills"
+     },
+     "fsp": {
+      "$ref": "#/components/schemas/FSPSummaryView"
+     },
+     "last_active_days": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Active Days"
+     },
+     "match": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/MatchOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "shortlisted": {
+      "type": "boolean",
+      "title": "Shortlisted",
+      "default": false
+     },
+     "invitation_status": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Invitation Status"
+     },
+     "applied": {
+      "type": "boolean",
+      "title": "Applied",
+      "default": false
+     },
+     "profile_strength": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Profile Strength"
+     },
+     "about": {
+      "type": "string",
+      "title": "About"
+     },
+     "education": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Education"
+     },
+     "team_roles": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Team Roles"
+     },
+     "soft_skills": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Soft Skills"
+     },
+     "competencies": {
+      "items": {
+       "$ref": "#/components/schemas/CompetencyScore"
+      },
+      "type": "array",
+      "title": "Competencies"
+     },
+     "test_history": {
+      "items": {
+       "$ref": "#/components/schemas/TestHistoryItem"
+      },
+      "type": "array",
+      "title": "Test History"
+     },
+     "fsp_profile": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/FSPProfileView"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "contacts_visible": {
+      "type": "boolean",
+      "title": "Contacts Visible"
+     },
+     "contacts_reason": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Contacts Reason"
+     },
+     "contacts": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Contacts"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "invitations": {
+      "items": {
+       "$ref": "#/components/schemas/InvitationOut"
+      },
+      "type": "array",
+      "title": "Invitations"
+     },
+     "requirement_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Requirement Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "candidate_id",
+     "display_name",
+     "headline",
+     "city",
+     "experience_years",
+     "work_format",
+     "expected_salary",
+     "category",
+     "skills",
+     "fsp",
+     "last_active_days",
+     "about",
+     "education",
+     "team_roles",
+     "soft_skills",
+     "competencies",
+     "test_history",
+     "fsp_profile",
+     "contacts_visible",
+     "contacts_reason",
+     "contacts",
+     "invitations",
+     "requirement_id"
+    ],
+    "title": "CandidateDetail"
+   },
+   "CandidateProfileIn": {
+    "properties": {
+     "first_name": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 64
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "First Name"
+     },
+     "last_name": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 64
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Name"
+     },
+     "phone": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 32
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Phone"
+     },
+     "telegram": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 64
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Telegram"
+     },
+     "city": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 64
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "City"
+     },
+     "headline": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 120
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Headline"
+     },
+     "about": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 4000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "About"
+     },
+     "experience_years": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 50.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Experience Years"
+     },
+     "education": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 255
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Education"
+     },
+     "team_roles": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "string"
+        },
+        "type": "array",
+        "maxItems": 10
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Team Roles"
+     },
+     "soft_skills": {
+      "anyOf": [
+       {
+        "items": {
+         "type": "string"
+        },
+        "type": "array",
+        "maxItems": 15
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Soft Skills"
+     },
+     "expected_salary": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 10000000.0,
+        "exclusiveMinimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expected Salary"
+     },
+     "work_format": {
+      "anyOf": [
+       {
+        "type": "string",
+        "enum": [
+         "remote",
+         "office",
+         "hybrid",
+         "any"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Work Format"
+     },
+     "specialization_id": {
+      "anyOf": [
+       {
+        "type": "string",
+        "enum": [
+         "backend",
+         "frontend",
+         "data_ml",
+         "devops"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Specialization Id"
+     },
+     "declared_grade_id": {
+      "anyOf": [
+       {
+        "type": "string",
+        "enum": [
+         "junior",
+         "middle",
+         "senior"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Declared Grade Id"
+     },
+     "skills": {
+      "anyOf": [
+       {
+        "items": {
+         "$ref": "#/components/schemas/CandidateSkillIn"
+        },
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Skills"
+     }
+    },
+    "type": "object",
+    "title": "CandidateProfileIn"
+   },
+   "CandidateProfileOut": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "email": {
+      "type": "string",
+      "title": "Email"
+     },
+     "first_name": {
+      "type": "string",
+      "title": "First Name"
+     },
+     "last_name": {
+      "type": "string",
+      "title": "Last Name"
+     },
+     "phone": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Phone"
+     },
+     "telegram": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Telegram"
+     },
+     "city": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "City"
+     },
+     "headline": {
+      "type": "string",
+      "title": "Headline"
+     },
+     "about": {
+      "type": "string",
+      "title": "About"
+     },
+     "experience_years": {
+      "type": "number",
+      "title": "Experience Years"
+     },
+     "education": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Education"
+     },
+     "team_roles": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Team Roles"
+     },
+     "soft_skills": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Soft Skills"
+     },
+     "expected_salary": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expected Salary"
+     },
+     "work_format": {
+      "type": "string",
+      "title": "Work Format"
+     },
+     "specialization_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Specialization Id"
+     },
+     "declared_grade_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Declared Grade Id"
+     },
+     "skills": {
+      "items": {
+       "$ref": "#/components/schemas/CandidateSkillView"
+      },
+      "type": "array",
+      "title": "Skills"
+     },
+     "category": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Category"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "competencies": {
+      "items": {
+       "$ref": "#/components/schemas/CompetencyScore"
+      },
+      "type": "array",
+      "title": "Competencies"
+     },
+     "completeness": {
+      "$ref": "#/components/schemas/Completeness"
+     },
+     "fsp": {
+      "$ref": "#/components/schemas/FSPSummaryView"
+     },
+     "fsp_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Fsp Id"
+     },
+     "settings": {
+      "$ref": "#/components/schemas/CandidateSettings"
+     },
+     "resume_filename": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Resume Filename"
+     },
+     "profile_updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Profile Updated At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "email",
+     "first_name",
+     "last_name",
+     "phone",
+     "telegram",
+     "city",
+     "headline",
+     "about",
+     "experience_years",
+     "education",
+     "team_roles",
+     "soft_skills",
+     "expected_salary",
+     "work_format",
+     "specialization_id",
+     "declared_grade_id",
+     "skills",
+     "category",
+     "competencies",
+     "completeness",
+     "fsp",
+     "fsp_id",
+     "settings",
+     "resume_filename",
+     "profile_updated_at"
+    ],
+    "title": "CandidateProfileOut"
+   },
+   "CandidateSettings": {
+    "properties": {
+     "open_to_offers": {
+      "type": "boolean",
+      "title": "Open To Offers"
+     },
+     "show_full_name": {
+      "type": "boolean",
+      "title": "Show Full Name"
+     },
+     "show_fsp": {
+      "type": "boolean",
+      "title": "Show Fsp"
+     },
+     "show_salary": {
+      "type": "boolean",
+      "title": "Show Salary"
+     },
+     "consent_processing_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Consent Processing At"
+     },
+     "consent_publication_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Consent Publication At"
+     },
+     "searchable": {
+      "type": "boolean",
+      "title": "Searchable"
+     }
+    },
+    "type": "object",
+    "required": [
+     "open_to_offers",
+     "show_full_name",
+     "show_fsp",
+     "show_salary",
+     "consent_processing_at",
+     "consent_publication_at",
+     "searchable"
+    ],
+    "title": "CandidateSettings"
+   },
+   "CandidateSettingsIn": {
+    "properties": {
+     "open_to_offers": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Open To Offers"
+     },
+     "show_full_name": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Show Full Name"
+     },
+     "show_fsp": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Show Fsp"
+     },
+     "show_salary": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Show Salary"
+     },
+     "consent_publication": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Consent Publication"
+     }
+    },
+    "type": "object",
+    "title": "CandidateSettingsIn"
+   },
+   "CandidateSkillIn": {
+    "properties": {
+     "slug": {
+      "type": "string",
+      "maxLength": 48,
+      "title": "Slug"
+     },
+     "level": {
+      "type": "integer",
+      "maximum": 5.0,
+      "minimum": 1.0,
+      "title": "Level"
+     },
+     "years": {
+      "type": "number",
+      "maximum": 50.0,
+      "minimum": 0.0,
+      "title": "Years"
+     }
+    },
+    "type": "object",
+    "required": [
+     "slug",
+     "level",
+     "years"
+    ],
+    "title": "CandidateSkillIn"
+   },
+   "CandidateSkillView": {
+    "properties": {
+     "slug": {
+      "type": "string",
+      "title": "Slug"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "level": {
+      "type": "integer",
+      "title": "Level"
+     },
+     "years": {
+      "type": "number",
+      "title": "Years"
+     },
+     "verified": {
+      "type": "boolean",
+      "title": "Verified"
+     },
+     "competency_score": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Competency Score"
+     }
+    },
+    "type": "object",
+    "required": [
+     "slug",
+     "name",
+     "level",
+     "years",
+     "verified"
+    ],
+    "title": "CandidateSkillView"
+   },
+   "Category": {
+    "properties": {
+     "label": {
+      "type": "string",
+      "title": "Label"
+     },
+     "specialization_id": {
+      "type": "string",
+      "title": "Specialization Id"
+     },
+     "specialization_name": {
+      "type": "string",
+      "title": "Specialization Name"
+     },
+     "grade_id": {
+      "type": "string",
+      "title": "Grade Id"
+     },
+     "grade_name": {
+      "type": "string",
+      "title": "Grade Name"
+     },
+     "verified_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Verified At"
+     },
+     "scaled_score": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Scaled Score"
+     },
+     "confidence": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Confidence"
+     },
+     "theta": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Theta"
+     },
+     "locked_until": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Locked Until"
+     },
+     "upgrade_eligible": {
+      "type": "boolean",
+      "title": "Upgrade Eligible"
+     }
+    },
+    "type": "object",
+    "required": [
+     "label",
+     "specialization_id",
+     "specialization_name",
+     "grade_id",
+     "grade_name",
+     "verified_at",
+     "scaled_score",
+     "confidence",
+     "theta",
+     "locked_until",
+     "upgrade_eligible"
+    ],
+    "title": "Category"
+   },
+   "CategoryCount": {
+    "properties": {
+     "label": {
+      "type": "string",
+      "title": "Label"
+     },
+     "count": {
+      "type": "integer",
+      "title": "Count"
+     }
+    },
+    "type": "object",
+    "required": [
+     "label",
+     "count"
+    ],
+    "title": "CategoryCount"
+   },
+   "CategoryGroup": {
+    "properties": {
+     "label": {
+      "type": "string",
+      "title": "Label"
+     },
+     "specialization_id": {
+      "type": "string",
+      "title": "Specialization Id"
+     },
+     "grade_id": {
+      "type": "string",
+      "title": "Grade Id"
+     },
+     "count": {
+      "type": "integer",
+      "title": "Count"
+     },
+     "avg_percent": {
+      "type": "integer",
+      "title": "Avg Percent"
+     },
+     "top_percent": {
+      "type": "integer",
+      "title": "Top Percent"
+     }
+    },
+    "type": "object",
+    "required": [
+     "label",
+     "specialization_id",
+     "grade_id",
+     "count",
+     "avg_percent",
+     "top_percent"
+    ],
+    "title": "CategoryGroup"
+   },
+   "Company": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "industry": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Industry"
+     },
+     "city": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "City"
+     },
+     "website": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Website"
+     },
+     "description": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Description"
+     },
+     "size": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Size"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "name"
+    ],
+    "title": "Company"
+   },
+   "CompanyIn": {
+    "properties": {
+     "company_name": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 128
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Company Name"
+     },
+     "industry": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 96
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Industry"
+     },
+     "description": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 4000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Description"
+     },
+     "website": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 255
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Website"
+     },
+     "city": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 64
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "City"
+     },
+     "size": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 32
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Size"
+     },
+     "contact_name": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 128
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Contact Name"
+     },
+     "contact_email": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 255
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Contact Email"
+     },
+     "contact_phone": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 32
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Contact Phone"
+     },
+     "contact_telegram": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 64
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Contact Telegram"
+     }
+    },
+    "type": "object",
+    "title": "CompanyIn"
+   },
+   "CompanyOut": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "email": {
+      "type": "string",
+      "title": "Email"
+     },
+     "company_name": {
+      "type": "string",
+      "title": "Company Name"
+     },
+     "industry": {
+      "type": "string",
+      "title": "Industry"
+     },
+     "description": {
+      "type": "string",
+      "title": "Description"
+     },
+     "website": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Website"
+     },
+     "city": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "City"
+     },
+     "size": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Size"
+     },
+     "contact_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Contact Name"
+     },
+     "contact_email": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Contact Email"
+     },
+     "contact_phone": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Contact Phone"
+     },
+     "contact_telegram": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Contact Telegram"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "email",
+     "company_name",
+     "industry",
+     "description",
+     "website",
+     "city",
+     "size",
+     "contact_name",
+     "contact_email",
+     "contact_phone",
+     "contact_telegram"
+    ],
+    "title": "CompanyOut"
+   },
+   "CompareDelta": {
+    "properties": {
+     "key": {
+      "type": "string",
+      "title": "Key"
+     },
+     "label": {
+      "type": "string",
+      "title": "Label"
+     },
+     "delta": {
+      "type": "number",
+      "title": "Delta"
+     }
+    },
+    "type": "object",
+    "required": [
+     "key",
+     "label",
+     "delta"
+    ],
+    "title": "CompareDelta"
+   },
+   "CompareOut": {
+    "properties": {
+     "delta_percent": {
+      "type": "integer",
+      "title": "Delta Percent"
+     },
+     "components": {
+      "items": {
+       "$ref": "#/components/schemas/CompareDelta"
+      },
+      "type": "array",
+      "title": "Components"
+     },
+     "summary": {
+      "type": "string",
+      "title": "Summary"
+     },
+     "a": {
+      "$ref": "#/components/schemas/CompareSide"
+     },
+     "b": {
+      "$ref": "#/components/schemas/CompareSide"
+     }
+    },
+    "type": "object",
+    "required": [
+     "delta_percent",
+     "components",
+     "summary",
+     "a",
+     "b"
+    ],
+    "title": "CompareOut"
+   },
+   "CompareSide": {
+    "properties": {
+     "candidate_id": {
+      "type": "integer",
+      "title": "Candidate Id"
+     },
+     "percent": {
+      "type": "integer",
+      "title": "Percent"
+     },
+     "components": {
+      "items": {
+       "$ref": "#/components/schemas/ComponentOut"
+      },
+      "type": "array",
+      "title": "Components"
+     }
+    },
+    "type": "object",
+    "required": [
+     "candidate_id",
+     "percent",
+     "components"
+    ],
+    "title": "CompareSide"
+   },
+   "CompetencyOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "weight": {
+      "type": "number",
+      "title": "Weight"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "name",
+     "weight"
+    ],
+    "title": "CompetencyOut"
+   },
+   "CompetencyScore": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "score": {
+      "type": "integer",
+      "title": "Score"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "name",
+     "score"
+    ],
+    "title": "CompetencyScore"
+   },
+   "Completeness": {
+    "properties": {
+     "percent": {
+      "type": "integer",
+      "title": "Percent"
+     },
+     "missing": {
+      "items": {
+       "$ref": "#/components/schemas/CompletenessItem"
+      },
+      "type": "array",
+      "title": "Missing"
+     }
+    },
+    "type": "object",
+    "required": [
+     "percent",
+     "missing"
+    ],
+    "title": "Completeness"
+   },
+   "CompletenessItem": {
+    "properties": {
+     "key": {
+      "type": "string",
+      "title": "Key"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     }
+    },
+    "type": "object",
+    "required": [
+     "key",
+     "title"
+    ],
+    "title": "CompletenessItem"
+   },
+   "ComponentOut": {
+    "properties": {
+     "key": {
+      "type": "string",
+      "title": "Key"
+     },
+     "label": {
+      "type": "string",
+      "title": "Label"
+     },
+     "value": {
+      "type": "number",
+      "title": "Value"
+     },
+     "weight": {
+      "type": "number",
+      "title": "Weight"
+     },
+     "available": {
+      "type": "boolean",
+      "title": "Available"
+     },
+     "detail": {
+      "type": "string",
+      "title": "Detail"
+     },
+     "contribution": {
+      "type": "number",
+      "title": "Contribution"
+     }
+    },
+    "type": "object",
+    "required": [
+     "key",
+     "label",
+     "value",
+     "weight",
+     "available",
+     "detail",
+     "contribution"
+    ],
+    "title": "ComponentOut"
+   },
+   "Contacts": {
+    "properties": {
+     "full_name": {
+      "type": "string",
+      "title": "Full Name"
+     },
+     "email": {
+      "type": "string",
+      "title": "Email"
+     },
+     "phone": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Phone"
+     },
+     "telegram": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Telegram"
+     }
+    },
+    "type": "object",
+    "required": [
+     "full_name",
+     "email"
+    ],
+    "title": "Contacts"
+   },
+   "EligibilityOut": {
+    "properties": {
+     "grade": {
+      "type": "string",
+      "title": "Grade"
+     },
+     "grade_name": {
+      "type": "string",
+      "title": "Grade Name"
+     },
+     "allowed": {
+      "type": "boolean",
+      "title": "Allowed"
+     },
+     "kind": {
+      "type": "string",
+      "title": "Kind"
+     },
+     "reason": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reason"
+     },
+     "available_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Available At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "grade",
+     "grade_name",
+     "allowed",
+     "kind"
+    ],
+    "title": "EligibilityOut"
+   },
+   "EmployerApplicationOut": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     },
+     "cover_letter": {
+      "type": "string",
+      "title": "Cover Letter"
+     },
+     "match_percent": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Match Percent"
+     },
+     "job": {
+      "$ref": "#/components/schemas/ApplicationJobRef"
+     },
+     "candidate": {
+      "$ref": "#/components/schemas/CandidateCard"
+     },
+     "contacts": {
+      "$ref": "#/components/schemas/Contacts"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "status",
+     "created_at",
+     "cover_letter",
+     "match_percent",
+     "job",
+     "candidate",
+     "contacts"
+    ],
+    "title": "EmployerApplicationOut"
+   },
+   "EmployerDashboard": {
+    "properties": {
+     "company": {
+      "$ref": "#/components/schemas/CompanyOut"
+     },
+     "company_complete": {
+      "type": "boolean",
+      "title": "Company Complete"
+     },
+     "requirements": {
+      "items": {
+       "$ref": "#/components/schemas/RequirementOut"
+      },
+      "type": "array",
+      "title": "Requirements"
+     },
+     "requirements_total": {
+      "type": "integer",
+      "title": "Requirements Total"
+     },
+     "invitations": {
+      "$ref": "#/components/schemas/EmployerInvitationStats"
+     },
+     "recent_responses": {
+      "items": {
+       "$ref": "#/components/schemas/InvitationOut"
+      },
+      "type": "array",
+      "title": "Recent Responses"
+     }
+    },
+    "type": "object",
+    "required": [
+     "company",
+     "company_complete",
+     "requirements",
+     "requirements_total",
+     "invitations",
+     "recent_responses"
+    ],
+    "title": "EmployerDashboard"
+   },
+   "EmployerInvitationStats": {
+    "properties": {
+     "total": {
+      "type": "integer",
+      "title": "Total"
+     },
+     "by_status": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "type": "object",
+      "title": "By Status"
+     },
+     "acceptance_rate": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Acceptance Rate"
+     }
+    },
+    "type": "object",
+    "required": [
+     "total",
+     "by_status",
+     "acceptance_rate"
+    ],
+    "title": "EmployerInvitationStats"
+   },
+   "FSPAchievementView": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "event_name": {
+      "type": "string",
+      "title": "Event Name"
+     },
+     "discipline": {
+      "type": "string",
+      "title": "Discipline"
+     },
+     "level": {
+      "type": "string",
+      "title": "Level"
+     },
+     "level_name": {
+      "type": "string",
+      "title": "Level Name"
+     },
+     "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+     },
+     "place": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Place"
+     },
+     "participants_total": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Participants Total"
+     },
+     "team_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Team Name"
+     },
+     "role": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Role"
+     },
+     "score": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Score"
+     },
+     "certificate_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Certificate Url"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "event_name",
+     "discipline",
+     "level",
+     "level_name",
+     "date"
+    ],
+    "title": "FSPAchievementView"
+   },
+   "FSPConfirmIn": {
+    "properties": {
+     "code": {
+      "type": "string",
+      "pattern": "^\\d{6}$",
+      "title": "Code"
+     }
+    },
+    "type": "object",
+    "required": [
+     "code"
+    ],
+    "title": "FSPConfirmIn"
+   },
+   "FSPLinkIn": {
+    "properties": {
+     "fsp_id": {
+      "type": "string",
+      "maxLength": 32,
+      "minLength": 3,
+      "title": "Fsp Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "fsp_id"
+    ],
+    "title": "FSPLinkIn"
+   },
+   "FSPLinkOut": {
+    "properties": {
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "masked_email": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Masked Email"
+     },
+     "dev_code": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Dev Code"
+     }
+    },
+    "type": "object",
+    "required": [
+     "status"
+    ],
+    "title": "FSPLinkOut"
+   },
+   "FSPOut": {
+    "properties": {
+     "linked": {
+      "type": "boolean",
+      "title": "Linked"
+     },
+     "fsp_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Fsp Id"
+     },
+     "pending_fsp_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Pending Fsp Id"
+     },
+     "summary": {
+      "$ref": "#/components/schemas/FSPSummaryView"
+     },
+     "profile": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/FSPProfileView"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "type": "object",
+    "required": [
+     "linked",
+     "fsp_id",
+     "pending_fsp_id",
+     "summary",
+     "profile"
+    ],
+    "title": "FSPOut"
+   },
+   "FSPProfileView": {
+    "properties": {
+     "fsp_id": {
+      "type": "string",
+      "title": "Fsp Id"
+     },
+     "full_name": {
+      "type": "string",
+      "title": "Full Name"
+     },
+     "region": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Region"
+     },
+     "sport_rank": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sport Rank"
+     },
+     "source": {
+      "type": "string",
+      "title": "Source"
+     },
+     "synced_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Synced At"
+     },
+     "achievements": {
+      "items": {
+       "$ref": "#/components/schemas/FSPAchievementView"
+      },
+      "type": "array",
+      "title": "Achievements"
+     }
+    },
+    "type": "object",
+    "required": [
+     "fsp_id",
+     "full_name",
+     "source",
+     "synced_at",
+     "achievements"
+    ],
+    "title": "FSPProfileView"
+   },
+   "FSPSummaryView": {
+    "properties": {
+     "available": {
+      "type": "boolean",
+      "title": "Available"
+     },
+     "strength": {
+      "type": "number",
+      "title": "Strength"
+     },
+     "count": {
+      "type": "integer",
+      "title": "Count"
+     },
+     "prizes": {
+      "type": "integer",
+      "title": "Prizes"
+     },
+     "best_text": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Best Text"
+     },
+     "sport_rank": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sport Rank"
+     },
+     "highlights": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Highlights",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "available",
+     "strength",
+     "count",
+     "prizes"
+    ],
+    "title": "FSPSummaryView"
+   },
+   "FinishIn": {
+    "properties": {
+     "attempt_id": {
+      "type": "integer",
+      "title": "Attempt Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "attempt_id"
+    ],
+    "title": "FinishIn"
+   },
+   "GradeOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "rank": {
+      "type": "integer",
+      "title": "Rank"
+     },
+     "description": {
+      "type": "string",
+      "title": "Description"
+     },
+     "theta_cut": {
+      "type": "number",
+      "title": "Theta Cut"
+     },
+     "score_threshold": {
+      "type": "integer",
+      "title": "Score Threshold"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "name",
+     "rank",
+     "description",
+     "theta_cut",
+     "score_threshold"
+    ],
+    "title": "GradeOut"
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "type": "array",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "title": "HTTPValidationError"
+   },
+   "InvitationCandidate": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "display_name": {
+      "type": "string",
+      "title": "Display Name"
+     },
+     "category_label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Category Label"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "display_name",
+     "category_label"
+    ],
+    "title": "InvitationCandidate"
+   },
+   "InvitationCounters": {
+    "properties": {
+     "total": {
+      "type": "integer",
+      "title": "Total"
+     },
+     "new": {
+      "type": "integer",
+      "title": "New"
+     },
+     "active": {
+      "type": "integer",
+      "title": "Active"
+     },
+     "accepted": {
+      "type": "integer",
+      "title": "Accepted"
+     },
+     "latest": {
+      "items": {
+       "$ref": "#/components/schemas/InvitationOut"
+      },
+      "type": "array",
+      "title": "Latest"
+     }
+    },
+    "type": "object",
+    "required": [
+     "total",
+     "new",
+     "active",
+     "accepted",
+     "latest"
+    ],
+    "title": "InvitationCounters"
+   },
+   "InvitationIn": {
+    "properties": {
+     "candidate_id": {
+      "type": "integer",
+      "title": "Candidate Id"
+     },
+     "job_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Job Id"
+     },
+     "position_title": {
+      "type": "string",
+      "maxLength": 128,
+      "minLength": 3,
+      "title": "Position Title"
+     },
+     "description": {
+      "type": "string",
+      "maxLength": 4000,
+      "minLength": 10,
+      "title": "Description"
+     },
+     "salary_from": {
+      "type": "integer",
+      "maximum": 10000000.0,
+      "exclusiveMinimum": 0.0,
+      "title": "Salary From",
+      "description": "Обязательно, ₽"
+     },
+     "salary_to": {
+      "type": "integer",
+      "maximum": 10000000.0,
+      "exclusiveMinimum": 0.0,
+      "title": "Salary To",
+      "description": "Обязательно, ₽"
+     },
+     "work_format": {
+      "type": "string",
+      "enum": [
+       "remote",
+       "office",
+       "hybrid",
+       "any"
+      ],
+      "title": "Work Format",
+      "default": "any"
+     },
+     "contact_method": {
+      "type": "string",
+      "maxLength": 255,
+      "minLength": 3,
+      "title": "Contact Method",
+      "description": "Как связаться с работодателем"
+     }
+    },
+    "type": "object",
+    "required": [
+     "candidate_id",
+     "position_title",
+     "description",
+     "salary_from",
+     "salary_to",
+     "contact_method"
+    ],
+    "title": "InvitationIn"
+   },
+   "InvitationOut": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     },
+     "viewed_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Viewed At"
+     },
+     "responded_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Responded At"
+     },
+     "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Expires At"
+     },
+     "position_title": {
+      "type": "string",
+      "title": "Position Title"
+     },
+     "description": {
+      "type": "string",
+      "title": "Description"
+     },
+     "salary_from": {
+      "type": "integer",
+      "title": "Salary From"
+     },
+     "salary_to": {
+      "type": "integer",
+      "title": "Salary To"
+     },
+     "work_format": {
+      "type": "string",
+      "title": "Work Format"
+     },
+     "contact_method": {
+      "type": "string",
+      "title": "Contact Method"
+     },
+     "match_score": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Match Score"
+     },
+     "match_reasons": {
+      "items": {
+       "$ref": "#/components/schemas/ReasonOut"
+      },
+      "type": "array",
+      "title": "Match Reasons"
+     },
+     "candidate_message": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Candidate Message"
+     },
+     "job_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Job Id"
+     },
+     "job_title": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Job Title"
+     },
+     "company": {
+      "$ref": "#/components/schemas/Company"
+     },
+     "candidate": {
+      "$ref": "#/components/schemas/InvitationCandidate"
+     },
+     "contacts": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Contacts"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "status",
+     "created_at",
+     "viewed_at",
+     "responded_at",
+     "expires_at",
+     "position_title",
+     "description",
+     "salary_from",
+     "salary_to",
+     "work_format",
+     "contact_method",
+     "match_score",
+     "match_reasons",
+     "candidate_message",
+     "job_id",
+     "job_title",
+     "company",
+     "candidate",
+     "contacts"
+    ],
+    "title": "InvitationOut"
+   },
+   "ItemOut": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "position": {
+      "type": "integer",
+      "title": "Position"
+     },
+     "competency_id": {
+      "type": "string",
+      "title": "Competency Id"
+     },
+     "competency_name": {
+      "type": "string",
+      "title": "Competency Name"
+     },
+     "qtype": {
+      "type": "string",
+      "title": "Qtype"
+     },
+     "text": {
+      "type": "string",
+      "title": "Text"
+     },
+     "options": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Options"
+     },
+     "answer": {
+      "anyOf": [
+       {
+        "items": {},
+        "type": "array"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Answer"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "position",
+     "competency_id",
+     "competency_name",
+     "qtype",
+     "text",
+     "options"
+    ],
+    "title": "ItemOut"
+   },
+   "JobSkillOut": {
+    "properties": {
+     "slug": {
+      "type": "string",
+      "title": "Slug"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "importance": {
+      "type": "string",
+      "title": "Importance"
+     }
+    },
+    "type": "object",
+    "required": [
+     "slug",
+     "name",
+     "importance"
+    ],
+    "title": "JobSkillOut"
+   },
+   "JobStats": {
+    "properties": {
+     "matched": {
+      "type": "integer",
+      "title": "Matched"
+     },
+     "shortlisted": {
+      "type": "integer",
+      "title": "Shortlisted"
+     },
+     "invited": {
+      "type": "integer",
+      "title": "Invited"
+     },
+     "accepted": {
+      "type": "integer",
+      "title": "Accepted"
+     },
+     "applications": {
+      "type": "integer",
+      "title": "Applications"
+     },
+     "top_percent": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Top Percent"
+     }
+    },
+    "type": "object",
+    "required": [
+     "matched",
+     "shortlisted",
+     "invited",
+     "accepted",
+     "applications",
+     "top_percent"
+    ],
+    "title": "JobStats"
+   },
+   "LastResult": {
+    "properties": {
+     "attempt_id": {
+      "type": "integer",
+      "title": "Attempt Id"
+     },
+     "outcome": {
+      "type": "string",
+      "title": "Outcome"
+     },
+     "scaled_score": {
+      "type": "integer",
+      "title": "Scaled Score"
+     },
+     "target_grade": {
+      "type": "string",
+      "title": "Target Grade"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "attempt_id",
+     "outcome",
+     "scaled_score",
+     "target_grade",
+     "created_at"
+    ],
+    "title": "LastResult"
+   },
+   "LoginIn": {
+    "properties": {
+     "email": {
+      "type": "string",
+      "format": "email",
+      "title": "Email"
+     },
+     "password": {
+      "type": "string",
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Password"
+     }
+    },
+    "type": "object",
+    "required": [
+     "email",
+     "password"
+    ],
+    "title": "LoginIn"
+   },
+   "MatchListOut": {
+    "properties": {
+     "requirement": {
+      "$ref": "#/components/schemas/RequirementOut"
+     },
+     "total": {
+      "type": "integer",
+      "title": "Total"
+     },
+     "filtered": {
+      "type": "integer",
+      "title": "Filtered"
+     },
+     "items": {
+      "items": {
+       "$ref": "#/components/schemas/CandidateCard"
+      },
+      "type": "array",
+      "title": "Items"
+     },
+     "categories": {
+      "items": {
+       "$ref": "#/components/schemas/CategoryGroup"
+      },
+      "type": "array",
+      "title": "Categories"
+     },
+     "computed_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Computed At"
+     },
+     "engine_version": {
+      "type": "string",
+      "title": "Engine Version"
+     },
+     "weights": {
+      "items": {
+       "$ref": "#/components/schemas/WeightOut"
+      },
+      "type": "array",
+      "title": "Weights"
+     }
+    },
+    "type": "object",
+    "required": [
+     "requirement",
+     "total",
+     "filtered",
+     "items",
+     "categories",
+     "computed_at",
+     "engine_version",
+     "weights"
+    ],
+    "title": "MatchListOut"
+   },
+   "MatchOut": {
+    "properties": {
+     "percent": {
+      "type": "integer",
+      "title": "Percent"
+     },
+     "rank": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rank"
+     },
+     "score": {
+      "type": "number",
+      "title": "Score"
+     },
+     "components": {
+      "items": {
+       "$ref": "#/components/schemas/ComponentOut"
+      },
+      "type": "array",
+      "title": "Components"
+     },
+     "reasons": {
+      "items": {
+       "$ref": "#/components/schemas/ReasonOut"
+      },
+      "type": "array",
+      "title": "Reasons"
+     },
+     "skill_matches": {
+      "items": {
+       "$ref": "#/components/schemas/SkillMatchOut"
+      },
+      "type": "array",
+      "title": "Skill Matches"
+     },
+     "must_gate": {
+      "type": "number",
+      "title": "Must Gate",
+      "description": "Множитель за покрытие обязательных навыков",
+      "default": 1.0
+     }
+    },
+    "type": "object",
+    "required": [
+     "percent",
+     "score",
+     "components",
+     "reasons",
+     "skill_matches"
+    ],
+    "title": "MatchOut"
+   },
+   "Message": {
+    "properties": {
+     "message": {
+      "type": "string",
+      "title": "Message"
+     }
+    },
+    "type": "object",
+    "required": [
+     "message"
+    ],
+    "title": "Message"
+   },
+   "MySubmission": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "answer": {
+      "type": "string",
+      "title": "Answer"
+     },
+     "rating": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rating"
+     },
+     "reviewer_comment": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reviewer Comment"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "answer",
+     "rating",
+     "reviewer_comment",
+     "created_at"
+    ],
+    "title": "MySubmission"
+   },
+   "ParseNeedIn": {
+    "properties": {
+     "text": {
+      "type": "string",
+      "maxLength": 6000,
+      "minLength": 10,
+      "title": "Text"
+     }
+    },
+    "type": "object",
+    "required": [
+     "text"
+    ],
+    "title": "ParseNeedIn"
+   },
+   "ParseNeedOut": {
+    "properties": {
+     "specialization_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Specialization Id"
+     },
+     "grade_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Grade Id"
+     },
+     "skills": {
+      "items": {
+       "$ref": "#/components/schemas/SkillRefOut"
+      },
+      "type": "array",
+      "title": "Skills"
+     },
+     "salary_from": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Salary From"
+     },
+     "salary_to": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Salary To"
+     },
+     "work_format": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Work Format"
+     },
+     "min_experience_years": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Min Experience Years"
+     }
+    },
+    "type": "object",
+    "required": [
+     "specialization_id",
+     "grade_id",
+     "skills",
+     "salary_from",
+     "salary_to",
+     "work_format",
+     "min_experience_years"
+    ],
+    "title": "ParseNeedOut"
+   },
+   "PresetOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "label": {
+      "type": "string",
+      "title": "Label"
+     },
+     "weights": {
+      "additionalProperties": {
+       "type": "number"
+      },
+      "type": "object",
+      "title": "Weights"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "label",
+     "weights"
+    ],
+    "title": "PresetOut"
+   },
+   "PublicJobOut": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "description": {
+      "type": "string",
+      "title": "Description"
+     },
+     "team_description": {
+      "type": "string",
+      "title": "Team Description"
+     },
+     "specialization_id": {
+      "type": "string",
+      "title": "Specialization Id"
+     },
+     "specialization_name": {
+      "type": "string",
+      "title": "Specialization Name"
+     },
+     "grade_id": {
+      "type": "string",
+      "title": "Grade Id"
+     },
+     "grade_name": {
+      "type": "string",
+      "title": "Grade Name"
+     },
+     "salary_from": {
+      "type": "integer",
+      "title": "Salary From"
+     },
+     "salary_to": {
+      "type": "integer",
+      "title": "Salary To"
+     },
+     "work_format": {
+      "type": "string",
+      "title": "Work Format"
+     },
+     "city": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "City"
+     },
+     "min_experience_years": {
+      "type": "number",
+      "title": "Min Experience Years"
+     },
+     "weights_preset": {
+      "type": "string",
+      "title": "Weights Preset"
+     },
+     "is_public": {
+      "type": "boolean",
+      "title": "Is Public"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     },
+     "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Updated At"
+     },
+     "matched_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Matched At"
+     },
+     "skills": {
+      "items": {
+       "$ref": "#/components/schemas/JobSkillOut"
+      },
+      "type": "array",
+      "title": "Skills"
+     },
+     "company": {
+      "$ref": "#/components/schemas/Company"
+     },
+     "stats": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/JobStats"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "application_status": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Application Status"
+     },
+     "match_percent": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Match Percent"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "title",
+     "description",
+     "team_description",
+     "specialization_id",
+     "specialization_name",
+     "grade_id",
+     "grade_name",
+     "salary_from",
+     "salary_to",
+     "work_format",
+     "city",
+     "min_experience_years",
+     "weights_preset",
+     "is_public",
+     "status",
+     "created_at",
+     "updated_at",
+     "matched_at",
+     "skills",
+     "company"
+    ],
+    "title": "PublicJobOut"
+   },
+   "ReasonOut": {
+    "properties": {
+     "kind": {
+      "type": "string",
+      "enum": [
+       "positive",
+       "neutral",
+       "negative"
+      ],
+      "title": "Kind"
+     },
+     "component": {
+      "type": "string",
+      "title": "Component"
+     },
+     "text": {
+      "type": "string",
+      "title": "Text"
+     }
+    },
+    "type": "object",
+    "required": [
+     "kind",
+     "component",
+     "text"
+    ],
+    "title": "ReasonOut"
+   },
+   "ReferenceOut": {
+    "properties": {
+     "specializations": {
+      "items": {
+       "$ref": "#/components/schemas/SpecializationOut"
+      },
+      "type": "array",
+      "title": "Specializations"
+     },
+     "grades": {
+      "items": {
+       "$ref": "#/components/schemas/GradeOut"
+      },
+      "type": "array",
+      "title": "Grades"
+     },
+     "skills": {
+      "items": {
+       "$ref": "#/components/schemas/SkillOut"
+      },
+      "type": "array",
+      "title": "Skills"
+     },
+     "weight_presets": {
+      "items": {
+       "$ref": "#/components/schemas/PresetOut"
+      },
+      "type": "array",
+      "title": "Weight Presets"
+     },
+     "component_labels": {
+      "additionalProperties": {
+       "type": "string"
+      },
+      "type": "object",
+      "title": "Component Labels"
+     }
+    },
+    "type": "object",
+    "required": [
+     "specializations",
+     "grades",
+     "skills",
+     "weight_presets",
+     "component_labels"
+    ],
+    "title": "ReferenceOut"
+   },
+   "RegisterIn": {
+    "properties": {
+     "email": {
+      "type": "string",
+      "format": "email",
+      "title": "Email"
+     },
+     "password": {
+      "type": "string",
+      "maxLength": 128,
+      "minLength": 8,
+      "title": "Password"
+     },
+     "role": {
+      "type": "string",
+      "enum": [
+       "candidate",
+       "employer"
+      ],
+      "title": "Role"
+     },
+     "consent_processing": {
+      "type": "boolean",
+      "title": "Consent Processing",
+      "description": "Согласие на обработку персональных данных (152-ФЗ)"
+     },
+     "first_name": {
+      "type": "string",
+      "maxLength": 64,
+      "title": "First Name",
+      "default": ""
+     },
+     "last_name": {
+      "type": "string",
+      "maxLength": 64,
+      "title": "Last Name",
+      "default": ""
+     },
+     "company_name": {
+      "type": "string",
+      "maxLength": 128,
+      "title": "Company Name",
+      "default": ""
+     }
+    },
+    "type": "object",
+    "required": [
+     "email",
+     "password",
+     "role",
+     "consent_processing"
+    ],
+    "title": "RegisterIn"
+   },
+   "RegisterOut": {
+    "properties": {
+     "email": {
+      "type": "string",
+      "title": "Email"
+     },
+     "verification_required": {
+      "type": "boolean",
+      "title": "Verification Required",
+      "default": true
+     },
+     "dev_code": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Dev Code",
+      "description": "Только в демо-режиме: код подтверждения"
+     }
+    },
+    "type": "object",
+    "required": [
+     "email"
+    ],
+    "title": "RegisterOut"
+   },
+   "ReportIn": {
+    "properties": {
+     "reason": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 500
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reason"
+     }
+    },
+    "type": "object",
+    "title": "ReportIn"
+   },
+   "RequirementIn": {
+    "properties": {
+     "title": {
+      "type": "string",
+      "maxLength": 128,
+      "minLength": 3,
+      "title": "Title"
+     },
+     "description": {
+      "type": "string",
+      "maxLength": 6000,
+      "title": "Description",
+      "default": ""
+     },
+     "team_description": {
+      "type": "string",
+      "maxLength": 4000,
+      "title": "Team Description",
+      "default": ""
+     },
+     "specialization_id": {
+      "type": "string",
+      "enum": [
+       "backend",
+       "frontend",
+       "data_ml",
+       "devops"
+      ],
+      "title": "Specialization Id"
+     },
+     "grade_id": {
+      "type": "string",
+      "enum": [
+       "junior",
+       "middle",
+       "senior"
+      ],
+      "title": "Grade Id"
+     },
+     "must_skills": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "maxItems": 15,
+      "title": "Must Skills"
+     },
+     "nice_skills": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "maxItems": 15,
+      "title": "Nice Skills"
+     },
+     "salary_from": {
+      "type": "integer",
+      "maximum": 10000000.0,
+      "exclusiveMinimum": 0.0,
+      "title": "Salary From",
+      "description": "Обязательно, ₽"
+     },
+     "salary_to": {
+      "type": "integer",
+      "maximum": 10000000.0,
+      "exclusiveMinimum": 0.0,
+      "title": "Salary To",
+      "description": "Обязательно, ₽"
+     },
+     "work_format": {
+      "type": "string",
+      "enum": [
+       "remote",
+       "office",
+       "hybrid",
+       "any"
+      ],
+      "title": "Work Format",
+      "default": "any"
+     },
+     "city": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 64
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "City"
+     },
+     "min_experience_years": {
+      "type": "number",
+      "maximum": 30.0,
+      "minimum": 0.0,
+      "title": "Min Experience Years",
+      "default": 0
+     },
+     "weights_preset": {
+      "type": "string",
+      "enum": [
+       "balanced",
+       "skills_first",
+       "proven_talent"
+      ],
+      "title": "Weights Preset",
+      "default": "balanced"
+     },
+     "is_public": {
+      "type": "boolean",
+      "title": "Is Public",
+      "default": false
+     }
+    },
+    "type": "object",
+    "required": [
+     "title",
+     "specialization_id",
+     "grade_id",
+     "salary_from",
+     "salary_to"
+    ],
+    "title": "RequirementIn"
+   },
+   "RequirementOut": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "description": {
+      "type": "string",
+      "title": "Description"
+     },
+     "team_description": {
+      "type": "string",
+      "title": "Team Description"
+     },
+     "specialization_id": {
+      "type": "string",
+      "title": "Specialization Id"
+     },
+     "specialization_name": {
+      "type": "string",
+      "title": "Specialization Name"
+     },
+     "grade_id": {
+      "type": "string",
+      "title": "Grade Id"
+     },
+     "grade_name": {
+      "type": "string",
+      "title": "Grade Name"
+     },
+     "salary_from": {
+      "type": "integer",
+      "title": "Salary From"
+     },
+     "salary_to": {
+      "type": "integer",
+      "title": "Salary To"
+     },
+     "work_format": {
+      "type": "string",
+      "title": "Work Format"
+     },
+     "city": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "City"
+     },
+     "min_experience_years": {
+      "type": "number",
+      "title": "Min Experience Years"
+     },
+     "weights_preset": {
+      "type": "string",
+      "title": "Weights Preset"
+     },
+     "is_public": {
+      "type": "boolean",
+      "title": "Is Public"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     },
+     "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Updated At"
+     },
+     "matched_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Matched At"
+     },
+     "skills": {
+      "items": {
+       "$ref": "#/components/schemas/JobSkillOut"
+      },
+      "type": "array",
+      "title": "Skills"
+     },
+     "company": {
+      "$ref": "#/components/schemas/Company"
+     },
+     "stats": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/JobStats"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "title",
+     "description",
+     "team_description",
+     "specialization_id",
+     "specialization_name",
+     "grade_id",
+     "grade_name",
+     "salary_from",
+     "salary_to",
+     "work_format",
+     "city",
+     "min_experience_years",
+     "weights_preset",
+     "is_public",
+     "status",
+     "created_at",
+     "updated_at",
+     "matched_at",
+     "skills",
+     "company"
+    ],
+    "title": "RequirementOut"
+   },
+   "ResendIn": {
+    "properties": {
+     "email": {
+      "type": "string",
+      "format": "email",
+      "title": "Email"
+     }
+    },
+    "type": "object",
+    "required": [
+     "email"
+    ],
+    "title": "ResendIn"
+   },
+   "RespondIn": {
+    "properties": {
+     "message": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 2000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Message"
+     }
+    },
+    "type": "object",
+    "title": "RespondIn"
+   },
+   "ResultBrief": {
+    "properties": {
+     "attempt_id": {
+      "type": "integer",
+      "title": "Attempt Id"
+     },
+     "specialization_id": {
+      "type": "string",
+      "title": "Specialization Id"
+     },
+     "target_grade": {
+      "type": "string",
+      "title": "Target Grade"
+     },
+     "outcome": {
+      "type": "string",
+      "title": "Outcome"
+     },
+     "passed": {
+      "type": "boolean",
+      "title": "Passed"
+     },
+     "scaled_score": {
+      "type": "integer",
+      "title": "Scaled Score"
+     },
+     "verified_grade": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Verified Grade"
+     },
+     "category_label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Category Label"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "attempt_id",
+     "specialization_id",
+     "target_grade",
+     "outcome",
+     "passed",
+     "scaled_score",
+     "verified_grade",
+     "category_label",
+     "created_at"
+    ],
+    "title": "ResultBrief"
+   },
+   "ResultOut": {
+    "properties": {
+     "attempt_id": {
+      "type": "integer",
+      "title": "Attempt Id"
+     },
+     "specialization_id": {
+      "type": "string",
+      "title": "Specialization Id"
+     },
+     "target_grade": {
+      "type": "string",
+      "title": "Target Grade"
+     },
+     "outcome": {
+      "type": "string",
+      "title": "Outcome"
+     },
+     "passed": {
+      "type": "boolean",
+      "title": "Passed"
+     },
+     "verified_grade": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Verified Grade"
+     },
+     "category_label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Category Label"
+     },
+     "scaled_score": {
+      "type": "integer",
+      "title": "Scaled Score"
+     },
+     "raw_percent": {
+      "type": "number",
+      "title": "Raw Percent"
+     },
+     "theta": {
+      "type": "number",
+      "title": "Theta"
+     },
+     "theta_se": {
+      "type": "number",
+      "title": "Theta Se"
+     },
+     "confidence": {
+      "type": "number",
+      "title": "Confidence"
+     },
+     "competencies": {
+      "items": {
+       "$ref": "#/components/schemas/CompetencyScore"
+      },
+      "type": "array",
+      "title": "Competencies"
+     },
+     "recommendation": {
+      "type": "string",
+      "title": "Recommendation"
+     },
+     "grade_changed": {
+      "type": "boolean",
+      "title": "Grade Changed"
+     },
+     "grade_change_blocked": {
+      "type": "boolean",
+      "title": "Grade Change Blocked"
+     },
+     "upgrade_eligible": {
+      "type": "boolean",
+      "title": "Upgrade Eligible"
+     },
+     "answered": {
+      "type": "integer",
+      "title": "Answered"
+     },
+     "total": {
+      "type": "integer",
+      "title": "Total"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "attempt_id",
+     "specialization_id",
+     "target_grade",
+     "outcome",
+     "passed",
+     "verified_grade",
+     "category_label",
+     "scaled_score",
+     "raw_percent",
+     "theta",
+     "theta_se",
+     "confidence",
+     "competencies",
+     "recommendation",
+     "grade_changed",
+     "grade_change_blocked",
+     "upgrade_eligible",
+     "answered",
+     "total",
+     "created_at"
+    ],
+    "title": "ResultOut"
+   },
+   "ResumeParseOut": {
+    "properties": {
+     "filename": {
+      "type": "string",
+      "title": "Filename"
+     },
+     "first_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "First Name"
+     },
+     "last_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Name"
+     },
+     "email": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Email"
+     },
+     "phone": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Phone"
+     },
+     "telegram": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Telegram"
+     },
+     "specialization_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Specialization Id"
+     },
+     "declared_grade_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Declared Grade Id"
+     },
+     "experience_years": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Experience Years"
+     },
+     "work_format": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Work Format"
+     },
+     "expected_salary": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expected Salary"
+     },
+     "skills": {
+      "items": {
+       "$ref": "#/components/schemas/SkillRef"
+      },
+      "type": "array",
+      "title": "Skills"
+     },
+     "text_preview": {
+      "type": "string",
+      "title": "Text Preview"
+     }
+    },
+    "type": "object",
+    "required": [
+     "filename",
+     "first_name",
+     "last_name",
+     "email",
+     "phone",
+     "telegram",
+     "specialization_id",
+     "declared_grade_id",
+     "experience_years",
+     "work_format",
+     "expected_salary",
+     "skills",
+     "text_preview"
+    ],
+    "title": "ResumeParseOut"
+   },
+   "ReviewIn": {
+    "properties": {
+     "rating": {
+      "type": "integer",
+      "maximum": 5.0,
+      "minimum": 1.0,
+      "title": "Rating"
+     },
+     "comment": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 2000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Comment"
+     }
+    },
+    "type": "object",
+    "required": [
+     "rating"
+    ],
+    "title": "ReviewIn"
+   },
+   "SkillMatchOut": {
+    "properties": {
+     "skill": {
+      "type": "string",
+      "title": "Skill"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "importance": {
+      "type": "string",
+      "title": "Importance"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "exact",
+       "related",
+       "missing"
+      ],
+      "title": "Status"
+     },
+     "via": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Via"
+     },
+     "verified": {
+      "type": "boolean",
+      "title": "Verified"
+     },
+     "value": {
+      "type": "number",
+      "title": "Value"
+     }
+    },
+    "type": "object",
+    "required": [
+     "skill",
+     "name",
+     "importance",
+     "status",
+     "via",
+     "verified",
+     "value"
+    ],
+    "title": "SkillMatchOut"
+   },
+   "SkillOut": {
+    "properties": {
+     "slug": {
+      "type": "string",
+      "title": "Slug"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "kind": {
+      "type": "string",
+      "title": "Kind"
+     },
+     "specializations": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Specializations"
+     }
+    },
+    "type": "object",
+    "required": [
+     "slug",
+     "name",
+     "kind",
+     "specializations"
+    ],
+    "title": "SkillOut"
+   },
+   "SkillRef": {
+    "properties": {
+     "slug": {
+      "type": "string",
+      "title": "Slug"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     }
+    },
+    "type": "object",
+    "required": [
+     "slug",
+     "name"
+    ],
+    "title": "SkillRef"
+   },
+   "SkillRefOut": {
+    "properties": {
+     "slug": {
+      "type": "string",
+      "title": "Slug"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     }
+    },
+    "type": "object",
+    "required": [
+     "slug",
+     "name"
+    ],
+    "title": "SkillRefOut"
+   },
+   "SpecializationOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "description": {
+      "type": "string",
+      "title": "Description"
+     },
+     "competencies": {
+      "items": {
+       "$ref": "#/components/schemas/CompetencyOut"
+      },
+      "type": "array",
+      "title": "Competencies"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "name",
+     "description",
+     "competencies"
+    ],
+    "title": "SpecializationOut"
+   },
+   "StartIn": {
+    "properties": {
+     "specialization_id": {
+      "type": "string",
+      "enum": [
+       "backend",
+       "frontend",
+       "data_ml",
+       "devops"
+      ],
+      "title": "Specialization Id"
+     },
+     "target_grade": {
+      "type": "string",
+      "enum": [
+       "junior",
+       "middle",
+       "senior"
+      ],
+      "title": "Target Grade"
+     }
+    },
+    "type": "object",
+    "required": [
+     "specialization_id",
+     "target_grade"
+    ],
+    "title": "StartIn"
+   },
+   "Step": {
+    "properties": {
+     "key": {
+      "type": "string",
+      "title": "Key"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "done": {
+      "type": "boolean",
+      "title": "Done"
+     },
+     "link": {
+      "type": "string",
+      "title": "Link"
+     }
+    },
+    "type": "object",
+    "required": [
+     "key",
+     "title",
+     "done",
+     "link"
+    ],
+    "title": "Step"
+   },
+   "SubmissionIn": {
+    "properties": {
+     "answer": {
+      "type": "string",
+      "maxLength": 6000,
+      "minLength": 20,
+      "title": "Answer"
+     }
+    },
+    "type": "object",
+    "required": [
+     "answer"
+    ],
+    "title": "SubmissionIn"
+   },
+   "SubmissionOut": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "answer": {
+      "type": "string",
+      "title": "Answer"
+     },
+     "rating": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rating"
+     },
+     "reviewer_comment": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reviewer Comment"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     },
+     "candidate_id": {
+      "type": "integer",
+      "title": "Candidate Id"
+     },
+     "candidate_name": {
+      "type": "string",
+      "title": "Candidate Name"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "answer",
+     "rating",
+     "reviewer_comment",
+     "created_at",
+     "candidate_id",
+     "candidate_name"
+    ],
+    "title": "SubmissionOut"
+   },
+   "TaskIn": {
+    "properties": {
+     "specialization_id": {
+      "type": "string",
+      "enum": [
+       "backend",
+       "frontend",
+       "data_ml",
+       "devops"
+      ],
+      "title": "Specialization Id"
+     },
+     "title": {
+      "type": "string",
+      "maxLength": 128,
+      "minLength": 3,
+      "title": "Title"
+     },
+     "description": {
+      "type": "string",
+      "maxLength": 4000,
+      "minLength": 10,
+      "title": "Description"
+     }
+    },
+    "type": "object",
+    "required": [
+     "specialization_id",
+     "title",
+     "description"
+    ],
+    "title": "TaskIn"
+   },
+   "TaskOut": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "description": {
+      "type": "string",
+      "title": "Description"
+     },
+     "specialization_id": {
+      "type": "string",
+      "title": "Specialization Id"
+     },
+     "specialization_name": {
+      "type": "string",
+      "title": "Specialization Name"
+     },
+     "is_active": {
+      "type": "boolean",
+      "title": "Is Active"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     },
+     "company": {
+      "$ref": "#/components/schemas/Company"
+     },
+     "submissions": {
+      "type": "integer",
+      "title": "Submissions"
+     },
+     "my_submission": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/MySubmission"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "title",
+     "description",
+     "specialization_id",
+     "specialization_name",
+     "is_active",
+     "created_at",
+     "company",
+     "submissions",
+     "my_submission"
+    ],
+    "title": "TaskOut"
+   },
+   "TestHistoryItem": {
+    "properties": {
+     "attempt_id": {
+      "type": "integer",
+      "title": "Attempt Id"
+     },
+     "target_grade": {
+      "type": "string",
+      "title": "Target Grade"
+     },
+     "specialization_id": {
+      "type": "string",
+      "title": "Specialization Id"
+     },
+     "outcome": {
+      "type": "string",
+      "title": "Outcome"
+     },
+     "scaled_score": {
+      "type": "integer",
+      "title": "Scaled Score"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "attempt_id",
+     "target_grade",
+     "specialization_id",
+     "outcome",
+     "scaled_score",
+     "created_at"
+    ],
+    "title": "TestHistoryItem"
+   },
+   "TestingRules": {
+    "properties": {
+     "test_length": {
+      "type": "integer",
+      "title": "Test Length"
+     },
+     "time_limit_minutes": {
+      "type": "integer",
+      "title": "Time Limit Minutes"
+     },
+     "retake_cooldown_days": {
+      "type": "integer",
+      "title": "Retake Cooldown Days"
+     },
+     "grade_change_cooldown_days": {
+      "type": "integer",
+      "title": "Grade Change Cooldown Days"
+     }
+    },
+    "type": "object",
+    "required": [
+     "test_length",
+     "time_limit_minutes",
+     "retake_cooldown_days",
+     "grade_change_cooldown_days"
+    ],
+    "title": "TestingRules"
+   },
+   "TestingStatusOut": {
+    "properties": {
+     "specialization_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Specialization Id"
+     },
+     "declared_grade_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Declared Grade Id"
+     },
+     "verified_specialization_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Verified Specialization Id"
+     },
+     "verified_grade_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Verified Grade Id"
+     },
+     "grade_locked_until": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Grade Locked Until"
+     },
+     "upgrade_eligible": {
+      "type": "boolean",
+      "title": "Upgrade Eligible"
+     },
+     "active_attempt": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/AttemptBrief"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "eligibility": {
+      "items": {
+       "$ref": "#/components/schemas/EligibilityOut"
+      },
+      "type": "array",
+      "title": "Eligibility"
+     },
+     "history": {
+      "items": {
+       "$ref": "#/components/schemas/ResultBrief"
+      },
+      "type": "array",
+      "title": "History"
+     },
+     "rules": {
+      "$ref": "#/components/schemas/TestingRules"
+     }
+    },
+    "type": "object",
+    "required": [
+     "specialization_id",
+     "declared_grade_id",
+     "verified_specialization_id",
+     "verified_grade_id",
+     "grade_locked_until",
+     "upgrade_eligible",
+     "active_attempt",
+     "eligibility",
+     "history",
+     "rules"
+    ],
+    "title": "TestingStatusOut"
+   },
+   "TokenOut": {
+    "properties": {
+     "access_token": {
+      "type": "string",
+      "title": "Access Token"
+     },
+     "token_type": {
+      "type": "string",
+      "title": "Token Type",
+      "default": "bearer"
+     },
+     "user": {
+      "$ref": "#/components/schemas/UserOut"
+     }
+    },
+    "type": "object",
+    "required": [
+     "access_token",
+     "user"
+    ],
+    "title": "TokenOut"
+   },
+   "UserOut": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "email": {
+      "type": "string",
+      "title": "Email"
+     },
+     "role": {
+      "type": "string",
+      "title": "Role"
+     },
+     "is_email_verified": {
+      "type": "boolean",
+      "title": "Is Email Verified"
+     },
+     "display_name": {
+      "type": "string",
+      "title": "Display Name"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "email",
+     "role",
+     "is_email_verified",
+     "display_name"
+    ],
+    "title": "UserOut"
+   },
+   "ValidationError": {
+    "properties": {
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Location"
+     },
+     "msg": {
+      "type": "string",
+      "title": "Message"
+     },
+     "type": {
+      "type": "string",
+      "title": "Error Type"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "ctx": {
+      "type": "object",
+      "title": "Context"
+     }
+    },
+    "type": "object",
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError"
+   },
+   "VerifyIn": {
+    "properties": {
+     "email": {
+      "type": "string",
+      "format": "email",
+      "title": "Email"
+     },
+     "code": {
+      "type": "string",
+      "maxLength": 6,
+      "minLength": 6,
+      "pattern": "^\\d{6}$",
+      "title": "Code"
+     }
+    },
+    "type": "object",
+    "required": [
+     "email",
+     "code"
+    ],
+    "title": "VerifyIn"
+   },
+   "WeightOut": {
+    "properties": {
+     "key": {
+      "type": "string",
+      "title": "Key"
+     },
+     "label": {
+      "type": "string",
+      "title": "Label"
+     },
+     "weight": {
+      "type": "number",
+      "title": "Weight"
+     }
+    },
+    "type": "object",
+    "required": [
+     "key",
+     "label",
+     "weight"
+    ],
+    "title": "WeightOut"
+   }
+  },
+  "securitySchemes": {
+   "HTTPBearer": {
+    "type": "http",
+    "scheme": "bearer"
+   }
+  }
+ }
+}

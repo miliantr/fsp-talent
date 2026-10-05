@@ -1,0 +1,227 @@
+{
+  "best": {
+    "config": {
+      "MUST_GATE_FLOOR": 0.8,
+      "EVIDENCE_STRENGTH": 0.0,
+      "TEST_COMPETENCY_SHARE": 0.35
+    },
+    "weights": "grade_heavier"
+  },
+  "train_initial": {
+    "P@5": 0.6366666666666667,
+    "P@10": 0.6083333333333333,
+    "R@10": 0.2823461298925647,
+    "MRR": 0.7723683261183261,
+    "NDCG@10": 0.6241063090152111
+  },
+  "heldout_initial": {
+    "P@5": 0.6233333333333333,
+    "P@10": 0.5733333333333334,
+    "R@10": 0.2647677769599434,
+    "MRR": 0.7968520368520369,
+    "NDCG@10": 0.5935751450381229
+  },
+  "heldout_best": {
+    "P@5": 0.8933333333333333,
+    "P@10": 0.7916666666666666,
+    "R@10": 0.3319174943655606,
+    "MRR": 0.9666666666666667,
+    "NDCG@10": 0.8088802855665725
+  },
+  "train_production": {
+    "P@5": 0.8800000000000001,
+    "P@10": 0.8066666666666666,
+    "R@10": 0.34581941415886913,
+    "MRR": 0.9333333333333333,
+    "NDCG@10": 0.8080186711990598
+  },
+  "heldout_production": {
+    "P@5": 0.87,
+    "P@10": 0.77,
+    "R@10": 0.3246601939330912,
+    "MRR": 0.9555555555555556,
+    "NDCG@10": 0.7857716673892583
+  },
+  "top": [
+    {
+      "config": {
+        "MUST_GATE_FLOOR": 0.8,
+        "EVIDENCE_STRENGTH": 0.0,
+        "TEST_COMPETENCY_SHARE": 0.35
+      },
+      "weights": "grade_heavier",
+      "ndcg": 0.8322804210548095
+    },
+    {
+      "config": {
+        "MUST_GATE_FLOOR": 0.65,
+        "EVIDENCE_STRENGTH": 0.0,
+        "TEST_COMPETENCY_SHARE": 0.0
+      },
+      "weights": "grade_heavier",
+      "ndcg": 0.8322706598681163
+    },
+    {
+      "config": {
+        "MUST_GATE_FLOOR": 1.0,
+        "EVIDENCE_STRENGTH": 0.0,
+        "TEST_COMPETENCY_SHARE": 0.35
+      },
+      "weights": "grade_heavier",
+      "ndcg": 0.8296655060680626
+    },
+    {
+      "config": {
+        "MUST_GATE_FLOOR": 0.8,
+        "EVIDENCE_STRENGTH": 0.0,
+        "TEST_COMPETENCY_SHARE": 0.0
+      },
+      "weights": "grade_heavier",
+      "ndcg": 0.8292071609938048
+    },
+    {
+      "config": {
+        "MUST_GATE_FLOOR": 1.0,
+        "EVIDENCE_STRENGTH": 0.0,
+        "TEST_COMPETENCY_SHARE": 0.0
+      },
+      "weights": "grade_heavier",
+      "ndcg": 0.8228254884836205
+    },
+    {
+      "config": {
+        "MUST_GATE_FLOOR": 0.8,
+        "EVIDENCE_STRENGTH": 0.25,
+        "TEST_COMPETENCY_SHARE": 0.0
+      },
+      "weights": "grade_heavier",
+      "ndcg": 0.8198030346861099
+    },
+    {
+      "config": {
+        "MUST_GATE_FLOOR": 0.65,
+        "EVIDENCE_STRENGTH": 0.0,
+        "TEST_COMPETENCY_SHARE": 0.35
+      },
+      "weights": "grade_heavier",
+      "ndcg": 0.8181090772334901
+    },
+    {
+      "config": {
+        "MUST_GATE_FLOOR": 1.0,
+        "EVIDENCE_STRENGTH": 0.25,
+        "TEST_COMPETENCY_SHARE": 0.0
+      },
+      "weights": "grade_heavier",
+      "ndcg": 0.815095535642704
+    },
+    {
+      "config": {
+        "MUST_GATE_FLOOR": 0.8,
+        "EVIDENCE_STRENGTH": 0.0,
+        "TEST_COMPETENCY_SHARE": 0.0
+      },
+      "weights": "initial",
+      "ndcg": 0.8096832656512075
+    },
+    {
+      "config": {
+        "MUST_GATE_FLOOR": 0.8,
+        "EVIDENCE_STRENGTH": 0.0,
+        "TEST_COMPETENCY_SHARE": 0.0
+      },
+      "weights": "skills_heavier",
+      "ndcg": 0.8086288457521793
+    },
+    {
+      "config": {
+        "MUST_GATE_FLOOR": 1.0,
+        "EVIDENCE_STRENGTH": 0.0,
+        "TEST_COMPETENCY_SHARE": 0.0
+      },
+      "weights": "initial",
+      "ndcg": 0.8086121037284609
+    },
+    {
+      "config": {
+        "MUST_GATE_FLOOR": 0.8,
+        "EVIDENCE_STRENGTH": 0.25,
+        "TEST_COMPETENCY_SHARE": 0.35
+      },
+      "weights": "grade_heavier",
+      "ndcg": 0.8080186711990598
+    },
+    {
+      "config": {
+        "MUST_GATE_FLOOR": 1.0,
+        "EVIDENCE_STRENGTH": 0.0,
+        "TEST_COMPETENCY_SHARE": 0.0
+      },
+      "weights": "skills_heavier",
+      "ndcg": 0.8069934694609551
+    },
+    {
+      "config": {
+        "MUST_GATE_FLOOR": 1.0,
+        "EVIDENCE_STRENGTH": 0.25,
+        "TEST_COMPETENCY_SHARE": 0.35
+      },
+      "weights": "grade_heavier",
+      "ndcg": 0.8039832816950719
+    },
+    {
+      "config": {
+        "MUST_GATE_FLOOR": 1.0,
+        "EVIDENCE_STRENGTH": 0.0,
+        "TEST_COMPETENCY_SHARE": 0.35
+      },
+      "weights": "skills_heavier",
+      "ndcg": 0.799138767127836
+    },
+    {
+      "config": {
+        "MUST_GATE_FLOOR": 0.8,
+        "EVIDENCE_STRENGTH": 0.0,
+        "TEST_COMPETENCY_SHARE": 0.35
+      },
+      "weights": "skills_heavier",
+      "ndcg": 0.7988645074301746
+    },
+    {
+      "config": {
+        "MUST_GATE_FLOOR": 0.8,
+        "EVIDENCE_STRENGTH": 0.0,
+        "TEST_COMPETENCY_SHARE": 0.35
+      },
+      "weights": "initial",
+      "ndcg": 0.7945871685179782
+    },
+    {
+      "config": {
+        "MUST_GATE_FLOOR": 1.0,
+        "EVIDENCE_STRENGTH": 0.0,
+        "TEST_COMPETENCY_SHARE": 0.35
+      },
+      "weights": "initial",
+      "ndcg": 0.7935716080760524
+    },
+    {
+      "config": {
+        "MUST_GATE_FLOOR": 0.65,
+        "EVIDENCE_STRENGTH": 0.0,
+        "TEST_COMPETENCY_SHARE": 0.0
+      },
+      "weights": "initial",
+      "ndcg": 0.7925498970508417
+    },
+    {
+      "config": {
+        "MUST_GATE_FLOOR": 0.65,
+        "EVIDENCE_STRENGTH": 0.0,
+        "TEST_COMPETENCY_SHARE": 0.0
+      },
+      "weights": "skills_heavier",
+      "ndcg": 0.7920807962577826
+    }
+  ]
+}
