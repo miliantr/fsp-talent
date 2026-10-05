@@ -1,0 +1,47 @@
+import type { Msg } from '../../core'
+import type { auth as ru } from '../ru/auth'
+
+export const auth: { readonly [K in keyof typeof ru]: Msg } = {
+  'auth.side.title': 'A verified profile instead of a CV nobody reads',
+  'auth.side.category': 'Category by test result, not by self-description',
+  'auth.side.fsp': 'FSP achievements are pulled in automatically',
+  'auth.side.employer': 'Employers come to you — with a vacancy and a salary',
+  'auth.side.law': 'Personal data is processed under Russian Federal Law 152-FZ',
+  'auth.email': 'E-mail',
+  'auth.password': 'Password',
+  'auth.firstName': 'First name',
+  'auth.lastName': 'Last name',
+  'auth.companyName': 'Company name',
+
+  'auth.login.title': 'Sign in',
+  'auth.login.noAccount': 'No account yet?',
+  'auth.login.toRegister': 'Sign up',
+  'auth.login.submit': 'Sign in',
+  'auth.login.busy': 'Signing in…',
+  'auth.login.demoHint': 'Demo accounts are on the',
+  'auth.login.demoLink': 'home page',
+
+  'auth.register.title': 'Sign up',
+  'auth.register.haveAccount': 'Already have an account?',
+  'auth.register.toLogin': 'Sign in',
+  'auth.register.candidate': 'I am a candidate',
+  'auth.register.candidateHint': 'I will take the test and get invitations',
+  'auth.register.employer': 'I am an employer',
+  'auth.register.employerHint': 'I will find and invite specialists',
+  'auth.register.passwordHint': 'At least 8 characters',
+  'auth.register.consent': 'I consent to the processing of my personal data under Russian Federal Law 152-FZ. Publishing the profile to employers is enabled separately in the settings.',
+  'auth.register.consentRequired': 'Consent to personal data processing is required',
+  'auth.register.submit': 'Sign up',
+  'auth.register.busy': 'Creating the account…',
+
+  'auth.verify.title': 'Confirm your e-mail',
+  'auth.verify.sent': 'We have sent a 6-digit code to',
+  'auth.verify.yourInbox': 'your inbox',
+  'auth.verify.demo': 'Demo mode: no e-mail leaves the system, the code is',
+  'auth.verify.fill': 'Fill in',
+  'auth.verify.code': 'Confirmation code',
+  'auth.verify.submit': 'Confirm',
+  'auth.verify.busy': 'Checking…',
+  'auth.verify.resend': 'Send the code again',
+  'auth.verify.resent': 'A new code has been sent',
+}

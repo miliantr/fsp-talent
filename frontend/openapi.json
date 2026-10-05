@@ -237,12 +237,70 @@
     ]
    }
   },
+  "/api/auth/me/locale": {
+   "put": {
+    "tags": [
+     "Аутентификация"
+    ],
+    "summary": "Сменить язык интерфейса",
+    "description": "Сохраняет выбранный язык в учётной записи: при входе с другого устройства он восстановится.",
+    "operationId": "set_locale_api_auth_me_locale_put",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/LocaleIn"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/UserOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Ошибка валидации",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
   "/api/reference": {
    "get": {
     "tags": [
      "Справочники"
     ],
     "summary": "Специализации, грейды, компетенции, навыки",
+    "description": "Reference data in the request language (Accept-Language).",
     "operationId": "reference_api_reference_get",
     "responses": {
      "200": {
@@ -7498,6 +7556,23 @@
     ],
     "title": "LastResult"
    },
+   "LocaleIn": {
+    "properties": {
+     "locale": {
+      "type": "string",
+      "enum": [
+       "ru",
+       "en"
+      ],
+      "title": "Locale"
+     }
+    },
+    "type": "object",
+    "required": [
+     "locale"
+    ],
+    "title": "LocaleIn"
+   },
    "LoginIn": {
     "properties": {
      "email": {
@@ -9444,6 +9519,16 @@
      "display_name": {
       "type": "string",
       "title": "Display Name"
+     },
+     "locale": {
+      "type": "string",
+      "enum": [
+       "ru",
+       "en"
+      ],
+      "title": "Locale",
+      "description": "Язык интерфейса (сохраняется в учётной записи)",
+      "default": "ru"
      }
     },
     "type": "object",

@@ -5,31 +5,37 @@ import { api, errorMessage } from '../../api/client'
 import { useApi } from '../../api/hooks'
 import type { Invitation } from '../../api/types'
 import { Empty, ErrorBox, InvitationStatusBadge, Loading, Modal, Reasons, useToast } from '../../components/ui'
-import { ago, date, salaryRange, WORK_FORMAT } from '../../lib/format'
+import type { MessageKey } from '../../i18n/core'
+import { useI18n } from '../../i18n/context'
+import { workFormatKey } from '../../lib/format'
+
+type Respond = 'accept' | 'reject' | 'report'
 
 export default function CandidateInvitations() {
   const { invId } = useParams()
   const nav = useNavigate()
   const toast = useToast()
+  const { t, fmt, lang } = useI18n()
   const list = useApi<Invitation[]>('/candidate/invitations')
   const [current, setCurrent] = useState<Invitation | null>(null)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
-  const [respond, setRespond] = useState<'accept' | 'reject' | 'report' | null>(null)
+  const [respond, setRespond] = useState<Respond | null>(null)
   const [message, setMessage] = useState('')
 
   const selectedId = invId ? Number(invId) : list.data?.[0]?.id
 
   useEffect(() => {
     if (!selectedId) { setCurrent(null); return }
-    // opening the invitation marks it as "viewed" on the server
+    // opening the invitation marks it as "viewed" on the server; refetched on a language switch, since the
+    // "why you were chosen" reasons are rendered by the server
     api<Invitation>(`/candidate/invitations/${selectedId}`).then((inv) => {
       setCurrent(inv)
       // functional update: the list request may finish before or after this one
       list.setData((prev) => (prev ? prev.map((x) => (x.id === inv.id ? inv : x)) : prev))
     }).catch((e) => setErr(errorMessage(e)))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedId])
+  }, [selectedId, lang])
 
   if (list.loading && !list.data) return <Loading />
   if (list.error) return <ErrorBox error={list.error} onRetry={list.reload} />
@@ -40,12 +46,11 @@ export default function CandidateInvitations() {
     setBusy(true)
     setErr(null)
     try {
-      const path = respond === 'report' ? 'report' : respond
       const body = respond === 'report' ? { reason: message || null } : { message: message || null }
-      const inv = await api<Invitation>(`/candidate/invitations/${current.id}/${path}`, { method: 'POST', body })
+      const inv = await api<Invitation>(`/candidate/invitations/${current.id}/${respond}`, { method: 'POST', body })
       setCurrent(inv)
       list.setData(items.map((x) => (x.id === inv.id ? inv : x)))
-      toast(respond === 'accept' ? 'Приглашение принято — работодатель получил ваши контакты' : respond === 'reject' ? 'Приглашение отклонено' : 'Жалоба отправлена')
+      toast(t(`cand.inv.done.${respond}` as MessageKey))
       setRespond(null)
       setMessage('')
     } catch (e) {
@@ -55,15 +60,16 @@ export default function CandidateInvitations() {
     }
   }
 
+  const closedStatus = (s: string) => t(s === 'expired' ? 'cand.inv.closed.expired' : s === 'withdrawn' ? 'cand.inv.closed.withdrawn' : 'cand.inv.closed.rejected')
+
   return (
     <div className="stack-lg">
-      <div className="page-head"><div><h1>Приглашения</h1>
-        <p className="sub">Работодатели сами выходят на вас с конкретным предложением и зарплатой. Условия видны до начала общения, контакты — только после вашего согласия.</p></div></div>
+      <div className="page-head"><div><h1>{t('nav.invitations')}</h1>
+        <p className="sub">{t('cand.inv.sub')}</p></div></div>
       <ErrorBox error={err} />
       {items.length === 0 ? (
-        <div className="card"><Empty icon={<Inbox size={26} />} title="Приглашений пока нет"
-          text="Подтвердите категорию, включите публикацию профиля и привяжите ФСП ID — так вас быстрее найдут."
-          action={<Link className="btn" to="/candidate">В кабинет</Link>} /></div>
+        <div className="card"><Empty icon={<Inbox size={26} />} title={t('cand.inv.emptyTitle')} text={t('cand.inv.emptyText')}
+          action={<Link className="btn" to="/candidate">{t('cand.inv.toCabinet')}</Link>} /></div>
       ) : (
         <div className="split-left">
           <div className="stack">
@@ -72,8 +78,8 @@ export default function CandidateInvitations() {
                 style={{ textAlign: 'left', cursor: 'pointer', font: 'inherit', borderColor: i.id === selectedId ? 'var(--primary)' : undefined, borderWidth: i.id === selectedId ? 2 : 1, padding: 14 }}>
                 <div className="row between"><b className="small">{i.company.name}</b><InvitationStatusBadge status={i.status} /></div>
                 <div className="bold" style={{ marginTop: 4 }}>{i.position_title}</div>
-                <div className="row between" style={{ marginTop: 6 }}><span className="small" style={{ fontWeight: 700, color: 'var(--primary-700)' }}>{salaryRange(i.salary_from, i.salary_to)}</span>
-                  <span className="tiny muted">{ago(i.created_at)}</span></div>
+                <div className="row between" style={{ marginTop: 6 }}><span className="small" style={{ fontWeight: 700, color: 'var(--primary-700)' }}>{fmt.salaryRange(i.salary_from, i.salary_to)}</span>
+                  <span className="tiny muted">{fmt.ago(i.created_at)}</span></div>
               </button>
             ))}
           </div>
@@ -86,38 +92,42 @@ export default function CandidateInvitations() {
               </div>
               <div className="divider" />
               <div className="row between wrap" style={{ alignItems: 'flex-end' }}>
-                <div><div className="small muted">Предложение</div><h2 style={{ marginTop: 4 }}>{current.position_title}</h2>
-                  <div className="small muted" style={{ marginTop: 4 }}>{WORK_FORMAT[current.work_format]}{current.job_title ? ` · по потребности «${current.job_title}»` : ' · без привязки к вакансии'}</div></div>
-                <div style={{ textAlign: 'right' }}><div className="small muted">Зарплата, ₽ в месяц</div><div className="salary lg">{salaryRange(current.salary_from, current.salary_to)}</div></div>
+                <div><div className="small muted">{t('cand.inv.offer')}</div><h2 style={{ marginTop: 4 }}>{current.position_title}</h2>
+                  <div className="small muted" style={{ marginTop: 4 }}>{t(workFormatKey(current.work_format))}
+                    {' · '}{current.job_title ? t('cand.inv.forNeed', { title: current.job_title }) : t('cand.inv.noVacancy')}</div></div>
+                <div style={{ textAlign: 'right' }}><div className="small muted">{t('cand.inv.salary')}</div>
+                  <div className="salary lg">{fmt.salaryRange(current.salary_from, current.salary_to)}</div></div>
               </div>
               <p style={{ marginTop: 18, whiteSpace: 'pre-wrap' }}>{current.description}</p>
-              {current.company.description && <p className="small muted" style={{ marginTop: 10 }}>О компании: {current.company.description}</p>}
+              {current.company.description && <p className="small muted" style={{ marginTop: 10 }}>{t('cand.inv.aboutCompany', { text: current.company.description })}</p>}
 
               {current.match_reasons.length > 0 && (
                 <div className="card flat" style={{ marginTop: 18, background: 'var(--surface-2)' }}>
-                  <div className="row between"><b>Почему выбрали вас</b>{current.match_score != null && <span className="badge violet">совпадение {Math.round(current.match_score * 100)}%</span>}</div>
+                  <div className="row between"><b>{t('cand.inv.whyYou')}</b>
+                    {current.match_score != null && <span className="badge violet">{t('cand.inv.match', { pct: Math.round(current.match_score * 100) })}</span>}</div>
                   <Reasons reasons={current.match_reasons} />
                 </div>
               )}
 
               <div className="card flat" style={{ marginTop: 14 }}>
-                <div className="row"><MessageCircle size={18} color="var(--primary)" /><b>Способ связи с работодателем</b></div>
+                <div className="row"><MessageCircle size={18} color="var(--primary)" /><b>{t('cand.inv.contact')}</b></div>
                 <p style={{ marginTop: 6 }}>{current.contact_method}</p>
               </div>
 
               <div className="row wrap" style={{ marginTop: 20 }}>
                 {(current.status === 'sent' || current.status === 'viewed') ? (
                   <>
-                    <button className="btn success lg" onClick={() => setRespond('accept')}><CheckCircle2 size={18} />Принять</button>
-                    <button className="btn ghost lg" onClick={() => setRespond('reject')}><XCircle size={18} />Отклонить</button>
-                    <span className="small muted">Действует до {date(current.expires_at)}</span>
-                    <button className="btn sm ghost right" onClick={() => setRespond('report')}><Flag size={14} />Пожаловаться</button>
+                    <button className="btn success lg" onClick={() => setRespond('accept')}><CheckCircle2 size={18} />{t('cand.inv.accept')}</button>
+                    <button className="btn ghost lg" onClick={() => setRespond('reject')}><XCircle size={18} />{t('cand.inv.reject')}</button>
+                    <span className="small muted">{t('cand.inv.validUntil', { date: fmt.date(current.expires_at) })}</span>
+                    <button className="btn sm ghost right" onClick={() => setRespond('report')}><Flag size={14} />{t('cand.inv.report')}</button>
                   </>
                 ) : current.status === 'accepted' ? (
                   <div className="alert success" style={{ width: '100%' }}><ShieldCheck size={18} />
-                    <span>Вы приняли приглашение {date(current.responded_at)} — работодатель получил ваши контакты и свяжется с вами.{current.candidate_message ? ` Ваш ответ: «${current.candidate_message}»` : ''}</span></div>
+                    <span>{t('cand.inv.accepted', { date: fmt.date(current.responded_at) })}
+                      {current.candidate_message ? ` ${t('cand.inv.yourReply', { text: current.candidate_message })}` : ''}</span></div>
                 ) : (
-                  <div className="alert info" style={{ width: '100%' }}>Статус: <b>{current.status === 'expired' ? 'срок приглашения истёк' : current.status === 'withdrawn' ? 'работодатель отозвал приглашение' : 'вы отклонили приглашение'}</b>
+                  <div className="alert info" style={{ width: '100%' }}>{t('cand.inv.status')} <b>{closedStatus(current.status)}</b>
                     {current.candidate_message && ` · «${current.candidate_message}»`}</div>
                 )}
               </div>
@@ -127,14 +137,14 @@ export default function CandidateInvitations() {
       )}
 
       {respond && current && (
-        <Modal title={respond === 'accept' ? 'Принять приглашение' : respond === 'reject' ? 'Отклонить приглашение' : 'Пожаловаться'} onClose={() => setRespond(null)}>
-          {respond === 'accept' && <div className="alert info" style={{ marginBottom: 14 }}><ShieldCheck size={18} />Компания «{current.company.name}» увидит ваши ФИО, e-mail, телефон и Telegram.</div>}
-          {respond === 'report' && <p className="small muted" style={{ marginBottom: 10 }}>Например: фиктивная вакансия, зарплата не соответствует, спам. Приглашение будет отклонено, а жалоба учтена при модерации работодателя.</p>}
-          <div className="field"><label htmlFor="invitations-f1">{respond === 'report' ? 'Причина' : 'Сообщение работодателю (необязательно)'}</label>
+        <Modal title={t(`cand.inv.modal.${respond}` as MessageKey)} onClose={() => setRespond(null)}>
+          {respond === 'accept' && <div className="alert info" style={{ marginBottom: 14 }}><ShieldCheck size={18} />{t('cand.inv.acceptNotice', { company: current.company.name })}</div>}
+          {respond === 'report' && <p className="small muted" style={{ marginBottom: 10 }}>{t('cand.inv.reportHint')}</p>}
+          <div className="field"><label htmlFor="invitations-f1">{respond === 'report' ? t('cand.inv.reason') : t('cand.inv.message')}</label>
             <textarea id="invitations-f1" className="textarea" value={message} onChange={(e) => setMessage(e.target.value)} /></div>
           <div className="row" style={{ marginTop: 16 }}>
-            <button className={`btn ${respond === 'accept' ? 'success' : respond === 'reject' ? '' : 'danger'}`} onClick={act} disabled={busy}>{busy ? '…' : 'Подтвердить'}</button>
-            <button className="btn ghost" onClick={() => setRespond(null)}>Отмена</button>
+            <button className={`btn ${respond === 'accept' ? 'success' : respond === 'reject' ? '' : 'danger'}`} onClick={act} disabled={busy}>{busy ? '…' : t('cand.inv.confirm')}</button>
+            <button className="btn ghost" onClick={() => setRespond(null)}>{t('common.cancel')}</button>
           </div>
         </Modal>
       )}

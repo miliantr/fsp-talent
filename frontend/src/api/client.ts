@@ -1,3 +1,5 @@
+import { getLang, translate } from '../i18n/core'
+
 const TOKEN_KEY = 'fsp_talent_token'
 
 export class ApiError extends Error {
@@ -59,7 +61,8 @@ function buildQuery(query?: Query): string {
 }
 
 export async function api<T>(path: string, opts: RequestOptions = {}): Promise<T> {
-  const headers: Record<string, string> = {}
+  // the server renders errors, explanations and reference data in the UI language
+  const headers: Record<string, string> = { 'Accept-Language': getLang() }
   const token = tokenStore.get()
   if (token) headers.Authorization = `Bearer ${token}`
   let body: BodyInit | undefined
@@ -72,7 +75,7 @@ export async function api<T>(path: string, opts: RequestOptions = {}): Promise<T
   try {
     res = await fetch(`/api${path}${buildQuery(opts.query)}`, { method: opts.method ?? 'GET', headers, body })
   } catch {
-    throw new ApiError(0, 'network', 'Сервер недоступен. Проверьте, что backend запущен.')
+    throw new ApiError(0, 'network', translate('error.network'))
   }
   if (res.status === 401 && token) {
     tokenStore.clear()
@@ -81,7 +84,8 @@ export async function api<T>(path: string, opts: RequestOptions = {}): Promise<T
   const text = await res.text()
   const data = text ? JSON.parse(text) : null
   if (!res.ok) {
-    throw new ApiError(res.status, data?.code ?? 'error', data?.message ?? data?.detail ?? `Ошибка ${res.status}`,
+    throw new ApiError(res.status, data?.code ?? 'error',
+      data?.message ?? data?.detail ?? translate('error.status', { status: String(res.status) }),
       data?.details ?? {})
   }
   return data as T
@@ -90,5 +94,5 @@ export async function api<T>(path: string, opts: RequestOptions = {}): Promise<T
 export function errorMessage(e: unknown): string {
   if (e instanceof ApiError) return e.message
   if (e instanceof Error) return e.message
-  return 'Что-то пошло не так'
+  return translate('error.unknown')
 }

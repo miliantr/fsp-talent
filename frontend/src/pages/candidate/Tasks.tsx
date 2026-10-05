@@ -4,10 +4,11 @@ import { api, errorMessage } from '../../api/client'
 import { useApi } from '../../api/hooks'
 import type { TaskOut } from '../../api/types'
 import { Empty, ErrorBox, Loading, Modal, useToast } from '../../components/ui'
-import { ago } from '../../lib/format'
+import { useI18n } from '../../i18n/context'
 
 export default function CandidateTasks() {
   const { data, error, loading, reload } = useApi<TaskOut[]>('/candidate/tasks')
+  const { t, fmt } = useI18n()
   const toast = useToast()
   const [open, setOpen] = useState<TaskOut | null>(null)
   const [answer, setAnswer] = useState('')
@@ -20,7 +21,7 @@ export default function CandidateTasks() {
     setErr(null)
     try {
       await api(`/candidate/tasks/${open.id}/submit`, { method: 'POST', body: { answer } })
-      toast('Решение отправлено — профиль отмечен как активный')
+      toast(t('cand.tasks.sent'))
       setOpen(null)
       setAnswer('')
       await reload()
@@ -33,24 +34,25 @@ export default function CandidateTasks() {
 
   return (
     <div className="stack-lg">
-      <div className="page-head"><div><h1>Короткие задания</h1>
-        <p className="sub">Работодатели периодически публикуют небольшие задачи. Решение или предложенный подход — свежий сигнал о вас: профиль поднимается в подборках как актуальный.</p></div></div>
+      <div className="page-head"><div><h1>{t('nav.tasks')}</h1><p className="sub">{t('cand.tasks.sub')}</p></div></div>
       {loading && !data ? <Loading /> : error ? <ErrorBox error={error} /> : (data ?? []).length === 0 ? (
-        <div className="card"><Empty icon={<ListChecks size={26} />} title="Заданий по вашей специализации пока нет" /></div>
+        <div className="card"><Empty icon={<ListChecks size={26} />} title={t('cand.tasks.empty')} /></div>
       ) : (
         <div className="grid grid-2">
-          {data!.map((t) => (
-            <div key={t.id} className="card stack">
-              <div className="row between"><span className="badge violet">{t.specialization_name}</span><span className="tiny muted">{t.company.name} · {ago(t.created_at)}</span></div>
-              <h3>{t.title}</h3>
-              <p className="small">{t.description}</p>
+          {data!.map((task) => (
+            <div key={task.id} className="card stack">
+              <div className="row between"><span className="badge violet">{task.specialization_name}</span>
+                <span className="tiny muted">{task.company.name} · {fmt.ago(task.created_at)}</span></div>
+              <h3>{task.title}</h3>
+              <p className="small">{task.description}</p>
               <div className="row between" style={{ marginTop: 'auto' }}>
-                <span className="tiny muted">Решений: {t.submissions}</span>
-                {t.my_submission ? (
-                  <span className="badge success">{t.my_submission.rating ? <><Star size={12} />Оценка {t.my_submission.rating}/5</> : 'Отправлено, ждёт оценки'}</span>
-                ) : <button className="btn sm" onClick={() => setOpen(t)}>Предложить решение</button>}
+                <span className="tiny muted">{t('cand.tasks.solutions', { n: task.submissions })}</span>
+                {task.my_submission ? (
+                  <span className="badge success">{task.my_submission.rating
+                    ? <><Star size={12} />{t('cand.tasks.rating', { n: task.my_submission.rating })}</> : t('cand.tasks.awaiting')}</span>
+                ) : <button className="btn sm" onClick={() => setOpen(task)}>{t('cand.tasks.propose')}</button>}
               </div>
-              {t.my_submission?.reviewer_comment && <div className="alert info small">Комментарий: {t.my_submission.reviewer_comment}</div>}
+              {task.my_submission?.reviewer_comment && <div className="alert info small">{t('cand.tasks.comment', { text: task.my_submission.reviewer_comment })}</div>}
             </div>
           ))}
         </div>
@@ -58,11 +60,11 @@ export default function CandidateTasks() {
       {open && (
         <Modal title={open.title} onClose={() => setOpen(null)}>
           <p className="small">{open.description}</p>
-          <div className="field" style={{ marginTop: 14 }}><label htmlFor="tasks-f1">Решение или подход</label>
+          <div className="field" style={{ marginTop: 14 }}><label htmlFor="tasks-f1">{t('cand.tasks.answer')}</label>
             <textarea id="tasks-f1" className="textarea" style={{ minHeight: 180 }} value={answer} onChange={(e) => setAnswer(e.target.value)} /></div>
           <ErrorBox error={err} />
-          <div className="row" style={{ marginTop: 14 }}><button className="btn" disabled={busy || answer.trim().length < 20} onClick={submit}>Отправить</button>
-            <button className="btn ghost" onClick={() => setOpen(null)}>Отмена</button></div>
+          <div className="row" style={{ marginTop: 14 }}><button className="btn" disabled={busy || answer.trim().length < 20} onClick={submit}>{t('cand.tasks.send')}</button>
+            <button className="btn ghost" onClick={() => setOpen(null)}>{t('common.cancel')}</button></div>
         </Modal>
       )}
     </div>

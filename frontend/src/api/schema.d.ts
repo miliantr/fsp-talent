@@ -92,6 +92,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/me/locale": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Сменить язык интерфейса
+         * @description Сохраняет выбранный язык в учётной записи: при входе с другого устройства он восстановится.
+         */
+        put: operations["set_locale_api_auth_me_locale_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/reference": {
         parameters: {
             query?: never;
@@ -99,7 +119,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Специализации, грейды, компетенции, навыки */
+        /**
+         * Специализации, грейды, компетенции, навыки
+         * @description Reference data in the request language (Accept-Language).
+         */
         get: operations["reference_api_reference_get"];
         put?: never;
         post?: never;
@@ -1856,6 +1879,14 @@ export interface components {
              */
             created_at: string;
         };
+        /** LocaleIn */
+        LocaleIn: {
+            /**
+             * Locale
+             * @enum {string}
+             */
+            locale: "ru" | "en";
+        };
         /** LoginIn */
         LoginIn: {
             /**
@@ -2549,6 +2580,13 @@ export interface components {
             is_email_verified: boolean;
             /** Display Name */
             display_name: string;
+            /**
+             * Locale
+             * @description Язык интерфейса (сохраняется в учётной записи)
+             * @default ru
+             * @enum {string}
+             */
+            locale: "ru" | "en";
         };
         /** ValidationError */
         ValidationError: {
@@ -2770,6 +2808,48 @@ export interface operations {
             };
             /** @description Требуется авторизация */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    set_locale_api_auth_me_locale_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LocaleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserOut"];
+                };
+            };
+            /** @description Требуется авторизация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Ошибка валидации */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

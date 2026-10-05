@@ -132,6 +132,18 @@ code, pre { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', Consol
 .tiny { font-size: 12px; }
 .bold { font-weight: 700; }
 .right { margin-left: auto; }
+
+/* language switcher (RU / EN) */
+.lang-switch { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); }
+.lang-switch button { margin: 0 !important; border: 0; background: transparent; font: inherit; font-size: 12px; font-weight: 700;
+  letter-spacing: .02em; padding: 4px 9px; border-radius: 999px; cursor: pointer; color: var(--muted); }
+.lang-switch button:hover { color: var(--primary); }
+.lang-switch button.on { background: var(--primary); color: #fff; }
+.lang-switch button:focus-visible { outline: 2px solid var(--primary-100); outline-offset: 1px; }
+.lang-switch.light { border-color: rgba(255,255,255,.3); background: rgba(255,255,255,.08); }
+.lang-switch.light button { color: rgba(255,255,255,.8); }
+.lang-switch.light button:hover { color: #fff; }
+.lang-switch.light button.on { background: #fff; color: var(--primary-700); }
 .center { text-align: center; }
 .mono { font-family: ui-monospace, Consolas, monospace; }
 .divider { height: 1px; background: var(--border); margin: 14px 0; }

@@ -20,6 +20,8 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useApi } from '../api/hooks'
 import type { Invitation } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
+import { useI18n } from '../i18n/context'
+import { LanguageSwitcher } from './LanguageSwitcher'
 
 interface NavItem { to: string; label: string; icon: ReactNode; end?: boolean; count?: number }
 
@@ -39,6 +41,7 @@ export function Logo() {
 
 export function AppLayout() {
   const { user, signOut } = useAuth()
+  const { t } = useI18n()
   const nav = useNavigate()
   const loc = useLocation()
   const [open, setOpen] = useState(false)
@@ -53,23 +56,23 @@ export function AppLayout() {
   }, [loc.pathname])
 
   const candidateNav: NavItem[] = [
-    { to: '/candidate', label: 'Обзор', icon: <LayoutDashboard size={18} />, end: true },
-    { to: '/candidate/profile', label: 'Профиль и резюме', icon: <UserRound size={18} /> },
-    { to: '/candidate/testing', label: 'Тестирование', icon: <ClipboardCheck size={18} /> },
-    { to: '/candidate/fsp', label: 'Достижения ФСП', icon: <Trophy size={18} /> },
-    { to: '/candidate/invitations', label: 'Приглашения', icon: <Inbox size={18} />, count: newCount },
-    { to: '/candidate/jobs', label: 'Вакансии и отклики', icon: <Briefcase size={18} /> },
-    { to: '/candidate/tasks', label: 'Короткие задания', icon: <ListChecks size={18} /> },
-    { to: '/candidate/settings', label: 'Настройки', icon: <Settings size={18} /> },
+    { to: '/candidate', label: t('nav.overview'), icon: <LayoutDashboard size={18} />, end: true },
+    { to: '/candidate/profile', label: t('nav.profile'), icon: <UserRound size={18} /> },
+    { to: '/candidate/testing', label: t('nav.testing'), icon: <ClipboardCheck size={18} /> },
+    { to: '/candidate/fsp', label: t('nav.fsp'), icon: <Trophy size={18} /> },
+    { to: '/candidate/invitations', label: t('nav.invitations'), icon: <Inbox size={18} />, count: newCount },
+    { to: '/candidate/jobs', label: t('nav.jobs'), icon: <Briefcase size={18} /> },
+    { to: '/candidate/tasks', label: t('nav.tasks'), icon: <ListChecks size={18} /> },
+    { to: '/candidate/settings', label: t('nav.settings'), icon: <Settings size={18} /> },
   ]
   const employerNav: NavItem[] = [
-    { to: '/employer', label: 'Обзор', icon: <LayoutDashboard size={18} />, end: true },
-    { to: '/employer/requirements', label: 'Потребности и подборки', icon: <Sparkles size={18} /> },
-    { to: '/employer/candidates', label: 'Банк кандидатов', icon: <Search size={18} /> },
-    { to: '/employer/invitations', label: 'Приглашения', icon: <Inbox size={18} /> },
-    { to: '/employer/applications', label: 'Отклики на вакансии', icon: <FileText size={18} /> },
-    { to: '/employer/tasks', label: 'Короткие задания', icon: <ListChecks size={18} /> },
-    { to: '/employer/company', label: 'Профиль компании', icon: <Building2 size={18} /> },
+    { to: '/employer', label: t('nav.overview'), icon: <LayoutDashboard size={18} />, end: true },
+    { to: '/employer/requirements', label: t('nav.requirements'), icon: <Sparkles size={18} /> },
+    { to: '/employer/candidates', label: t('nav.bank'), icon: <Search size={18} /> },
+    { to: '/employer/invitations', label: t('nav.invitations'), icon: <Inbox size={18} /> },
+    { to: '/employer/applications', label: t('nav.applications'), icon: <FileText size={18} /> },
+    { to: '/employer/tasks', label: t('nav.tasks'), icon: <ListChecks size={18} /> },
+    { to: '/employer/company', label: t('nav.company'), icon: <Building2 size={18} /> },
   ]
   const items = isCandidate ? candidateNav : employerNav
 
@@ -78,9 +81,9 @@ export function AppLayout() {
       <aside className={`sidebar ${open ? 'open' : ''}`}>
         <NavLink to="/" className="brand">
           <span className="brand-mark"><Logo /></span>
-          <span><div className="brand-name">FSP Talent</div><div className="brand-sub">верифицированный подбор ИТ</div></span>
+          <span><div className="brand-name">FSP Talent</div><div className="brand-sub">{t('nav.brandSub')}</div></span>
         </NavLink>
-        <div className="nav-label">{isCandidate ? 'Кабинет кандидата' : 'Кабинет работодателя'}</div>
+        <div className="nav-label">{isCandidate ? t('nav.candidateCabinet') : t('nav.employerCabinet')}</div>
         {items.map((it) => (
           <NavLink key={it.to} to={it.to} end={it.end} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             {it.icon}<span>{it.label}</span>{it.count ? <span className="count">{it.count}</span> : null}
@@ -88,17 +91,18 @@ export function AppLayout() {
         ))}
         <div className="sidebar-foot">
           <div className="row"><span className="badge light" style={{ background: 'rgba(255,255,255,.15)', color: '#fff' }}>
-            {isCandidate ? <UserRound size={12} /> : <Users size={12} />}{isCandidate ? 'Кандидат' : 'Работодатель'}</span></div>
+            {isCandidate ? <UserRound size={12} /> : <Users size={12} />}{isCandidate ? t('nav.roleCandidate') : t('nav.roleEmployer')}</span>
+            <span className="right"><LanguageSwitcher tone="light" /></span></div>
           <div className="who" style={{ marginTop: 8 }}>{user?.display_name}</div>
           <div className="tiny" style={{ opacity: 0.7 }}>{user?.email}</div>
-          <button className="btn light sm block" onClick={() => { signOut(); nav('/') }}><LogOut size={14} />Выйти</button>
+          <button className="btn light sm block" onClick={() => { signOut(); nav('/') }}><LogOut size={14} />{t('nav.signOut')}</button>
         </div>
       </aside>
       <div className="main">
         <div className="topbar">
-          <button className="icon-btn" style={{ color: '#fff' }} onClick={() => setOpen(!open)} aria-label="Меню"><Menu /></button>
+          <button className="icon-btn" style={{ color: '#fff' }} onClick={() => setOpen(!open)} aria-label={t('nav.menu')}><Menu /></button>
           <span className="brand-name">FSP Talent</span>
-          <span style={{ width: 32 }} />
+          <LanguageSwitcher tone="light" />
         </div>
         <div className="content"><Outlet /></div>
       </div>

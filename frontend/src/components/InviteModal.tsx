@@ -2,7 +2,8 @@ import { Send, ShieldCheck } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { api, errorMessage } from '../api/client'
 import type { Invitation, Requirement } from '../api/types'
-import { WORK_FORMAT } from '../lib/format'
+import { useI18n } from '../i18n/context'
+import { WORK_FORMATS, workFormatKey } from '../lib/format'
 import { ErrorBox, Modal } from './ui'
 
 export function InviteModal({ candidateId, candidateName, requirement, defaultContact, onClose, onSent }: {
@@ -21,6 +22,7 @@ export function InviteModal({ candidateId, candidateName, requirement, defaultCo
     work_format: requirement?.work_format ?? 'any',
     contact_method: defaultContact ?? '',
   })
+  const { t } = useI18n()
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm({ ...form, [k]: e.target.value })
@@ -29,8 +31,8 @@ export function InviteModal({ candidateId, candidateName, requirement, defaultCo
     e.preventDefault()
     const from = Number(form.salary_from)
     const to = Number(form.salary_to)
-    if (!from || !to) return setErr('Укажите зарплатную вилку — это обязательное условие приглашения')
-    if (to < from) return setErr('Верхняя граница вилки меньше нижней')
+    if (!from || !to) return setErr(t('invite.salaryRequired'))
+    if (to < from) return setErr(t('invite.salaryInverted'))
     setBusy(true)
     setErr(null)
     try {
@@ -47,24 +49,23 @@ export function InviteModal({ candidateId, candidateName, requirement, defaultCo
   }
 
   return (
-    <Modal title={`Пригласить: ${candidateName}`} onClose={onClose}>
+    <Modal title={t('invite.title', { name: candidateName })} onClose={onClose}>
       <form className="stack" onSubmit={submit}>
-        <div className="alert violet small"><ShieldCheck size={16} />Кандидат увидит компанию, предложение и зарплату до ответа. Его контакты откроются вам после принятия приглашения.</div>
-        <div className="field"><label htmlFor="invitemodal-f1">Должность / предложение</label><input id="invitemodal-f1" className="input" required minLength={3} value={form.position_title} onChange={set('position_title')} /></div>
-        <div className="field"><label htmlFor="invitemodal-f2">Описание предложения</label><textarea id="invitemodal-f2" className="textarea" required minLength={10} value={form.description} onChange={set('description')}
-          placeholder="Задачи, команда, чем интересно предложение" /></div>
+        <div className="alert violet small"><ShieldCheck size={16} />{t('invite.notice')}</div>
+        <div className="field"><label htmlFor="invitemodal-f1">{t('invite.position')}</label><input id="invitemodal-f1" className="input" required minLength={3} value={form.position_title} onChange={set('position_title')} /></div>
+        <div className="field"><label htmlFor="invitemodal-f2">{t('invite.description')}</label><textarea id="invitemodal-f2" className="textarea" required minLength={10} value={form.description} onChange={set('description')}
+          placeholder={t('invite.descriptionPlaceholder')} /></div>
         <div className="grid grid-3">
-          <div className="field"><label htmlFor="invitemodal-f3">Зарплата от, ₽</label><input id="invitemodal-f3" className="input" type="number" required min={1} step="any" value={form.salary_from} onChange={set('salary_from')} /></div>
-          <div className="field"><label htmlFor="invitemodal-f4">до, ₽</label><input id="invitemodal-f4" className="input" type="number" required min={1} step="any" value={form.salary_to} onChange={set('salary_to')} /></div>
-          <div className="field"><label htmlFor="invitemodal-f5">Формат</label><select id="invitemodal-f5" className="select" value={form.work_format} onChange={set('work_format')}>
-            {Object.entries(WORK_FORMAT).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
+          <div className="field"><label htmlFor="invitemodal-f3">{t('invite.salaryFrom')}</label><input id="invitemodal-f3" className="input" type="number" required min={1} step="any" value={form.salary_from} onChange={set('salary_from')} /></div>
+          <div className="field"><label htmlFor="invitemodal-f4">{t('invite.salaryTo')}</label><input id="invitemodal-f4" className="input" type="number" required min={1} step="any" value={form.salary_to} onChange={set('salary_to')} /></div>
+          <div className="field"><label htmlFor="invitemodal-f5">{t('invite.format')}</label><select id="invitemodal-f5" className="select" value={form.work_format} onChange={set('work_format')}>
+            {WORK_FORMATS.map((k) => <option key={k} value={k}>{t(workFormatKey(k))}</option>)}</select></div>
         </div>
-        <div className="field"><label htmlFor="invitemodal-f6">Способ связи</label><input id="invitemodal-f6" className="input" required minLength={3} value={form.contact_method} onChange={set('contact_method')} placeholder="Telegram @hr, телефон или e-mail рекрутера" /></div>
-        {requirement ? <p className="tiny muted">Приглашение привязано к потребности «{requirement.title}» — кандидат увидит, почему его выбрали.</p>
-          : <p className="tiny muted">Приглашение без привязки к вакансии.</p>}
+        <div className="field"><label htmlFor="invitemodal-f6">{t('invite.contact')}</label><input id="invitemodal-f6" className="input" required minLength={3} value={form.contact_method} onChange={set('contact_method')} placeholder={t('invite.contactPlaceholder')} /></div>
+        <p className="tiny muted">{requirement ? t('invite.linked', { title: requirement.title }) : t('invite.unlinked')}</p>
         <ErrorBox error={err} />
-        <div className="row"><button className="btn" disabled={busy}><Send size={16} />{busy ? 'Отправляем…' : 'Отправить приглашение'}</button>
-          <button type="button" className="btn ghost" onClick={onClose}>Отмена</button></div>
+        <div className="row"><button className="btn" disabled={busy}><Send size={16} />{busy ? t('common.sending') : t('invite.send')}</button>
+          <button type="button" className="btn ghost" onClick={onClose}>{t('common.cancel')}</button></div>
       </form>
     </Modal>
   )

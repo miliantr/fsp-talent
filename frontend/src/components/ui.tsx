@@ -9,7 +9,9 @@ import type {
   ReasonOut,
   SkillMatch,
 } from '../api/types'
-import { APPLICATION_STATUS, COMPONENT_COLORS, date, INVITATION_STATUS, OUTCOME, plural } from '../lib/format'
+import type { MessageKey } from '../i18n/core'
+import { useI18n } from '../i18n/context'
+import { APPLICATION_TONE, COMPONENT_COLORS, INVITATION_TONE, OUTCOME_TONE } from '../lib/format'
 
 export function Loading({ label }: { label?: string }) {
   return (
@@ -23,12 +25,13 @@ export function Loading({ label }: { label?: string }) {
 }
 
 export function ErrorBox({ error, onRetry }: { error: string | null; onRetry?: () => void }) {
+  const { t } = useI18n()
   if (!error) return null
   return (
     <div className="alert error" role="alert">
       <AlertCircle size={18} />
       <div style={{ flex: 1 }}>{error}</div>
-      {onRetry && <button className="btn sm ghost" onClick={onRetry}>Повторить</button>}
+      {onRetry && <button className="btn sm ghost" onClick={onRetry}>{t('common.retry')}</button>}
     </div>
   )
 }
@@ -48,27 +51,28 @@ export function Badge({ tone = 'muted', children }: { tone?: string; children: R
   return <span className={`badge ${tone}`}>{children}</span>
 }
 
-export function InvitationStatusBadge({ status }: { status: string }) {
-  const s = INVITATION_STATUS[status] ?? { label: status, tone: 'muted' }
-  return <Badge tone={s.tone}>{s.label}</Badge>
+function StatusBadge({ kind, status, tones }: { kind: string; status: string; tones: Record<string, string> }) {
+  const { t } = useI18n()
+  const label = t(`status.${kind}.${status}` as MessageKey)
+  return <Badge tone={tones[status] ?? 'muted'}>{label.startsWith('status.') ? status : label}</Badge>
 }
 
-export function ApplicationStatusBadge({ status }: { status: string }) {
-  const s = APPLICATION_STATUS[status] ?? { label: status, tone: 'muted' }
-  return <Badge tone={s.tone}>{s.label}</Badge>
-}
+export const InvitationStatusBadge = ({ status }: { status: string }) =>
+  <StatusBadge kind="invitation" status={status} tones={INVITATION_TONE} />
 
-export function OutcomeBadge({ outcome }: { outcome: string }) {
-  const s = OUTCOME[outcome] ?? { label: outcome, tone: 'muted' }
-  return <Badge tone={s.tone}>{s.label}</Badge>
-}
+export const ApplicationStatusBadge = ({ status }: { status: string }) =>
+  <StatusBadge kind="application" status={status} tones={APPLICATION_TONE} />
+
+export const OutcomeBadge = ({ outcome }: { outcome: string }) =>
+  <StatusBadge kind="outcome" status={outcome} tones={OUTCOME_TONE} />
 
 export function CategoryBadge({ category, size }: { category: Category | null | undefined; size?: 'lg' }) {
+  const { t } = useI18n()
   if (!category) {
-    return <span className={`category none ${size ?? ''}`}><span className="ok"><Minus size={14} /></span>Категория не подтверждена</span>
+    return <span className={`category none ${size ?? ''}`}><span className="ok"><Minus size={14} /></span>{t('category.none')}</span>
   }
   return (
-    <span className={`category ${size ?? ''}`} title="Категория подтверждена тестированием">
+    <span className={`category ${size ?? ''}`} title={t('category.verifiedTitle')}>
       <span className="ok"><ShieldCheck size={size ? 18 : 14} /></span>
       {category.label}
     </span>
@@ -102,8 +106,9 @@ export function Bar({ value, tone }: { value: number; tone?: 'success' | 'warnin
 
 /** 0–100 scaled score with the grade bands (25 Junior / 50 Middle / 75 Senior). */
 export function ScoreScale({ score }: { score: number }) {
+  const { t } = useI18n()
   return (
-    <div className="scale" aria-label={`Шкальный балл ${score} из 100`}>
+    <div className="scale" aria-label={t('scale.aria', { score })}>
       <div className="marker" style={{ left: `${Math.max(2, Math.min(98, score))}%` }}><b>{score}</b><i /></div>
       <div className="track"><i /><i /><i /><i /></div>
       <div className="ticks"><span>&lt; 25</span><span>Junior 25+</span><span>Middle 50+</span><span>Senior 75+</span></div>
@@ -112,7 +117,8 @@ export function ScoreScale({ score }: { score: number }) {
 }
 
 export function CompetencyBars({ items }: { items: CompetencyScore[] }) {
-  if (!items.length) return <p className="muted small">Появятся после тестирования.</p>
+  const { t } = useI18n()
+  if (!items.length) return <p className="muted small">{t('competencies.empty')}</p>
   return (
     <div className="stack">
       {items.map((c) => (
@@ -144,31 +150,34 @@ export function Reasons({ reasons, limit }: { reasons: ReasonOut[]; limit?: numb
 
 /** Contribution of each component to the final score (points out of 100). */
 export function MatchBreakdown({ components, mustGate, detailed }: { components: ComponentOut[]; mustGate?: number; detailed?: boolean }) {
+  const { t, fmt } = useI18n()
   const avail = components.filter((c) => c.available)
+  const pts = (x: number) => fmt.number(Math.round(x * 10) / 10)
   return (
     <div className="stack">
       <div className="stacked" aria-hidden>
         {avail.map((c) => (
-          <i key={c.key} title={`${c.label}: ${c.contribution.toFixed(1)}`}
+          <i key={c.key} title={`${c.label}: ${pts(c.contribution)}`}
             style={{ width: `${c.contribution}%`, background: COMPONENT_COLORS[c.key] }} />
         ))}
       </div>
       <div className="legend">
         {avail.map((c) => (
-          <span key={c.key}><i style={{ background: COMPONENT_COLORS[c.key] }} />{c.label} {c.contribution.toFixed(1)}</span>
+          <span key={c.key}><i style={{ background: COMPONENT_COLORS[c.key] }} />{c.label} {pts(c.contribution)}</span>
         ))}
       </div>
       {detailed && (
         <div className="table-wrap" style={{ marginTop: 6 }}>
           <table className="table">
-            <thead><tr><th>Фактор</th><th>Оценка</th><th>Вес</th><th>Вклад</th><th>Детали</th></tr></thead>
+            <thead><tr><th>{t('breakdown.factor')}</th><th>{t('breakdown.score')}</th><th>{t('breakdown.weight')}</th>
+              <th>{t('breakdown.contribution')}</th><th>{t('breakdown.details')}</th></tr></thead>
             <tbody>
               {components.map((c) => (
                 <tr key={c.key} style={{ opacity: c.available ? 1 : 0.5 }}>
                   <td><span className="row"><i style={{ width: 10, height: 10, borderRadius: 3, background: COMPONENT_COLORS[c.key], display: 'inline-block' }} />{c.label}</span></td>
-                  <td style={{ width: 140 }}>{c.available ? <div className="row"><div style={{ flex: 1 }}><Bar value={c.value * 100} /></div><span className="tiny">{Math.round(c.value * 100)}</span></div> : <span className="muted small">нет данных</span>}</td>
+                  <td style={{ width: 140 }}>{c.available ? <div className="row"><div style={{ flex: 1 }}><Bar value={c.value * 100} /></div><span className="tiny">{Math.round(c.value * 100)}</span></div> : <span className="muted small">{t('breakdown.noData')}</span>}</td>
                   <td className="small">{c.available ? `${Math.round(c.weight * 100)}%` : '—'}</td>
-                  <td className="bold">{c.available ? c.contribution.toFixed(1) : '—'}</td>
+                  <td className="bold">{c.available ? pts(c.contribution) : '—'}</td>
                   <td className="small muted">{c.detail}</td>
                 </tr>
               ))}
@@ -176,7 +185,7 @@ export function MatchBreakdown({ components, mustGate, detailed }: { components:
           </table>
           {mustGate !== undefined && mustGate < 0.999 && (
             <p className="small muted" style={{ marginTop: 8 }}>
-              Множитель покрытия обязательных навыков: <b>×{mustGate.toFixed(2)}</b> (уже учтён во вкладах).
+              {t('breakdown.mustGate')} <b>×{fmt.number(Math.round(mustGate * 100) / 100)}</b> {t('breakdown.mustGateNote')}
             </p>
           )}
         </div>
@@ -186,14 +195,16 @@ export function MatchBreakdown({ components, mustGate, detailed }: { components:
 }
 
 export function SkillMatchChips({ items }: { items: SkillMatch[] }) {
+  const { t } = useI18n()
   return (
     <div className="row wrap">
       {items.map((s) => (
         <span key={s.skill} className={`chip ${s.status === 'missing' ? 'missing' : s.status === 'related' ? 'related' : s.verified ? 'verified' : ''}`}
-          title={s.status === 'related' ? `Близкий навык: ${s.via}` : s.verified ? 'Подтверждён тестом' : s.importance === 'must' ? 'Обязательный' : 'Желательный'}>
+          title={s.status === 'related' ? t('skills.related', { via: s.via ?? '' }) : s.verified ? t('skills.verified')
+            : s.importance === 'must' ? t('skills.must') : t('skills.nice')}>
           {s.status === 'exact' && s.verified && <ShieldCheck size={13} />}
           {s.name}{s.status === 'related' && <span className="tiny"> ≈ {s.via}</span>}
-          {s.importance === 'nice' && <span className="tiny muted">·жел.</span>}
+          {s.importance === 'nice' && <span className="tiny muted">{t('skills.niceShort')}</span>}
         </span>
       ))}
     </div>
@@ -201,14 +212,15 @@ export function SkillMatchChips({ items }: { items: SkillMatch[] }) {
 }
 
 export function FspSummary({ fsp, compact }: { fsp: FSPSummaryView; compact?: boolean }) {
+  const { t } = useI18n()
   if (!fsp.available) {
-    return <span className="badge muted" title="Отсутствие истории ФСП не снижает рейтинг">ФСП: нет истории</span>
+    return <span className="badge muted" title={t('fsp.noHistoryTitle')}>{t('fsp.noHistory')}</span>
   }
   return (
     <span className="badge accent" title={fsp.highlights.join('\n')}>
       <Trophy size={13} />
-      {fsp.count} {plural(fsp.count, 'достижение', 'достижения', 'достижений')} ФСП
-      {!compact && fsp.prizes > 0 && ` · ${fsp.prizes} ${plural(fsp.prizes, 'призовое', 'призовых', 'призовых')}`}
+      {t('fsp.achievements', { n: fsp.count })}
+      {!compact && fsp.prizes > 0 && ` · ${t('fsp.prizes', { n: fsp.prizes })}`}
     </span>
   )
 }
@@ -219,6 +231,7 @@ export function Medal({ place }: { place: number | null | undefined }) {
 }
 
 export function AchievementList({ items }: { items: FSPAchievementView[] }) {
+  const { t, fmt } = useI18n()
   return (
     <div className="stack">
       {items.map((a) => (
@@ -227,13 +240,14 @@ export function AchievementList({ items }: { items: FSPAchievementView[] }) {
           <div style={{ flex: 1 }}>
             <div className="bold">{a.event_name}</div>
             <div className="small muted">
-              {a.discipline} · {a.level_name} · {date(a.date)}
-              {a.participants_total ? ` · ${a.place ? `${a.place} место из ${a.participants_total}` : `${a.participants_total} участников`}` : ''}
+              {a.discipline} · {a.level_name} · {fmt.date(a.date)}
+              {a.participants_total ? ` · ${a.place ? t('fsp.placeOf', { place: a.place, total: a.participants_total })
+                : t('fsp.participants', { n: a.participants_total })}` : ''}
             </div>
             <div className="row wrap" style={{ marginTop: 6 }}>
-              {a.team_name && <Badge tone="outline">Команда «{a.team_name}»</Badge>}
-              {a.role && <Badge tone="violet">Роль: {a.role}</Badge>}
-              {a.score != null && <Badge tone="outline">{a.score} баллов</Badge>}
+              {a.team_name && <Badge tone="outline">{t('fsp.team', { team: a.team_name })}</Badge>}
+              {a.role && <Badge tone="violet">{t('fsp.role', { role: a.role })}</Badge>}
+              {a.score != null && <Badge tone="outline">{t('fsp.points', { n: a.score })}</Badge>}
             </div>
           </div>
         </div>
@@ -243,6 +257,7 @@ export function AchievementList({ items }: { items: FSPAchievementView[] }) {
 }
 
 export function Modal({ title, onClose, children, wide }: { title: ReactNode; onClose: () => void; children: ReactNode; wide?: boolean }) {
+  const { t } = useI18n()
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', onKey)
@@ -251,7 +266,7 @@ export function Modal({ title, onClose, children, wide }: { title: ReactNode; on
   return (
     <div className="modal-back" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal" role="dialog" aria-modal="true" style={wide ? { maxWidth: 860 } : undefined}>
-        <div className="modal-head"><h2>{title}</h2><button className="icon-btn" onClick={onClose} aria-label="Закрыть"><X size={20} /></button></div>
+        <div className="modal-head"><h2>{title}</h2><button className="icon-btn" onClick={onClose} aria-label={t('common.close')}><X size={20} /></button></div>
         <div className="modal-body">{children}</div>
       </div>
     </div>

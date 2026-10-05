@@ -4,22 +4,25 @@ import { api, errorMessage } from '../../api/client'
 import { useApi } from '../../api/hooks'
 import type { Company } from '../../api/types'
 import { ErrorBox, Loading, useToast } from '../../components/ui'
+import type { MessageKey } from '../../i18n/core'
+import { useI18n } from '../../i18n/context'
 
-const FIELDS: { k: keyof Company; label: string; area?: boolean; ph?: string }[] = [
-  { k: 'company_name', label: 'Название компании' },
-  { k: 'industry', label: 'Направление деятельности', ph: 'FinTech, E-commerce…' },
-  { k: 'description', label: 'Описание организации', area: true },
-  { k: 'website', label: 'Сайт' },
-  { k: 'city', label: 'Город' },
-  { k: 'size', label: 'Размер', ph: '50–200' },
-  { k: 'contact_name', label: 'Контактное лицо' },
-  { k: 'contact_email', label: 'E-mail для кандидатов' },
-  { k: 'contact_phone', label: 'Телефон' },
-  { k: 'contact_telegram', label: 'Telegram' },
+const FIELDS: { k: keyof Company; area?: boolean; ph?: string }[] = [
+  { k: 'company_name' },
+  { k: 'industry', ph: 'FinTech, E-commerce…' },
+  { k: 'description', area: true },
+  { k: 'website' },
+  { k: 'city' },
+  { k: 'size', ph: '50–200' },
+  { k: 'contact_name' },
+  { k: 'contact_email' },
+  { k: 'contact_phone' },
+  { k: 'contact_telegram' },
 ]
 
 export default function CompanyPage() {
   const { data, error, loading, setData } = useApi<Company>('/employer/profile')
+  const { t } = useI18n()
   const toast = useToast()
   const [form, setForm] = useState<Record<string, string>>({})
   const [busy, setBusy] = useState(false)
@@ -38,7 +41,7 @@ export default function CompanyPage() {
     setErr(null)
     try {
       setData(await api<Company>('/employer/profile', { method: 'PUT', body: form }))
-      toast('Профиль компании сохранён')
+      toast(t('emp.company.saved'))
     } catch (ex) {
       setErr(errorMessage(ex))
     } finally {
@@ -48,14 +51,15 @@ export default function CompanyPage() {
 
   return (
     <form className="stack-lg" onSubmit={submit}>
-      <div className="page-head"><div><h1>Профиль компании</h1><p className="sub">Кандидат видит эти данные в каждом приглашении.</p></div>
-        <button className="btn" disabled={busy}><Save size={16} />{busy ? 'Сохраняем…' : 'Сохранить'}</button></div>
+      <div className="page-head"><div><h1>{t('nav.company')}</h1><p className="sub">{t('emp.company.sub')}</p></div>
+        <button className="btn" disabled={busy}><Save size={16} />{busy ? t('common.saving') : t('common.save')}</button></div>
       <ErrorBox error={err} />
       <div className="card"><div className="grid grid-2">
         {FIELDS.map((f) => (
-          <div key={f.k} className="field" style={f.area ? { gridColumn: '1 / -1' } : undefined}><label>{f.label}</label>
-            {f.area ? <textarea className="textarea" value={form[f.k] ?? ''} onChange={(e) => setForm({ ...form, [f.k]: e.target.value })} />
-              : <input className="input" placeholder={f.ph} value={form[f.k] ?? ''} onChange={(e) => setForm({ ...form, [f.k]: e.target.value })} />}</div>
+          <div key={f.k} className="field" style={f.area ? { gridColumn: '1 / -1' } : undefined}>
+            <label htmlFor={`company-${f.k}`}>{t(`emp.company.field.${f.k}` as MessageKey)}</label>
+            {f.area ? <textarea id={`company-${f.k}`} className="textarea" value={form[f.k] ?? ''} onChange={(e) => setForm({ ...form, [f.k]: e.target.value })} />
+              : <input id={`company-${f.k}`} className="input" placeholder={f.ph} value={form[f.k] ?? ''} onChange={(e) => setForm({ ...form, [f.k]: e.target.value })} />}</div>
         ))}
       </div></div>
     </form>

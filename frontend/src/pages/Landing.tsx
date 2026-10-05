@@ -5,23 +5,27 @@ import { api, errorMessage } from '../api/client'
 import type { TokenOut } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import { Logo } from '../components/AppLayout'
+import { LanguageSwitcher } from '../components/LanguageSwitcher'
+import type { MessageKey } from '../i18n/core'
+import { useI18n } from '../i18n/context'
 
 const DEMO = [
-  { email: 'candidate@demo.ru', role: 'candidate', title: 'Кандидат · Backend Middle', text: 'Подтверждённая категория, достижения ФСП, входящие приглашения' },
-  { email: 'fresh@demo.ru', role: 'candidate', title: 'Кандидат без теста', text: 'Профиль заполнен — можно сразу пройти тестирование' },
-  { email: 'hr@demo.ru', role: 'employer', title: 'Работодатель', text: '«Технологии Будущего»: потребности, подборки, приглашения' },
-]
+  { email: 'candidate@demo.ru', role: 'candidate', key: 'candidate' },
+  { email: 'fresh@demo.ru', role: 'candidate', key: 'fresh' },
+  { email: 'hr@demo.ru', role: 'employer', key: 'employer' },
+] as const
 
 const FLOW = [
-  { icon: <UserRound size={20} />, title: 'Опрос', text: 'Специализация и предполагаемый грейд' },
-  { icon: <ClipboardCheck size={20} />, title: 'Тест на грейд', text: 'Индивидуальный вариант сопоставимой сложности' },
-  { icon: <BadgeCheck size={20} />, title: 'Категория', text: '«Backend · Middle» + достижения ФСП' },
-  { icon: <Sparkles size={20} />, title: 'Подборка', text: 'Работодатель описывает потребность и получает рейтинг с объяснением' },
-  { icon: <Handshake size={20} />, title: 'Приглашение', text: 'С зарплатной вилкой — кандидат видит условия до начала общения' },
-]
+  { icon: <UserRound size={20} />, key: 'survey' },
+  { icon: <ClipboardCheck size={20} />, key: 'test' },
+  { icon: <BadgeCheck size={20} />, key: 'category' },
+  { icon: <Sparkles size={20} />, key: 'shortlist' },
+  { icon: <Handshake size={20} />, key: 'invitation' },
+] as const
 
 export default function Landing() {
   const { user, signIn } = useAuth()
+  const { t } = useI18n()
   const nav = useNavigate()
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -30,9 +34,9 @@ export default function Landing() {
     setBusy(email)
     setError(null)
     try {
-      const t = await api<TokenOut>('/auth/login', { method: 'POST', body: { email, password: 'demo12345' } })
-      signIn(t)
-      nav(t.user.role === 'candidate' ? '/candidate' : '/employer')
+      const res = await api<TokenOut>('/auth/login', { method: 'POST', body: { email, password: 'demo12345' } })
+      signIn(res)
+      nav(res.user.role === 'candidate' ? '/candidate' : '/employer')
     } catch (e) {
       setError(errorMessage(e))
     } finally {
@@ -46,56 +50,54 @@ export default function Landing() {
         <div className="hero-inner">
           <div className="hero-nav">
             <Link to="/" className="brand"><span className="brand-mark"><Logo /></span>
-              <span><div className="brand-name">FSP Talent</div><div className="brand-sub">Федерация спортивного программирования</div></span></Link>
+              <span><div className="brand-name">FSP Talent</div><div className="brand-sub">{t('landing.brandSub')}</div></span></Link>
             <div className="row">
+              <LanguageSwitcher tone="light" />
               {user ? (
-                <Link className="btn white" to={user.role === 'candidate' ? '/candidate' : '/employer'}>Мой кабинет <ArrowRight size={16} /></Link>
+                <Link className="btn white" to={user.role === 'candidate' ? '/candidate' : '/employer'}>{t('landing.myCabinet')} <ArrowRight size={16} /></Link>
               ) : (
-                <><Link className="btn light" to="/login">Войти</Link><Link className="btn white" to="/register">Регистрация</Link></>
+                <><Link className="btn light" to="/login">{t('landing.signIn')}</Link><Link className="btn white" to="/register">{t('landing.register')}</Link></>
               )}
             </div>
           </div>
-          <div className="pill" style={{ marginTop: 48 }}><ShieldCheck size={15} />Обратная механика подбора · верифицированные профили</div>
-          <h1>Работодатель сам находит вас — по подтверждённым навыкам, а&nbsp;не&nbsp;по&nbsp;ключевым словам</h1>
-          <p className="lead">Кандидат проходит тест на заявленный грейд и получает категорию. Работодатель описывает потребность,
-            видит ранжированную подборку с объяснением и отправляет приглашение с зарплатой. Достижения ФСП усиливают профиль.</p>
+          <div className="pill" style={{ marginTop: 48 }}><ShieldCheck size={15} />{t('landing.pill')}</div>
+          <h1>{t('landing.title')}</h1>
+          <p className="lead">{t('landing.lead')}</p>
           <div className="row wrap" style={{ marginTop: 30, gap: 12 }}>
-            <Link className="btn white lg" to="/register?role=candidate"><UserRound size={18} />Я ищу работу</Link>
-            <Link className="btn light lg" to="/register?role=employer"><Building2 size={18} />Я нанимаю</Link>
+            <Link className="btn white lg" to="/register?role=candidate"><UserRound size={18} />{t('landing.ctaCandidate')}</Link>
+            <Link className="btn light lg" to="/register?role=employer"><Building2 size={18} />{t('landing.ctaEmployer')}</Link>
           </div>
         </div>
       </section>
 
       <section className="landing-section">
-        <h2>Как это работает</h2>
-        <p className="muted" style={{ marginTop: 6 }}>Инициатива у работодателя: кандидат не рассылает отклики вслепую.</p>
+        <h2>{t('landing.howTitle')}</h2>
+        <p className="muted" style={{ marginTop: 6 }}>{t('landing.howSub')}</p>
         <div className="flow" style={{ marginTop: 22 }}>
           {FLOW.map((f, i) => (
-            <div key={f.title} className="card">
+            <div key={f.key} className="card">
               <div className="row between"><span className="step-num">{i + 1}</span><span style={{ color: 'var(--primary)' }}>{f.icon}</span></div>
-              <h3 style={{ marginTop: 14 }}>{f.title}</h3>
-              <p className="small muted" style={{ marginTop: 4 }}>{f.text}</p>
+              <h3 style={{ marginTop: 14 }}>{t(`landing.flow.${f.key}.title` as MessageKey)}</h3>
+              <p className="small muted" style={{ marginTop: 4 }}>{t(`landing.flow.${f.key}.text` as MessageKey)}</p>
             </div>
           ))}
         </div>
 
         <div className="grid grid-3" style={{ marginTop: 36 }}>
-          <div className="card"><h3 className="row"><ClipboardCheck size={18} color="var(--primary)" />Тест, который нельзя «слить»</h3>
-            <p className="small muted" style={{ marginTop: 8 }}>Варианты собираются из калиброванного банка по единому плану (blueprint),
-              параметрические задания генерируют новые числа, оценка — по IRT, подозрительные паттерны требуют подтверждения.</p></div>
-          <div className="card"><h3 className="row"><Sparkles size={18} color="var(--primary)" />Объяснимый матчинг</h3>
-            <p className="small muted" style={{ marginTop: 8 }}>Каждый процент совпадения раскладывается на вклад факторов: стек, тест, грейд,
-              ФСП, актуальность, зарплата. Видно, почему кандидат A выше кандидата B.</p></div>
-          <div className="card"><h3 className="row"><Trophy size={18} color="var(--accent)" />ФСП как сигнал, а не фильтр</h3>
-            <p className="small muted" style={{ marginTop: 8 }}>Достижения автоматически подтягиваются из реестра ФСП и поднимают профиль.
-              Нет истории — нет штрафа: используется нейтральная база.</p></div>
+          <div className="card"><h3 className="row"><ClipboardCheck size={18} color="var(--primary)" />{t('landing.feature.test.title')}</h3>
+            <p className="small muted" style={{ marginTop: 8 }}>{t('landing.feature.test.text')}</p></div>
+          <div className="card"><h3 className="row"><Sparkles size={18} color="var(--primary)" />{t('landing.feature.matching.title')}</h3>
+            <p className="small muted" style={{ marginTop: 8 }}>{t('landing.feature.matching.text')}</p></div>
+          <div className="card"><h3 className="row"><Trophy size={18} color="var(--accent)" />{t('landing.feature.fsp.title')}</h3>
+            <p className="small muted" style={{ marginTop: 8 }}>{t('landing.feature.fsp.text')}</p></div>
         </div>
       </section>
 
       <section className="landing-section" style={{ paddingTop: 0 }}>
         <div className="card" style={{ padding: 26 }}>
           <div className="row between wrap">
-            <div><h2>Демо-доступ</h2><p className="muted small" style={{ marginTop: 6 }}>Пароль у всех демо-аккаунтов: <b className="mono">demo12345</b></p></div>
+            <div><h2>{t('landing.demo.title')}</h2>
+              <p className="muted small" style={{ marginTop: 6 }}>{t('landing.demo.password')} <b className="mono">demo12345</b></p></div>
           </div>
           {error && <div className="alert error" style={{ marginTop: 14 }}>{error}</div>}
           <div className="grid grid-3" style={{ marginTop: 18 }}>
@@ -103,16 +105,16 @@ export default function Landing() {
               <div key={d.email} className="card flat" style={{ background: 'var(--surface-2)' }}>
                 <div className="demo-acc">
                   <span className="avatar">{d.role === 'candidate' ? <UserRound size={20} /> : <Building2 size={20} />}</span>
-                  <div><div className="bold">{d.title}</div><div className="tiny muted mono">{d.email}</div></div>
+                  <div><div className="bold">{t(`landing.demo.${d.key}.title` as MessageKey)}</div><div className="tiny muted mono">{d.email}</div></div>
                 </div>
-                <p className="small muted" style={{ margin: '10px 0 14px', minHeight: 40 }}>{d.text}</p>
+                <p className="small muted" style={{ margin: '10px 0 14px', minHeight: 40 }}>{t(`landing.demo.${d.key}.text` as MessageKey)}</p>
                 <button className="btn block" disabled={busy !== null} onClick={() => demoLogin(d.email)}>
-                  {busy === d.email ? 'Входим…' : 'Войти в демо'}</button>
+                  {busy === d.email ? t('landing.demo.signingIn') : t('landing.demo.signIn')}</button>
               </div>
             ))}
           </div>
         </div>
-        <p className="center tiny muted" style={{ marginTop: 28 }}>FSP Talent · MVP для хакатона ФСП · API: <a href="/api/docs">/api/docs</a></p>
+        <p className="center tiny muted" style={{ marginTop: 28 }}>{t('landing.footer')} <a href="/api/docs">/api/docs</a></p>
       </section>
     </div>
   )

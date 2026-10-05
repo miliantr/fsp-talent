@@ -5,6 +5,7 @@ import { api, ApiError, errorMessage } from '../../api/client'
 import { useApi } from '../../api/hooks'
 import type { AnswerOut, Attempt, TestResult } from '../../api/types'
 import { ErrorBox, Loading, Modal, RichText } from '../../components/ui'
+import { useI18n } from '../../i18n/context'
 import { useReference } from '../../lib/reference'
 
 type AnswerVal = (number | string)[]
@@ -12,7 +13,10 @@ type AnswerVal = (number | string)[]
 export default function TestRunner() {
   const { attemptId } = useParams()
   const nav = useNavigate()
+  const { t } = useI18n()
   const { specName, gradeName } = useReference()
+  // the question texts come from the server in the UI language; switching it mid-test re-fetches the same
+  // questions translated (same options in the same order, so given answers stay valid)
   const { data, error, loading } = useApi<Attempt>(`/candidate/testing/attempts/${attemptId}`)
   const [idx, setIdx] = useState(0)
   const [answers, setAnswers] = useState<Record<number, AnswerVal>>({})
@@ -30,9 +34,9 @@ export default function TestRunner() {
       return
     }
     setOffset(new Date(data.server_time).getTime() - Date.now())
-    setAnswers(Object.fromEntries(data.items.filter((i) => i.answer).map((i) => [i.id, i.answer as AnswerVal])))
-    const t = window.setInterval(() => setNow(Date.now()), 1000)
-    return () => window.clearInterval(t)
+    setAnswers((prev) => ({ ...Object.fromEntries(data.items.filter((i) => i.answer).map((i) => [i.id, i.answer as AnswerVal])), ...prev }))
+    const timer = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(timer)
   }, [data, nav])
 
   const remaining = useMemo(() => {
@@ -40,7 +44,7 @@ export default function TestRunner() {
     return Math.max(0, Math.floor((new Date(data.deadline_at).getTime() - (now + offset)) / 1000))
   }, [data, now, offset])
 
-  if (loading && !data) return <Loading label="Загружаем ваш вариант…" />
+  if (loading && !data) return <Loading label={t('test.run.loading')} />
   if (error) return <ErrorBox error={error} />
   if (!data) return null
   const item = data.items[idx]
@@ -87,11 +91,12 @@ export default function TestRunner() {
   return (
     <div className="stack-lg">
       <div className="page-head">
-        <div><h1>Тест: {specName(data.specialization_id)} · {gradeName(data.target_grade)}</h1>
-          <p className="sub">Ответы сохраняются автоматически. Можно переходить между вопросами в любом порядке.</p></div>
+        <div><h1>{t('test.run.title', { spec: specName(data.specialization_id), grade: gradeName(data.target_grade) })}</h1>
+          <p className="sub">{t('test.run.sub')}</p></div>
         <div className="row">
-          <span className={`badge ${remaining < 300 ? 'danger' : 'violet'}`} style={{ fontSize: 15, padding: '8px 14px' }}><Clock size={16} />{mm}:{ss}</span>
-          <button className="btn" onClick={() => setConfirm(true)}><Flag size={16} />Завершить</button>
+          <span className={`badge ${remaining < 300 ? 'danger' : 'violet'}`} style={{ fontSize: 15, padding: '8px 14px' }}
+            aria-label={t('test.run.timeLeft', { time: `${mm}:${ss}` })}><Clock size={16} />{mm}:{ss}</span>
+          <button className="btn" onClick={() => setConfirm(true)}><Flag size={16} />{t('test.run.finish')}</button>
         </div>
       </div>
       <ErrorBox error={err} />
@@ -99,25 +104,25 @@ export default function TestRunner() {
       <div className="split">
         <div className="card" style={{ padding: 26 }}>
           <div className="row between" style={{ marginBottom: 14 }}>
-            <span className="badge violet">Вопрос {idx + 1} из {data.total}</span>
+            <span className="badge violet">{t('test.run.question', { n: idx + 1, total: data.total })}</span>
             <span className="badge outline">{item.competency_name}</span>
           </div>
           <RichText text={item.text} />
           <div className="stack" style={{ marginTop: 22 }}>
             {item.qtype === 'numeric' ? (
               <div className="field" style={{ maxWidth: 320 }}>
-                <label htmlFor="num">Ваш ответ (число)</label>
-                <input id="num" className="input" inputMode="decimal" value={current[0] ?? ''} placeholder="Например, 42"
+                <label htmlFor="num">{t('test.run.numeric')}</label>
+                <input id="num" className="input" inputMode="decimal" value={current[0] ?? ''} placeholder={t('test.run.numericPlaceholder')}
                   onChange={(e) => setAnswers((a) => ({ ...a, [item.id]: [e.target.value] }))}
                   onBlur={(e) => e.target.value.trim() && save([e.target.value])} />
               </div>
             ) : (
               <>
-                {item.qtype === 'multi' && <span className="small muted">Выберите все верные варианты</span>}
+                {item.qtype === 'multi' && <span className="small muted">{t('test.run.multi')}</span>}
                 {item.options.map((o, i) => {
                   const on = current.includes(i)
                   return (
-                    <button key={i} className={`option ${item.qtype === 'multi' ? 'multi' : ''} ${on ? 'on' : ''}`} onClick={() => choose(i)}>
+                    <button key={i} className={`option ${item.qtype === 'multi' ? 'multi' : ''} ${on ? 'on' : ''}`} onClick={() => choose(i)} aria-pressed={on}>
                       <span className="mark">{on && <Check size={14} />}</span><span style={{ flex: 1 }}><RichText text={o} /></span>
                     </button>
                   )
@@ -126,23 +131,24 @@ export default function TestRunner() {
             )}
           </div>
           <div className="row between" style={{ marginTop: 24 }}>
-            <button className="btn ghost" disabled={idx === 0} onClick={() => setIdx(idx - 1)}><ChevronLeft size={16} />Назад</button>
-            <span className="small muted">{saving ? 'Сохраняем…' : current.length ? 'Ответ сохранён' : ''}</span>
+            <button className="btn ghost" disabled={idx === 0} onClick={() => setIdx(idx - 1)}><ChevronLeft size={16} />{t('test.run.back')}</button>
+            <span className="small muted">{saving ? t('test.run.saving') : current.length ? t('test.run.saved') : ''}</span>
             {idx < data.total - 1
-              ? <button className="btn" onClick={() => setIdx(idx + 1)}>Далее<ChevronRight size={16} /></button>
-              : <button className="btn success" onClick={() => setConfirm(true)}><Flag size={16} />Завершить тест</button>}
+              ? <button className="btn" onClick={() => setIdx(idx + 1)}>{t('test.run.next')}<ChevronRight size={16} /></button>
+              : <button className="btn success" onClick={() => setConfirm(true)}><Flag size={16} />{t('test.run.finishTest')}</button>}
           </div>
         </div>
         <div className="card sticky stack">
-          <div className="row between"><b>Прогресс</b><span className="small muted">{answeredCount} / {data.total}</span></div>
+          <div className="row between"><b>{t('test.run.progress')}</b><span className="small muted">{answeredCount} / {data.total}</span></div>
           <div className="bar"><i style={{ width: `${(answeredCount / data.total) * 100}%` }} /></div>
           <div className="qnav" style={{ marginTop: 8 }}>
             {data.items.map((it, i) => (
-              <button key={it.id} className={`${answers[it.id]?.length ? 'done' : ''} ${i === idx ? 'cur' : ''}`} onClick={() => setIdx(i)} aria-label={`Вопрос ${i + 1}`}>{i + 1}</button>
+              <button key={it.id} className={`${answers[it.id]?.length ? 'done' : ''} ${i === idx ? 'cur' : ''}`} onClick={() => setIdx(i)}
+                aria-label={t('test.run.question', { n: i + 1, total: data.total })}>{i + 1}</button>
             ))}
           </div>
           <div className="divider" />
-          <div className="small muted">План варианта (одинаков для всех кандидатов):</div>
+          <div className="small muted">{t('test.run.blueprint')}</div>
           {Object.entries(data.blueprint.competency_quota).map(([k, v]) => (
             <div key={k} className="row between tiny"><span>{data.items.find((i) => i.competency_id === k)?.competency_name ?? k}</span><b>{v}</b></div>
           ))}
@@ -150,11 +156,11 @@ export default function TestRunner() {
       </div>
 
       {confirm && (
-        <Modal title="Завершить тест?" onClose={() => setConfirm(false)}>
-          <p>Отвечено {answeredCount} из {data.total}. {answeredCount < data.total && 'Неотвеченные вопросы засчитываются как неверные.'}</p>
+        <Modal title={t('test.run.confirmTitle')} onClose={() => setConfirm(false)}>
+          <p>{t('test.run.answered', { n: answeredCount, total: data.total })} {answeredCount < data.total && t('test.run.unanswered')}</p>
           <div className="row" style={{ marginTop: 18 }}>
-            <button className="btn" onClick={finish} disabled={finishing}>{finishing ? 'Считаем результат…' : 'Завершить и узнать результат'}</button>
-            <button className="btn ghost" onClick={() => setConfirm(false)}>Вернуться к вопросам</button>
+            <button className="btn" onClick={finish} disabled={finishing}>{finishing ? t('test.run.counting') : t('test.run.finishAndSee')}</button>
+            <button className="btn ghost" onClick={() => setConfirm(false)}>{t('test.run.backToQuestions')}</button>
           </div>
         </Modal>
       )}

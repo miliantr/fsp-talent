@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
+import { useI18n } from '../i18n/context'
 import { api, errorMessage, type RequestOptions } from './client'
 
 export interface ApiState<T> {
@@ -9,8 +10,10 @@ export interface ApiState<T> {
   setData: Dispatch<SetStateAction<T | null>>
 }
 
-/** GET a resource; `path = null` skips the request. Re-fetches when `path` or `query` change. */
+/** GET a resource; `path = null` skips the request. Re-fetches when `path`, `query` or the UI language
+ * change (texts rendered by the server — explanations, reasons, reference names — follow the language). */
 export function useApi<T>(path: string | null, query?: RequestOptions['query']): ApiState<T> {
+  const { lang } = useI18n()
   const [data, setData] = useState<T | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState<boolean>(path !== null)
@@ -30,7 +33,8 @@ export function useApi<T>(path: string | null, query?: RequestOptions['query']):
     } finally {
       if (id === seq.current) setLoading(false)
     }
-  }, [path, queryKey])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [path, queryKey, lang])
 
   useEffect(() => {
     void load()
