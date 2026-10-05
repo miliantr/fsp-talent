@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import { api, errorMessage, type RequestOptions } from './client'
 
 export interface ApiState<T> {
@@ -6,7 +6,7 @@ export interface ApiState<T> {
   error: string | null
   loading: boolean
   reload: () => Promise<void>
-  setData: (d: T | null) => void
+  setData: Dispatch<SetStateAction<T | null>>
 }
 
 /** GET a resource; `path = null` skips the request. Re-fetches when `path` or `query` change. */

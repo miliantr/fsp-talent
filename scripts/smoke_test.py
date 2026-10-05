@@ -54,11 +54,16 @@ def main() -> int:
     ok(c.put("/candidate/settings", headers=cand, json={"consent_publication": True}))
     cand_id = c.get("/candidate/profile", headers=cand).json()["id"]
 
-    r = c.post("/auth/login", json={"email": "hr@demo.ru", "password": "demo12345"})
+    # a throwaway employer, so the demo accounts stay untouched
+    emp_email = f"smoke-hr{int(time.time())}@example.com"
+    r = c.post("/auth/register", json={"email": emp_email, "password": "smoketest123", "role": "employer",
+                                       "consent_processing": True, "company_name": "Smoke Co"})
+    ok(r, 201)
+    r = c.post("/auth/verify-email", json={"email": emp_email, "code": r.json()["dev_code"]})
     ok(r)
     emp = {"Authorization": f"Bearer {r.json()['access_token']}"}
     r = c.post("/employer/requirements", headers=emp, json={
-        "title": "Smoke Backend", "specialization_id": "backend", "grade_id": "middle",
+        "title": "Smoke Backend", "specialization_id": "backend", "grade_id": "middle", "is_public": True,
         "must_skills": ["python", "fastapi", "postgresql", "docker"], "salary_from": 180000, "salary_to": 250000})
     ok(r, 201)
     job_id = r.json()["id"]
@@ -82,6 +87,12 @@ def main() -> int:
         d = c.get(f"/employer/candidates/{target}", headers=emp).json()
         assert d["contacts"] and d["contacts"]["email"] == email
         print("invitation accepted, contacts disclosed:", d["contacts"]["email"])
+    else:
+        # secondary scenario: the candidate applies to the published vacancy -> contacts are disclosed
+        ok(c.post("/applications", headers=cand, json={"job_id": job_id, "cover_letter": "smoke"}), 201)
+        apps = c.get("/employer/applications", headers=emp, params={"job_id": job_id}).json()
+        assert apps and apps[0]["contacts"]["email"] == email
+        print("application received, contacts disclosed:", apps[0]["contacts"]["email"])
     print("SMOKE OK")
     return 0
 

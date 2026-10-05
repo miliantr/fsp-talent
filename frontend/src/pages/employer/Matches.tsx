@@ -30,6 +30,7 @@ export default function Matches() {
   const toast = useToast()
   const [f, setF] = useState<Filters>(NO_FILTERS)
   const [refreshing, setRefreshing] = useState(false)
+  const [showAllCats, setShowAllCats] = useState(false)
   const query = {
     grades: f.grades, categories: f.categories, has_fsp: f.has_fsp || undefined, min_score: f.min_score || undefined,
     skills: f.skills, shortlisted: f.shortlisted || undefined,
@@ -48,6 +49,9 @@ export default function Matches() {
   const toggle = <K extends 'grades' | 'categories' | 'skills'>(k: K, v: string) =>
     setF({ ...f, [k]: f[k].includes(v) ? f[k].filter((x) => x !== v) : [...f[k], v] })
   const filtersOn = JSON.stringify(f) !== JSON.stringify(NO_FILTERS)
+  // categories that really fit the need come first; the long tail of adjacent ones is collapsed
+  const strongCats = data.categories.filter((c, i) => i < 3 || c.top_percent >= 60 || f.categories.includes(c.label))
+  const hiddenCats = data.categories.length - strongCats.length
 
   const shortlist = async (c: CandidateCard) => {
     try {
@@ -111,10 +115,14 @@ export default function Matches() {
           <h3>Рекомендованные категории</h3><span className="small muted">{data.total} кандидатов в подборке · движок v{data.engine_version} · {ago(data.computed_at)}</span>
         </div>
         <div className="row wrap">
-          {data.categories.map((c) => (
+          {(showAllCats ? data.categories : strongCats).map((c) => (
             <button key={c.label} className={`chip selectable ${f.categories.includes(c.label) ? 'on' : ''}`} onClick={() => toggle('categories', c.label)}>
               <b>{c.label}</b> · {c.count} · ср. {c.avg_percent}% · макс. {c.top_percent}%</button>
           ))}
+          {hiddenCats > 0 && (
+            <button className="chip selectable" onClick={() => setShowAllCats(!showAllCats)}>
+              {showAllCats ? 'Свернуть' : `ещё ${hiddenCats} смежных категорий`}</button>
+          )}
         </div>
       </div>
 
@@ -178,7 +186,9 @@ export default function Matches() {
                 {c.invitation_status ? <InvitationStatusBadge status={c.invitation_status} /> : null}
                 {c.applied && <span className="badge info">откликнулся сам</span>}
                 <Link className="btn secondary sm" to={`/employer/candidates/${c.candidate_id}?requirement_id=${jobId}`}>Профиль и объяснение<ChevronRight size={14} /></Link>
-                <button className="btn sm" disabled={c.invitation_status === 'sent' || c.invitation_status === 'viewed'} onClick={() => setInvite(c)}><Send size={14} />Пригласить</button>
+                {c.invitation_status === 'sent' || c.invitation_status === 'viewed'
+                  ? <button className="btn sm" disabled title="Ждём ответа кандидата"><Send size={14} />Приглашение отправлено</button>
+                  : <button className="btn sm" onClick={() => setInvite(c)}><Send size={14} />Пригласить</button>}
                 <div className="row">
                   <button className="btn sm ghost" style={{ flex: 1 }} onClick={() => shortlist(c)} title="В избранное">
                     <Star size={14} fill={c.shortlisted ? 'var(--gold)' : 'none'} color={c.shortlisted ? 'var(--gold)' : 'currentColor'} /></button>

@@ -172,6 +172,14 @@ EVIDENCE_STRENGTH = 0.25
 TEST_COMPETENCY_SHARE = 0.35
 MUST_GATE_FULL = 0.92
 
+FORMAT_NAMES = {"remote": "удалённо", "office": "офис", "hybrid": "гибрид", "any": "любой"}
+
+
+def _lower_first(s: str) -> str:
+    """'Достижения ФСП' -> 'достижения ФСП' (keeps abbreviations intact)."""
+    return s[:1].lower() + s[1:]
+
+
 GRADE_FIT = {0: 1.0, 1: 0.6, -1: 0.4}  # |diff| >= 2 is excluded by the hard gate
 FORMAT_FIT = {
     "remote": {"remote": 1.0, "office": 0.75, "hybrid": 0.9, "any": 1.0},
@@ -261,7 +269,7 @@ def _freshness_component(c, now: datetime):
         return Component("freshness", 0.5, 0, True, "нет данных"), None
     days = max(0, (now - max(stamps)).days)
     return Component("freshness", 0.5 ** (days / FRESHNESS_HALF_LIFE_DAYS), 0, True,
-                     f"{days} дн. назад"), days
+                     "сегодня" if days == 0 else f"{days} дн. назад"), days
 
 
 def _salary_component(c, job):
@@ -282,10 +290,12 @@ def _experience_component(c, job):
 
 def _format_component(c, job):
     value = FORMAT_FIT.get(job.work_format, FORMAT_FIT["any"]).get(c.work_format, 1.0)
+    detail = f"{FORMAT_NAMES.get(c.work_format, c.work_format)} / {FORMAT_NAMES.get(job.work_format, job.work_format)}"
     if job.work_format in ("office", "hybrid") and c.work_format != "remote" and job.city and c.city \
             and job.city.lower() != c.city.lower():
         value *= 0.7
-    return Component("format", value, 0, True, f"{c.work_format} / {job.work_format}")
+        detail += f", другой город ({c.city})"
+    return Component("format", value, 0, True, detail)
 
 
 # ------------------------------------------------------------------ public API
@@ -374,9 +384,9 @@ def compare(a: MatchScore, b: MatchScore) -> dict:
     minus = [d for d in deltas if d["delta"] < 0][:2]
     text = f"Разница {a.percent - b.percent:+d} п."
     if plus:
-        text += " Преимущество: " + ", ".join(f"{d['label'].lower()} ({d['delta']:+.1f})" for d in plus) + "."
+        text += " Преимущество: " + ", ".join(f"{_lower_first(d['label'])} ({d['delta']:+.1f})" for d in plus) + "."
     if minus:
-        text += " Уступает: " + ", ".join(f"{d['label'].lower()} ({d['delta']:+.1f})" for d in minus) + "."
+        text += " Уступает: " + ", ".join(f"{_lower_first(d['label'])} ({d['delta']:+.1f})" for d in minus) + "."
     return {"delta_percent": a.percent - b.percent, "components": deltas, "summary": text}
 
 

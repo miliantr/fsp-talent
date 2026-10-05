@@ -14,8 +14,10 @@ import {
   ScoreScale,
 } from '../../components/ui'
 import { ago, date, salaryRange, WORK_FORMAT } from '../../lib/format'
+import { useReference } from '../../lib/reference'
 
 export default function CandidateDashboardPage() {
+  const { gradeName } = useReference()
   const { data, error, loading, reload } = useApi<CandidateDashboard>('/candidate/dashboard')
   if (loading && !data) return <Loading />
   if (error) return <ErrorBox error={error} onRetry={reload} />
@@ -122,7 +124,7 @@ export default function CandidateDashboardPage() {
             {data.last_result ? (
               <div className="stack">
                 <OutcomeBadge outcome={data.last_result.outcome} />
-                <div className="small muted">Цель: {data.last_result.target_grade} · {date(data.last_result.created_at)}</div>
+                <div className="small muted">Цель: {gradeName(data.last_result.target_grade)} · {date(data.last_result.created_at)}</div>
                 <div className="row"><b style={{ fontSize: 22, fontFamily: 'var(--display)' }}>{data.last_result.scaled_score}</b><span className="muted">/ 100</span></div>
                 <Link className="btn secondary sm" to={`/candidate/results/${data.last_result.attempt_id}`}>Подробнее</Link>
               </div>

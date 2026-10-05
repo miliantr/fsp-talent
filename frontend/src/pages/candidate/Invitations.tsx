@@ -25,7 +25,8 @@ export default function CandidateInvitations() {
     // opening the invitation marks it as "viewed" on the server
     api<Invitation>(`/candidate/invitations/${selectedId}`).then((inv) => {
       setCurrent(inv)
-      list.setData((list.data ?? []).map((x) => (x.id === inv.id ? inv : x)))
+      // functional update: the list request may finish before or after this one
+      list.setData((prev) => (prev ? prev.map((x) => (x.id === inv.id ? inv : x)) : prev))
     }).catch((e) => setErr(errorMessage(e)))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId])

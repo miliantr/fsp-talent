@@ -80,6 +80,7 @@ export function ScoreRing({ value, size = 76, label, color }: { value: number; s
   const c = 2 * Math.PI * r
   const v = Math.max(0, Math.min(100, value))
   const stroke = color ?? (v >= 75 ? 'var(--success)' : v >= 55 ? 'var(--primary)' : 'var(--warning)')
+  const text = `${Math.round(v)}${label ? '' : '%'}`
   return (
     <div className="ring" style={{ width: size, height: size }} aria-label={`${v}%`}>
       <svg width={size} height={size}>
@@ -88,7 +89,7 @@ export function ScoreRing({ value, size = 76, label, color }: { value: number; s
           strokeDasharray={c} strokeDashoffset={c * (1 - v / 100)} style={{ transition: 'stroke-dashoffset .6s ease' }} />
       </svg>
       <div className="val">
-        <b style={{ fontSize: size * 0.27 }}>{Math.round(v)}{label ? '' : '%'}</b>
+        <b style={{ fontSize: size * (text.length >= 4 ? 0.2 : text.length === 3 ? 0.24 : 0.28) }}>{text}</b>
         {label && <span>{label}</span>}
       </div>
     </div>
