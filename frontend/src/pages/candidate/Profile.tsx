@@ -5,7 +5,8 @@ import { api, errorMessage } from '../../api/client'
 import { useApi } from '../../api/hooks'
 import type { CandidateProfile, ResumeParseOut } from '../../api/types'
 import { SkillLevelEditor, type SkillLevel } from '../../components/SkillPicker'
-import { CategoryBadge, ErrorBox, Loading, useToast } from '../../components/ui'
+import { GradeStatusLine } from '../../components/GradeStatus'
+import { CategoryBadge, ErrorBox, Loading, MoreCategories, useToast } from '../../components/ui'
 import { useI18n } from '../../i18n/context'
 import { WORK_FORMATS, workFormatKey } from '../../lib/format'
 import { useReference } from '../../lib/reference'
@@ -203,7 +204,8 @@ export default function ProfilePage() {
           </div>
           <div className="card stack">
             <h3>{t('cand.profile.category')}</h3>
-            <CategoryBadge category={data.category} />
+            <div className="row wrap"><CategoryBadge category={data.category} /><MoreCategories categories={data.categories} shown={data.category} /></div>
+            <GradeStatusLine status={data.grade_status} />
             <Link to="/candidate/testing" className="btn secondary sm">{t('cand.profile.toTesting')}</Link>
           </div>
           <div className="card stack">

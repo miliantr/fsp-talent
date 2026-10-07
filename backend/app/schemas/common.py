@@ -40,6 +40,25 @@ class Category(BaseModel):
     theta: float | None
     locked_until: datetime | None
     upgrade_eligible: bool
+    is_primary: bool = True
+
+
+class DeclaredGrade(BaseModel):
+    """Self-declared specialization and grade; officially a grade is assigned only by the test."""
+
+    label: str
+    specialization_id: str
+    grade_id: str
+    confirmed: bool
+
+
+class GradeStatus(BaseModel):
+    """Self-declared grade vs the grade confirmed by the test."""
+
+    status: Literal["confirmed", "confirmed_lower", "not_confirmed", "not_tested", "no_claim"]
+    specialization_id: str | None
+    declared_grade_id: str | None
+    confirmed_grade_id: str | None
 
 
 class CandidateSkillView(BaseModel):

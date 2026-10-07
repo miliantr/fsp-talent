@@ -28,7 +28,9 @@ export default function PrintProfile() {
         <div className="divider" />
         <dl className="kv">
           <dt>{t('cand.print.spec')}</dt><dd>{t('cand.print.specValue', { spec: specName(d.specialization_id), grade: gradeName(d.declared_grade_id) })}</dd>
-          <dt>{t('cand.print.grade')}</dt><dd>{d.category ? `${d.category.grade_name} · ${fmt.date(d.category.verified_at)}` : t('cand.print.notVerified')}</dd>
+          <dt>{t('cand.print.grade')}</dt><dd>{d.categories.length
+            ? d.categories.map((k) => `${k.label} · ${fmt.date(k.verified_at)}`).join('; ')
+            : t('cand.print.notVerified')}</dd>
           <dt>{t('cand.print.experience')}</dt><dd>{fmt.years(d.experience_years)}</dd>
           <dt>{t('cand.print.format')}</dt><dd>{t(workFormatKey(d.work_format))}</dd>
           <dt>{t('cand.print.salary')}</dt><dd>{fmt.money(d.expected_salary)}</dd>

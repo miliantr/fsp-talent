@@ -52,6 +52,14 @@ export const common = {
 
   'category.none': 'Категория не подтверждена',
   'category.verifiedTitle': 'Категория подтверждена тестированием',
+  'category.also': 'Ещё одна подтверждённая категория',
+  'category.primary': 'Основная',
+  'grade.declaredUnconfirmed': '{label} — грейд не подтверждён',
+  'grade.status.confirmed': 'Заявленный грейд {grade} подтверждён тестом',
+  'grade.status.confirmed_lower': 'Заявлен {declared}, тест подтвердил {confirmed}',
+  'grade.status.not_confirmed': 'Заявлен {grade} — грейд не подтверждён: тест не пройден',
+  'grade.status.not_tested': 'Заявлен {grade} — грейд не подтверждён: тест ещё не пройден',
+  'grade.status.hint': 'Грейд — уровень навыков. Выбрать его можно самому, но официально его присваивает только тест; стаж остаётся отдельным полем профиля.',
   'scale.aria': 'Шкальный балл {score} из 100',
   'competencies.empty': 'Появятся после тестирования.',
 

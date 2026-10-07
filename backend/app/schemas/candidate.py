@@ -9,6 +9,7 @@ from app.schemas.common import (
     FSPProfileView,
     FSPSummaryView,
     GradeId,
+    GradeStatus,
     SpecId,
     WorkFormatT,
 )
@@ -86,7 +87,9 @@ class CandidateProfileOut(BaseModel):
     specialization_id: str | None
     declared_grade_id: str | None
     skills: list[CandidateSkillView]
-    category: Category | None
+    category: Category | None = Field(description="Основная категория")
+    categories: list[Category] = Field(default=[], description="Все подтверждённые категории, основная первой")
+    grade_status: GradeStatus
     competencies: list[CompetencyScore]
     completeness: Completeness
     fsp: FSPSummaryView

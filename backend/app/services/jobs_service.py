@@ -61,8 +61,8 @@ def apply(db: Session, candidate: CandidateProfile, job_id: int, cover_letter: s
         raise Conflict(t("error.duplicate_application"), code="duplicate_application")
     score = None
     if candidate.is_verified:
-        score = engine.score_candidate(matching.candidate_features(candidate), matching.job_features(job),
-                                       skill_graph()).score
+        score = engine.score_candidate(matching.candidate_features(candidate, specialization=job.specialization_id),
+                                       matching.job_features(job), skill_graph()).score
     app = Application(job_id=job.id, candidate_id=candidate.id, cover_letter=cover_letter.strip(),
                       match_score=score)
     db.add(app)
@@ -94,7 +94,8 @@ def employer_applications(db: Session, employer: EmployerProfile, job_id: int | 
             "id": a.id, "status": a.status, "created_at": a.created_at, "cover_letter": a.cover_letter,
             "match_percent": round(a.match_score * 100) if a.match_score else None,
             "job": {"id": a.job.id, "title": a.job.title},
-            "candidate": presenters.candidate_card(c, graph, fsp, contacts_visible=True),
+            "candidate": presenters.candidate_card(c, graph, fsp, contacts_visible=True,
+                                                   specialization=a.job.specialization_id),
             "contacts": privacy.contacts(c),  # the candidate applied himself -> contacts are disclosed
         })
     return out

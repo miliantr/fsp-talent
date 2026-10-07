@@ -10,6 +10,7 @@ from app.schemas.common import (
     Company,
     CompetencyScore,
     Contacts,
+    DeclaredGrade,
     FSPProfileView,
     FSPSummaryView,
     GradeId,
@@ -178,7 +179,9 @@ class CandidateCard(BaseModel):
     experience_years: float
     work_format: str
     expected_salary: int | None
-    category: Category | None
+    category: Category | None = Field(description="Категория, представляющая кандидата для этой потребности")
+    categories: list[Category] = Field(default=[], description="Все подтверждённые категории, основная первой")
+    declared: DeclaredGrade | None = Field(default=None, description="Заявленный грейд (подтверждается тестом)")
     skills: list[CandidateSkillView]
     fsp: FSPSummaryView
     last_active_days: int | None

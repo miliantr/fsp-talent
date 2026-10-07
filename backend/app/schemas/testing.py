@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-from app.schemas.common import CompetencyScore, GradeId, SpecId
+from app.schemas.common import Category, CompetencyScore, GradeId, SpecId
 
 
 class EligibilityOut(BaseModel):
@@ -46,10 +46,14 @@ class TestingRules(BaseModel):
 class TestingStatusOut(BaseModel):
     specialization_id: str | None
     declared_grade_id: str | None
-    verified_specialization_id: str | None
-    verified_grade_id: str | None
-    grade_locked_until: datetime | None
+    verified_specialization_id: str | None = Field(description="Специализация основной категории")
+    verified_grade_id: str | None = Field(description="Грейд основной категории")
+    viewed_specialization_id: str = Field(description="Специализация, для которой рассчитана доступность")
+    viewed_grade_id: str | None = Field(description="Подтверждённый грейд в этой специализации")
+    grade_locked_until: datetime | None = Field(description="Блокировка смены грейда в этой специализации")
     upgrade_eligible: bool
+    categories: list[Category]
+    max_categories: int
     active_attempt: AttemptBrief | None
     eligibility: list[EligibilityOut]
     history: list[ResultBrief]

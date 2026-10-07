@@ -3,7 +3,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload, selectinload
 
-from app.models import CandidateProfile, CandidateSkill, FSPProfile, User
+from app.models import CandidateCategory, CandidateProfile, CandidateSkill, FSPProfile, User
 
 
 def _base():
@@ -26,8 +26,8 @@ def searchable(db: Session, specializations: list[str] | None = None) -> list[Ca
         CandidateProfile.consent_publication_at.is_not(None),
         User.is_active.is_(True),
     )
-    if specializations:
-        q = q.where(CandidateProfile.verified_specialization_id.in_(specializations))
+    if specializations:  # any of the candidate's categories (one per specialization)
+        q = q.where(CandidateProfile.categories.any(CandidateCategory.specialization_id.in_(specializations)))
     return list(db.scalars(q).unique())
 
 

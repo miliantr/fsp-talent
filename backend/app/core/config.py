@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     test_time_limit_minutes: int = 30
     retake_cooldown_days: int = 30          # same target grade
     grade_change_cooldown_days: int = 90    # verified grade may change at most once per 90 days
+    max_categories: int = 3                 # verified categories per candidate (one per specialization)
 
     # --- invitations --------------------------------------------------------
     invitation_ttl_days: int = 14

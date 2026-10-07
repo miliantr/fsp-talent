@@ -1,9 +1,10 @@
-import { ArrowRight, Clock, Lock, PlayCircle, RefreshCcw, ShieldCheck, Shuffle, Sigma } from 'lucide-react'
+import { ArrowRight, Clock, Layers, Lock, PlayCircle, RefreshCcw, ShieldCheck, Shuffle, Sigma, Star } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api, ApiError, errorMessage } from '../../api/client'
 import { useApi } from '../../api/hooks'
 import type { Attempt, CandidateProfile, Eligibility, TestingStatus } from '../../api/types'
+import { GradeStatusLine } from '../../components/GradeStatus'
 import { CategoryBadge, ErrorBox, Loading, OutcomeBadge, useToast } from '../../components/ui'
 import type { MessageKey } from '../../i18n/core'
 import { useI18n } from '../../i18n/context'
@@ -49,11 +50,25 @@ export default function TestingPage() {
     }
   }
 
+  const makePrimary = async (specId: string) => {
+    setBusy(`primary-${specId}`)
+    setErr(null)
+    try {
+      profile.setData(await api<CandidateProfile>(`/candidate/categories/${specId}/primary`, { method: 'PUT' }))
+      toast(t('test.cat.primarySaved'))
+    } catch (ex) {
+      setErr(errorMessage(ex))
+    } finally {
+      setBusy(null)
+    }
+  }
+
   const start = async (e: Eligibility) => {
     setBusy(e.grade)
     setErr(null)
     try {
-      if (!surveyDone || p.specialization_id !== spec) {
+      // the survey records the main specialization; a test in another one adds a category
+      if (!surveyDone) {
         await api('/candidate/profile', { method: 'PUT', body: { specialization_id: spec, declared_grade_id: grade || e.grade } })
       }
       const att = await api<Attempt>('/candidate/testing/start', { method: 'POST', body: { specialization_id: spec, target_grade: e.grade } })
@@ -109,6 +124,10 @@ export default function TestingPage() {
           <div className="card">
             <div className="card-title"><h3><span className="step-num">2</span>{t('test.gradeTest', { spec: specName(spec) })}</h3>
               <button className="icon-btn" onClick={() => status.reload()} aria-label={t('common.refresh')}><RefreshCcw size={16} /></button></div>
+            {surveyDone && spec !== p.specialization_id && !p.categories.some((k) => k.specialization_id === spec) && (
+              <div className="alert violet small" style={{ marginBottom: 12 }}><Layers size={16} />
+                <span>{t('test.cat.extraHint', { spec: specName(spec), main: specName(p.specialization_id) })}</span></div>
+            )}
             {status.loading && !s ? <Loading /> : status.error ? <ErrorBox error={status.error} /> : s && (
               <div className="grid grid-3">
                 {s.eligibility.map((e) => {
@@ -146,6 +165,20 @@ export default function TestingPage() {
         </div>
 
         <div className="stack-lg sticky">
+          <div className="card stack">
+            <div className="card-title" style={{ marginBottom: 0 }}><h3><Layers size={18} color="var(--primary)" />{t('test.cat.title')}</h3>
+              {s && <span className="tiny muted">{t('test.cat.limit', { n: s.max_categories })}</span>}</div>
+            {p.categories.length === 0 ? <p className="small muted">{t('test.cat.none')}</p> : p.categories.map((k) => (
+              <div key={k.label} className="row between wrap" style={{ gap: 8 }}>
+                <span className="row" style={{ gap: 8 }}><CategoryBadge category={k} /><span className="tiny muted">{k.scaled_score}/100</span></span>
+                {k.is_primary ? <span className="badge violet"><Star size={12} />{t('category.primary')}</span> : (
+                  <button className="btn ghost sm" disabled={busy !== null} onClick={() => makePrimary(k.specialization_id)}>{t('test.cat.makePrimary')}</button>
+                )}
+              </div>
+            ))}
+            <GradeStatusLine status={p.grade_status} />
+            <p className="tiny muted" style={{ margin: 0 }}>{t('test.cat.how')}</p>
+          </div>
           <div className="card stack">
             <h3>{t('test.how')}</h3>
             <div className="row" style={{ alignItems: 'flex-start' }}><Shuffle size={18} color="var(--primary)" style={{ flex: 'none', marginTop: 2 }} />

@@ -151,6 +151,8 @@ class Persona:
     achievements: list[Achievement] = field(default_factory=list)
     take_test: bool = True
     open_to_offers: bool = True
+    # additional categories: (specialization, grade, ability θ in that specialization)
+    extra_categories: list[tuple[str, str, float]] = field(default_factory=list)
 
 
 _TR = dict(zip("абвгдеёжзийклмнопрстуфхцчшщъыьэюя",
@@ -258,6 +260,17 @@ def build_personas(today: date, seed: int = 2026) -> list[Persona]:
             strength = {"junior": 0.2, "middle": 0.35, "senior": 0.5}[grade]
             p.achievements = _achievements(rng, spec, strength, rng.randint(1, 4), today)
         personas.append(p)
+    # a few people are verified in a second, adjacent specialization (own RNG: the main stream is unchanged)
+    xr = random.Random(seed + 1)
+    for p in personas:
+        if p.grade == "junior":
+            continue
+        if p.specialization == "backend" and "docker" in p.skills and xr.random() < 0.45:
+            p.extra_categories.append(("devops", "junior", round(p.theta - 0.9, 2)))
+        elif p.specialization == "data_ml" and "python" in p.skills and xr.random() < 0.35:
+            p.extra_categories.append(("backend", "junior", round(p.theta - 1.0, 2)))
+        elif p.specialization == "devops" and p.grade == "senior" and xr.random() < 0.5:
+            p.extra_categories.append(("backend", "junior", round(p.theta - 1.1, 2)))
     return personas
 
 
@@ -275,7 +288,7 @@ def demo_personas(today: date) -> list[Persona]:
               "покрываю код тестами и выкатываю через Docker и CI. Призёр соревнований ФСП по продуктовому "
               "программированию.",
         phone="+7 915 123-45-67", telegram="@alexey_demidov", days_ago=6,
-        fsp_id="FSP-100777", sport_rank="I разряд",
+        fsp_id="FSP-100777", sport_rank="I разряд", extra_categories=[("devops", "junior", 0.0)],
         achievements=[
             Achievement("ACH-2025-31415", "Всероссийские соревнования по продуктовому программированию",
                         "Продуктовое программирование", "all_russian", today - timedelta(days=150), 2, 180,

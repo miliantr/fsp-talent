@@ -21,6 +21,7 @@ from app.models import (
     TestItem,
     TestResult,
 )
+from app.services import categories
 from app.services.testing.generator import ItemSpec, build_blueprint, generate_form
 from app.services.testing.policy import (
     AttemptRecord,
@@ -47,9 +48,12 @@ def _history(db: Session, candidate_id: int) -> list[TestAttempt]:
     ))
 
 
-def _state(p: CandidateProfile) -> CandidateGradeState:
-    return CandidateGradeState(p.verified_specialization_id, p.verified_grade_id, p.grade_locked_until,
-                               p.upgrade_eligible)
+def _state(p: CandidateProfile, specialization: str) -> CandidateGradeState:
+    """Grade state of the category in this specialization (each category has its own lock)."""
+    cat = categories.get(p, specialization)
+    return CandidateGradeState(specialization if cat else None, cat.grade_id if cat else None,
+                               cat.grade_locked_until if cat else None, bool(cat and cat.upgrade_eligible),
+                               categories_count=len(p.categories), max_categories=get_settings().max_categories)
 
 
 def expire_overdue(db: Session, candidate: CandidateProfile, now: datetime | None = None) -> None:
@@ -68,7 +72,8 @@ def eligibility(db: Session, candidate: CandidateProfile, specialization: str,
                              a.status == AttemptStatus.IN_PROGRESS, bool(a.result and a.result.flagged))
                for a in _history(db, candidate.id)]
     days = get_settings().retake_cooldown_days
-    return [check_eligibility(_state(candidate), records, specialization, g, now, days) for g in GRADES]
+    return [check_eligibility(_state(candidate, specialization), records, specialization, g, now, days)
+            for g in GRADES]
 
 
 def active_attempt(db: Session, candidate: CandidateProfile) -> TestAttempt | None:
@@ -189,35 +194,36 @@ def _finish(db: Session, candidate: CandidateProfile, att: TestAttempt, now: dat
     grade_changed = False
     blocked = False
     spec = att.specialization_id
-    same_spec = candidate.verified_specialization_id == spec
-    current = candidate.verified_grade_id if same_spec else None
+    cat = categories.get(candidate, spec)  # categories are independent per specialization
+    current = cat.grade_id if cat else None
 
     if out.passed:
         target = att.target_grade_id
-        if current == target:
+        if cat is not None and current == target:
             # re-confirmation refreshes the verified data, no grade change
-            candidate.verified_at = now
+            cat.verified_at = now
         else:
-            locked = candidate.grade_locked_until is not None and now < candidate.grade_locked_until
-            fast_track = (current is not None and GRADE_RANK[target] - GRADE_RANK[current] == 1
-                          and candidate.upgrade_eligible)
-            if candidate.verified_grade_id and locked and not fast_track:
+            locked = cat is not None and cat.grade_locked_until is not None and now < cat.grade_locked_until
+            fast_track = (cat is not None and GRADE_RANK[target] - GRADE_RANK[current] == 1
+                          and cat.upgrade_eligible)
+            if locked and not fast_track:
                 blocked = True  # guarded at start(), kept as a safety net
             else:
                 grade_changed = True
-                candidate.verified_grade_id = target
-                candidate.verified_specialization_id = spec
-                candidate.verified_at = now
-                candidate.grade_locked_until = now + timedelta(days=get_settings().grade_change_cooldown_days)
+                cat = categories.ensure(candidate, spec, now)
+                cat.grade_id = target
+                cat.verified_at = now
+                cat.grade_locked_until = now + timedelta(days=get_settings().grade_change_cooldown_days)
         if not blocked:
-            candidate.upgrade_eligible = out.upgrade_eligible
-            candidate.ability_theta = out.theta
-            candidate.scaled_score = out.scaled_score
-            candidate.category_confidence = out.confidence
-            candidate.competency_scores = out.competency_scores
-    elif current and GRADE_RANK[att.target_grade_id] > GRADE_RANK[current]:
+            cat.upgrade_eligible = out.upgrade_eligible
+            cat.theta = out.theta
+            cat.scaled_score = out.scaled_score
+            cat.confidence = out.confidence
+            cat.competency_scores = out.competency_scores
+    elif cat is not None and GRADE_RANK[att.target_grade_id] > GRADE_RANK[current]:
         # failed upgrade attempt: the verified grade is kept, the fast track is used up
-        candidate.upgrade_eligible = False
+        cat.upgrade_eligible = False
+    categories.sync_primary(candidate)
 
     verified_for_result = att.target_grade_id if out.passed and not blocked else None
     result = TestResult(

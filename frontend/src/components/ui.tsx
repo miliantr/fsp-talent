@@ -4,6 +4,7 @@ import type {
   Category,
   CompetencyScore,
   ComponentOut,
+  DeclaredGrade,
   FSPAchievementView,
   FSPSummaryView,
   ReasonOut,
@@ -76,6 +77,31 @@ export function CategoryBadge({ category, size }: { category: Category | null | 
       <span className="ok"><ShieldCheck size={size ? 18 : 14} /></span>
       {category.label}
     </span>
+  )
+}
+
+/** The candidate's other verified categories besides the one shown: «DevOps · Junior». */
+export function MoreCategories({ categories, shown, light }: { categories: Category[] | undefined; shown?: Category | null; light?: boolean }) {
+  const { t } = useI18n()
+  const rest = (categories ?? []).filter((k) => k.label !== shown?.label)
+  if (rest.length === 0) return null
+  return (
+    <>
+      {rest.map((k) => (
+        <span key={k.label} className={`badge ${light ? 'light' : 'outline'}`} title={t('category.also')}>
+          <ShieldCheck size={12} />{k.label}</span>
+      ))}
+    </>
+  )
+}
+
+/** A self-declared grade the test has not confirmed (only the test assigns a grade officially). */
+export function DeclaredGradeBadge({ declared }: { declared: DeclaredGrade | null | undefined }) {
+  const { t } = useI18n()
+  if (!declared || declared.confirmed) return null
+  return (
+    <span className="badge warning" title={t('grade.status.hint')}>
+      <AlertCircle size={12} />{t('grade.declaredUnconfirmed', { label: declared.label })}</span>
   )
 }
 

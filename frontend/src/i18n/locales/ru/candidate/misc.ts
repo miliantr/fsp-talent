@@ -41,7 +41,7 @@ export const misc = {
   'cand.print.save': 'Сохранить в PDF',
   'cand.print.spec': 'Специализация (опрос)',
   'cand.print.specValue': '{spec} · заявлен {grade}',
-  'cand.print.grade': 'Подтверждённый грейд',
+  'cand.print.grade': 'Подтверждённые категории',
   'cand.print.notVerified': 'не подтверждён',
   'cand.print.experience': 'Опыт',
   'cand.print.format': 'Формат',

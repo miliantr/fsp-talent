@@ -52,6 +52,14 @@ export const common: { readonly [K in keyof typeof ru]: Msg } = {
 
   'category.none': 'Category not verified',
   'category.verifiedTitle': 'Category verified by the test',
+  'category.also': 'Another verified category',
+  'category.primary': 'Primary',
+  'grade.declaredUnconfirmed': '{label} — grade not confirmed',
+  'grade.status.confirmed': 'The declared grade {grade} is confirmed by the test',
+  'grade.status.confirmed_lower': '{declared} declared, the test confirmed {confirmed}',
+  'grade.status.not_confirmed': '{grade} declared — grade not confirmed: the test was not passed',
+  'grade.status.not_tested': '{grade} declared — grade not confirmed: no test taken yet',
+  'grade.status.hint': 'A grade is a skill level. You can choose it yourself, but only the test assigns it officially; years of experience stay a separate profile field.',
   'scale.aria': 'Scaled score {score} out of 100',
   'competencies.empty': 'Will appear after the test.',
 

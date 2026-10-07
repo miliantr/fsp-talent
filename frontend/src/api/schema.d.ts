@@ -167,6 +167,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/candidate/categories/{specialization_id}/primary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Сделать подтверждённую категорию основной */
+        put: operations["set_primary_category_api_candidate_categories__specialization_id__primary_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/candidate/resume/parse": {
         parameters: {
             query?: never;
@@ -1099,7 +1116,16 @@ export interface components {
             work_format: string;
             /** Expected Salary */
             expected_salary: number | null;
+            /** @description Категория, представляющая кандидата для этой потребности */
             category: components["schemas"]["Category"] | null;
+            /**
+             * Categories
+             * @description Все подтверждённые категории, основная первой
+             * @default []
+             */
+            categories: components["schemas"]["Category"][];
+            /** @description Заявленный грейд (подтверждается тестом) */
+            declared?: components["schemas"]["DeclaredGrade"] | null;
             /** Skills */
             skills: components["schemas"]["CandidateSkillView"][];
             fsp: components["schemas"]["FSPSummaryView"];
@@ -1147,7 +1173,16 @@ export interface components {
             work_format: string;
             /** Expected Salary */
             expected_salary: number | null;
+            /** @description Категория, представляющая кандидата для этой потребности */
             category: components["schemas"]["Category"] | null;
+            /**
+             * Categories
+             * @description Все подтверждённые категории, основная первой
+             * @default []
+             */
+            categories: components["schemas"]["Category"][];
+            /** @description Заявленный грейд (подтверждается тестом) */
+            declared?: components["schemas"]["DeclaredGrade"] | null;
             /** Skills */
             skills: components["schemas"]["CandidateSkillView"][];
             fsp: components["schemas"]["FSPSummaryView"];
@@ -1264,7 +1299,15 @@ export interface components {
             declared_grade_id: string | null;
             /** Skills */
             skills: components["schemas"]["CandidateSkillView"][];
+            /** @description Основная категория */
             category: components["schemas"]["Category"] | null;
+            /**
+             * Categories
+             * @description Все подтверждённые категории, основная первой
+             * @default []
+             */
+            categories: components["schemas"]["Category"][];
+            grade_status: components["schemas"]["GradeStatus"];
             /** Competencies */
             competencies: components["schemas"]["CompetencyScore"][];
             completeness: components["schemas"]["Completeness"];
@@ -1358,6 +1401,11 @@ export interface components {
             locked_until: string | null;
             /** Upgrade Eligible */
             upgrade_eligible: boolean;
+            /**
+             * Is Primary
+             * @default true
+             */
+            is_primary: boolean;
         };
         /** CategoryCount */
         CategoryCount: {
@@ -1537,6 +1585,20 @@ export interface components {
             /** Telegram */
             telegram?: string | null;
         };
+        /**
+         * DeclaredGrade
+         * @description Self-declared specialization and grade; officially a grade is assigned only by the test.
+         */
+        DeclaredGrade: {
+            /** Label */
+            label: string;
+            /** Specialization Id */
+            specialization_id: string;
+            /** Grade Id */
+            grade_id: string;
+            /** Confirmed */
+            confirmed: boolean;
+        };
         /** EligibilityOut */
         EligibilityOut: {
             /** Grade */
@@ -1714,6 +1776,23 @@ export interface components {
             theta_cut: number;
             /** Score Threshold */
             score_threshold: number;
+        };
+        /**
+         * GradeStatus
+         * @description Self-declared grade vs the grade confirmed by the test.
+         */
+        GradeStatus: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "confirmed" | "confirmed_lower" | "not_confirmed" | "not_tested" | "no_claim";
+            /** Specialization Id */
+            specialization_id: string | null;
+            /** Declared Grade Id */
+            declared_grade_id: string | null;
+            /** Confirmed Grade Id */
+            confirmed_grade_id: string | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -2542,14 +2621,37 @@ export interface components {
             specialization_id: string | null;
             /** Declared Grade Id */
             declared_grade_id: string | null;
-            /** Verified Specialization Id */
+            /**
+             * Verified Specialization Id
+             * @description Специализация основной категории
+             */
             verified_specialization_id: string | null;
-            /** Verified Grade Id */
+            /**
+             * Verified Grade Id
+             * @description Грейд основной категории
+             */
             verified_grade_id: string | null;
-            /** Grade Locked Until */
+            /**
+             * Viewed Specialization Id
+             * @description Специализация, для которой рассчитана доступность
+             */
+            viewed_specialization_id: string;
+            /**
+             * Viewed Grade Id
+             * @description Подтверждённый грейд в этой специализации
+             */
+            viewed_grade_id: string | null;
+            /**
+             * Grade Locked Until
+             * @description Блокировка смены грейда в этой специализации
+             */
             grade_locked_until: string | null;
             /** Upgrade Eligible */
             upgrade_eligible: boolean;
+            /** Categories */
+            categories: components["schemas"]["Category"][];
+            /** Max Categories */
+            max_categories: number;
             active_attempt: components["schemas"]["AttemptBrief"] | null;
             /** Eligibility */
             eligibility: components["schemas"]["EligibilityOut"][];
@@ -3002,6 +3104,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    set_primary_category_api_candidate_categories__specialization_id__primary_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                specialization_id: "backend" | "frontend" | "data_ml" | "devops";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CandidateProfileOut"];
+                };
+            };
+            /** @description Требуется авторизация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

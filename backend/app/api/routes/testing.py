@@ -17,7 +17,9 @@ from app.schemas.testing import (
     StartIn,
     TestingStatusOut,
 )
+from app.services import categories
 from app.services.presenters import attempt_view, result_view
+from app.services.presenters import categories as category_list
 from app.services.testing import service
 
 router = APIRouter(prefix="/candidate/testing", tags=["Тестирование"], responses=errors(401, 403))
@@ -37,10 +39,14 @@ def status_(c: Candidate, db: DB, specialization_id: str | None = None):
     spec = specialization_id or c.specialization_id or c.verified_specialization_id or "backend"
     act: TestAttempt | None = service.active_attempt(db, c)
     s = get_settings()
+    cat = categories.get(c, spec)
     return {
         "specialization_id": c.specialization_id, "declared_grade_id": c.declared_grade_id,
         "verified_specialization_id": c.verified_specialization_id, "verified_grade_id": c.verified_grade_id,
-        "grade_locked_until": c.grade_locked_until, "upgrade_eligible": c.upgrade_eligible,
+        "viewed_specialization_id": spec, "viewed_grade_id": cat.grade_id if cat else None,
+        "grade_locked_until": cat.grade_locked_until if cat else None,
+        "upgrade_eligible": bool(cat and cat.upgrade_eligible),
+        "categories": category_list(c), "max_categories": s.max_categories,
         "active_attempt": {"id": act.id, "specialization_id": act.specialization_id,
                            "target_grade": act.target_grade_id, "started_at": act.started_at,
                            "deadline_at": act.deadline_at, "answered": sum(1 for i in act.items if i.answer),

@@ -7,7 +7,7 @@ from app.domain.catalog import GRADE_RANK, SPEC_NAMES
 from app.i18n import t
 from app.models import CandidateProfile, CandidateSkill, InvitationStatus, Skill, WorkFormat
 from app.repositories.reference import skill_graph
-from app.services import fsp_service, invitation_service, presenters
+from app.services import categories, fsp_service, invitation_service, presenters
 from app.services.nlp.extractor import parse_resume_text, pdf_to_text
 from app.services.testing import service as testing_service
 
@@ -78,7 +78,7 @@ def completeness(c: CandidateProfile) -> dict:
             "missing": [{"key": k, "title": t(f"profile.missing.{k}")} for k, ok in checks if not ok]}
 
 
-def profile_view(c: CandidateProfile) -> dict:
+def profile_view(db: Session, c: CandidateProfile) -> dict:
     graph = skill_graph()
     fsp = fsp_service.summary_for(c, None)
     return {
@@ -87,6 +87,8 @@ def profile_view(c: CandidateProfile) -> dict:
         "team_roles": c.team_roles or [], "soft_skills": c.soft_skills or [],
         "skills": presenters.skills(c, graph),
         "category": presenters.category(c),
+        "categories": presenters.categories(c),
+        "grade_status": categories.grade_status(db, c),
         "competencies": presenters.competency_list(c.competency_scores or {}),
         "completeness": completeness(c),
         "fsp": presenters.fsp_summary(fsp),
@@ -119,7 +121,7 @@ def dashboard(db: Session, c: CandidateProfile) -> dict:
         step["title"] = t(f"profile.step.{step['key']}")
     last = results[0] if results else None
     return {
-        "profile": profile_view(c),
+        "profile": profile_view(db, c),
         "invitations": {
             "total": len(invs),
             "new": sum(1 for i in invs if i.status == InvitationStatus.SENT),

@@ -8,6 +8,7 @@ import {
   AchievementList,
   Avatar,
   CategoryBadge,
+  MoreCategories,
   CompetencyBars,
   Empty,
   ErrorBox,
@@ -53,7 +54,7 @@ export default function CandidateView() {
             <div className="stack" style={{ gap: 8 }}>
               <h1>{c.display_name}</h1>
               <div className="muted">{c.headline} · {t('emp.cand.experience', { value: fmt.years(c.experience_years) })} · {c.city ?? '—'} · {t(workFormatKey(c.work_format))}</div>
-              <div className="row wrap"><CategoryBadge category={c.category} size="lg" /><FspSummary fsp={c.fsp} /></div>
+              <div className="row wrap"><CategoryBadge category={c.category} size="lg" /><MoreCategories categories={c.categories} shown={c.category} /><FspSummary fsp={c.fsp} /></div>
             </div>
           </div>
           <div className="row" style={{ gap: 20 }}>

@@ -79,6 +79,7 @@ MESSAGES: dict[str, str | dict[str, str]] = {
     "error.duplicate_application": "Вы уже откликнулись на эту вакансию",
     "error.application_not_found": "Отклик не найден",
     "error.task_not_found": "Задание не найдено",
+    "error.category_not_found": "Категория не найдена — сначала подтвердите её тестом",
     "error.solution_too_short": "Опишите решение или подход подробнее (от 20 символов)",
     "error.solution_exists": "Решение уже отправлено",
     "error.solution_not_found": "Решение не найдено",
@@ -131,7 +132,7 @@ MESSAGES: dict[str, str | dict[str, str]] = {
     "ref.spec.frontend.description": "Клиентская разработка: веб-интерфейсы, SPA, производительность в браузере.",
     "ref.spec.data_ml.description": "Анализ данных и машинное обучение: модели, метрики, MLOps.",
     "ref.spec.devops.description": "Инфраструктура, CI/CD, контейнеры, наблюдаемость и надёжность.",
-    "ref.grade.junior.description": "Опыт до 1–2 лет: решает типовые задачи под руководством.",
+    "ref.grade.junior.description": "Решает типовые задачи по образцу и под руководством, знает основы стека.",
     "ref.grade.middle.description": "Самостоятельно решает задачи, понимает компромиссы и инструменты.",
     "ref.grade.senior.description": "Проектирует системы, отвечает за качество и развитие команды.",
     "ref.competency.be_lang": "Язык и рантайм (Python и др.)",
@@ -251,7 +252,12 @@ MESSAGES: dict[str, str | dict[str, str]] = {
     "test.rec.expired": " Время теста истекло.",
     "test.policy.finish_current": "Завершите текущую попытку тестирования",
     "test.policy.retake_after": "Повторно пройти тест на {grade} можно после {date}",
-    "test.policy.change_after": "Сменить категорию можно после {date}",
+    "test.policy.max_categories": {
+        "one": "Можно подтвердить не больше {n} категории — тест в новой специализации недоступен",
+        "few": "Можно подтвердить не больше {n} категорий — тест в новой специализации недоступен",
+        "many": "Можно подтвердить не больше {n} категорий — тест в новой специализации недоступен",
+        "other": "Можно подтвердить не больше {n} категории — тест в новой специализации недоступен",
+    },
     "test.policy.grade_locked": "Грейд можно менять не чаще раза в период; следующая смена — после {date}",
 
     # ---------------------------------------------------------------- FSP

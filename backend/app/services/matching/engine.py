@@ -82,6 +82,9 @@ class CandidateFeatures:
     verified_at: datetime | None = None
     upgrade_eligible: bool = False
     fsp_by_spec: dict[str, FSPSummary] = field(default_factory=dict)
+    # competency scores of the candidate's other verified categories {specialization: {competency: %}}:
+    # a skill tested in another category (Docker in DevOps) is still evidence for this requirement
+    other_competencies: dict[str, dict[str, int]] = field(default_factory=dict)
 
 
 @dataclass
@@ -206,8 +209,13 @@ def skill_evidence(c: CandidateFeatures, slug: str, graph: SkillGraph) -> tuple[
     level = c.skills.get(slug, 3)
     declared = min(1.0, 0.55 + 0.09 * level)
     comp = graph.competency(slug, c.specialization)
-    if comp and comp in c.competency_scores:
-        v = c.competency_scores[comp] / 100
+    score = c.competency_scores.get(comp) if comp else None
+    if score is None:
+        tested = [scores[k] for spec, scores in c.other_competencies.items()
+                  if (k := graph.competency(slug, spec)) and k in scores]
+        score = max(tested) if tested else None
+    if score is not None:
+        v = score / 100
         return declared * ((1 - EVIDENCE_STRENGTH) + EVIDENCE_STRENGTH * v), v >= 0.6
     return declared * ((1 - EVIDENCE_STRENGTH) + EVIDENCE_STRENGTH * UNVERIFIED_SKILL_PRIOR), False
 

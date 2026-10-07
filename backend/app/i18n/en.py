@@ -79,6 +79,7 @@ MESSAGES: dict[str, str | dict[str, str]] = {
     "error.duplicate_application": "You have already applied to this vacancy",
     "error.application_not_found": "Application not found",
     "error.task_not_found": "Task not found",
+    "error.category_not_found": "Category not found — verify it with a test first",
     "error.solution_too_short": "Describe the solution or approach in more detail (at least 20 characters)",
     "error.solution_exists": "The solution has already been submitted",
     "error.solution_not_found": "Solution not found",
@@ -130,7 +131,7 @@ MESSAGES: dict[str, str | dict[str, str]] = {
     "ref.spec.frontend.description": "Client-side development: web interfaces, SPAs, browser performance.",
     "ref.spec.data_ml.description": "Data analysis and machine learning: models, metrics, MLOps.",
     "ref.spec.devops.description": "Infrastructure, CI/CD, containers, observability and reliability.",
-    "ref.grade.junior.description": "Up to 1–2 years of experience: solves typical tasks under guidance.",
+    "ref.grade.junior.description": "Solves typical tasks by example and with guidance; knows the basics of the stack.",
     "ref.grade.middle.description": "Solves tasks independently, understands trade-offs and tools.",
     "ref.grade.senior.description": "Designs systems, owns quality and helps the team grow.",
     "ref.competency.be_lang": "Language and runtime (Python etc.)",
@@ -244,7 +245,10 @@ MESSAGES: dict[str, str | dict[str, str]] = {
     "test.rec.expired": " Time ran out.",
     "test.policy.finish_current": "Finish the current test attempt first",
     "test.policy.retake_after": "You can retake the {grade} test after {date}",
-    "test.policy.change_after": "You can change your category after {date}",
+    "test.policy.max_categories": {
+        "one": "You can hold at most {n} verified category — a test in a new specialization is unavailable",
+        "other": "You can hold at most {n} verified categories — a test in a new specialization is unavailable",
+    },
     "test.policy.grade_locked": "The grade can be changed once per period; the next change is possible after {date}",
 
     # ---------------------------------------------------------------- FSP

@@ -59,6 +59,8 @@ class CandidateProfile(Base):
     declared_grade_id: Mapped[str | None] = mapped_column(ForeignKey("grades.id"))
 
     # --- verified by the testing engine (the only source of the category) ---
+    # A candidate may hold one category per specialization (candidate_categories); the columns below
+    # mirror the PRIMARY category, so screens that show "the" category read them directly.
     verified_grade_id: Mapped[str | None] = mapped_column(ForeignKey("grades.id"), index=True)
     verified_specialization_id: Mapped[str | None] = mapped_column(
         ForeignKey("specializations.id"), index=True
@@ -100,6 +102,10 @@ class CandidateProfile(Base):
     skills: Mapped[list["CandidateSkill"]] = relationship(
         back_populates="candidate", cascade="all, delete-orphan"
     )
+    categories: Mapped[list["CandidateCategory"]] = relationship(
+        back_populates="candidate", cascade="all, delete-orphan", lazy="selectin",
+        order_by="(CandidateCategory.is_primary.desc(), CandidateCategory.verified_at)",
+    )
     fsp_profile: Mapped["FSPProfile | None"] = relationship(  # noqa: F821
         back_populates="candidate", cascade="all, delete-orphan", uselist=False
     )
@@ -135,3 +141,31 @@ class CandidateSkill(Base):
 
     candidate: Mapped[CandidateProfile] = relationship(back_populates="skills")
     skill: Mapped[Skill] = relationship()
+
+
+class CandidateCategory(Base):
+    """A verified category «specialization · grade». One per specialization; exactly one is primary.
+
+    Only the testing engine writes here: a passed test creates or updates the category of its
+    specialization, the grade-change lock and the fast track are kept per category."""
+
+    __tablename__ = "candidate_categories"
+    __table_args__ = (UniqueConstraint("candidate_id", "specialization_id", name="uq_candidate_category"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    candidate_id: Mapped[int] = mapped_column(
+        ForeignKey("candidate_profiles.id", ondelete="CASCADE"), index=True
+    )
+    specialization_id: Mapped[str] = mapped_column(ForeignKey("specializations.id"), index=True)
+    grade_id: Mapped[str] = mapped_column(ForeignKey("grades.id"), index=True)
+    is_primary: Mapped[bool] = mapped_column(Boolean, default=False)
+    theta: Mapped[float] = mapped_column(Float, default=0)
+    scaled_score: Mapped[int] = mapped_column(Integer, default=0)
+    confidence: Mapped[float] = mapped_column(Float, default=0.5)
+    competency_scores: Mapped[dict] = mapped_column(JSON, default=dict)
+    verified_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    grade_locked_until: Mapped[datetime | None] = mapped_column(DateTime)
+    upgrade_eligible: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+    candidate: Mapped[CandidateProfile] = relationship(back_populates="categories")

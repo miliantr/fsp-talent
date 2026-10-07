@@ -9,10 +9,12 @@ import {
   FspSummary,
   InvitationStatusBadge,
   Loading,
+  MoreCategories,
   OutcomeBadge,
   ScoreRing,
   ScoreScale,
 } from '../../components/ui'
+import { GradeStatusLine } from '../../components/GradeStatus'
 import { useI18n } from '../../i18n/context'
 import { workFormatKey } from '../../lib/format'
 import { useReference } from '../../lib/reference'
@@ -50,6 +52,12 @@ export default function CandidateDashboardPage() {
                 when: cat.upgrade_eligible ? t('cand.dash.changeNow') : t('cand.dash.changeAfter', { date: fmt.date(cat.locked_until) }),
               }) : t('cand.dash.verifyHint')}
             </div>
+            {(p.categories.length > 1 || (p.grade_status.status !== 'confirmed' && p.grade_status.status !== 'no_claim')) && (
+              <div className="row wrap">
+                <MoreCategories categories={p.categories} shown={cat} light />
+                {p.grade_status.status !== 'confirmed' && <GradeStatusLine status={p.grade_status} light />}
+              </div>
+            )}
             <div className="row wrap">
               <span className="badge" style={{ background: 'rgba(255,255,255,.15)', color: '#fff' }}>
                 {data.searchable ? <><Eye size={13} />{t('cand.dash.visible')}</> : <><EyeOff size={13} />{t('cand.dash.hidden')}</>}

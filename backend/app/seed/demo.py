@@ -174,14 +174,15 @@ def run(db: Session, *, wipe: bool = False) -> dict:
             continue
         when = now - timedelta(days=p.days_ago)
         if p.key == "demo_candidate":
-            # the showcase profile must be a confident Backend · Middle: replay until it passes
-            for attempt_seed in range(50):
-                res = take_test(db, c, p.specialization, p.declared_grade, p.theta, when,
-                                random.Random(attempt_seed))
-                if res.passed:
-                    break
-                db.delete(db.get(TestAttempt, res.attempt_id))  # failed replay leaves no trace
-                db.commit()
+            # the showcase profile must be a confident Backend · Middle (+ DevOps · Junior): replay until it passes
+            for k, (spec, grade, theta) in enumerate([(p.specialization, p.declared_grade, p.theta),
+                                                       *p.extra_categories]):
+                for attempt_seed in range(50):
+                    res = take_test(db, c, spec, grade, theta, when + timedelta(hours=k), random.Random(attempt_seed))
+                    if res.passed:
+                        break
+                    db.delete(db.get(TestAttempt, res.attempt_id))  # failed replay leaves no trace
+                    db.commit()
             db.commit()
             continue
         res = take_test(db, c, p.specialization, p.declared_grade, p.theta, when, rng)
@@ -192,6 +193,9 @@ def run(db: Session, *, wipe: bool = False) -> dict:
         if not res.passed and lower:
             # the grade is never lowered forcibly: the candidate chooses to take a lower-grade test
             res = take_test(db, c, p.specialization, lower, p.theta, when + timedelta(minutes=30), rng)
+        for spec, grade, theta in p.extra_categories:
+            # a second category is a separate test in another specialization (own RNG stream)
+            take_test(db, c, spec, grade, theta, when + timedelta(hours=2), random.Random(f"{p.key}:{spec}"))
         db.commit()
 
     employers: dict[str, EmployerProfile] = {}
@@ -254,7 +258,8 @@ def run(db: Session, *, wipe: bool = False) -> dict:
                          description=t["description"], created_at=now - timedelta(days=5))
         db.add(task)
         db.flush()
-        pool = [c for c in cands.values() if c.verified_specialization_id == t["spec"] and c.id != star.id][:3]
+        pool = [c for c in cands.values() if any(k.specialization_id == t["spec"] for k in c.categories)
+                and c.id != star.id][:3]
         for c in pool:
             db.add(TaskSubmission(task_id=task.id, candidate_id=c.id, rating=rng.choice([3, 4, 5, None]),
                                   answer="Предлагаю следующий подход: зафиксировать требования, выбрать "

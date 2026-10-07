@@ -472,6 +472,89 @@
     ]
    }
   },
+  "/api/candidate/categories/{specialization_id}/primary": {
+   "put": {
+    "tags": [
+     "Кабинет кандидата"
+    ],
+    "summary": "Сделать подтверждённую категорию основной",
+    "operationId": "set_primary_category_api_candidate_categories__specialization_id__primary_put",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "specialization_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "enum": [
+        "backend",
+        "frontend",
+        "data_ml",
+        "devops"
+       ],
+       "type": "string",
+       "title": "Specialization Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/CandidateProfileOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/candidate/resume/parse": {
    "post": {
     "tags": [
@@ -4797,7 +4880,28 @@
        {
         "type": "null"
        }
-      ]
+      ],
+      "description": "Категория, представляющая кандидата для этой потребности"
+     },
+     "categories": {
+      "items": {
+       "$ref": "#/components/schemas/Category"
+      },
+      "type": "array",
+      "title": "Categories",
+      "description": "Все подтверждённые категории, основная первой",
+      "default": []
+     },
+     "declared": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/DeclaredGrade"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Заявленный грейд (подтверждается тестом)"
      },
      "skills": {
       "items": {
@@ -4971,7 +5075,28 @@
        {
         "type": "null"
        }
-      ]
+      ],
+      "description": "Категория, представляющая кандидата для этой потребности"
+     },
+     "categories": {
+      "items": {
+       "$ref": "#/components/schemas/Category"
+      },
+      "type": "array",
+      "title": "Categories",
+      "description": "Все подтверждённые категории, основная первой",
+      "default": []
+     },
+     "declared": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/DeclaredGrade"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Заявленный грейд (подтверждается тестом)"
      },
      "skills": {
       "items": {
@@ -5523,7 +5648,20 @@
        {
         "type": "null"
        }
-      ]
+      ],
+      "description": "Основная категория"
+     },
+     "categories": {
+      "items": {
+       "$ref": "#/components/schemas/Category"
+      },
+      "type": "array",
+      "title": "Categories",
+      "description": "Все подтверждённые категории, основная первой",
+      "default": []
+     },
+     "grade_status": {
+      "$ref": "#/components/schemas/GradeStatus"
      },
      "competencies": {
       "items": {
@@ -5590,6 +5728,7 @@
      "declared_grade_id",
      "skills",
      "category",
+     "grade_status",
      "competencies",
      "completeness",
      "fsp",
@@ -5874,6 +6013,11 @@
      "upgrade_eligible": {
       "type": "boolean",
       "title": "Upgrade Eligible"
+     },
+     "is_primary": {
+      "type": "boolean",
+      "title": "Is Primary",
+      "default": true
      }
     },
     "type": "object",
@@ -6515,6 +6659,35 @@
     ],
     "title": "Contacts"
    },
+   "DeclaredGrade": {
+    "properties": {
+     "label": {
+      "type": "string",
+      "title": "Label"
+     },
+     "specialization_id": {
+      "type": "string",
+      "title": "Specialization Id"
+     },
+     "grade_id": {
+      "type": "string",
+      "title": "Grade Id"
+     },
+     "confirmed": {
+      "type": "boolean",
+      "title": "Confirmed"
+     }
+    },
+    "type": "object",
+    "required": [
+     "label",
+     "specialization_id",
+     "grade_id",
+     "confirmed"
+    ],
+    "title": "DeclaredGrade",
+    "description": "Self-declared specialization and grade; officially a grade is assigned only by the test."
+   },
    "EligibilityOut": {
     "properties": {
      "grade": {
@@ -7082,6 +7255,63 @@
      "score_threshold"
     ],
     "title": "GradeOut"
+   },
+   "GradeStatus": {
+    "properties": {
+     "status": {
+      "type": "string",
+      "enum": [
+       "confirmed",
+       "confirmed_lower",
+       "not_confirmed",
+       "not_tested",
+       "no_claim"
+      ],
+      "title": "Status"
+     },
+     "specialization_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Specialization Id"
+     },
+     "declared_grade_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Declared Grade Id"
+     },
+     "confirmed_grade_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Confirmed Grade Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "status",
+     "specialization_id",
+     "declared_grade_id",
+     "confirmed_grade_id"
+    ],
+    "title": "GradeStatus",
+    "description": "Self-declared grade vs the grade confirmed by the test."
    },
    "HTTPValidationError": {
     "properties": {
@@ -9404,7 +9634,8 @@
         "type": "null"
        }
       ],
-      "title": "Verified Specialization Id"
+      "title": "Verified Specialization Id",
+      "description": "Специализация основной категории"
      },
      "verified_grade_id": {
       "anyOf": [
@@ -9415,7 +9646,25 @@
         "type": "null"
        }
       ],
-      "title": "Verified Grade Id"
+      "title": "Verified Grade Id",
+      "description": "Грейд основной категории"
+     },
+     "viewed_specialization_id": {
+      "type": "string",
+      "title": "Viewed Specialization Id",
+      "description": "Специализация, для которой рассчитана доступность"
+     },
+     "viewed_grade_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Viewed Grade Id",
+      "description": "Подтверждённый грейд в этой специализации"
      },
      "grade_locked_until": {
       "anyOf": [
@@ -9427,11 +9676,23 @@
         "type": "null"
        }
       ],
-      "title": "Grade Locked Until"
+      "title": "Grade Locked Until",
+      "description": "Блокировка смены грейда в этой специализации"
      },
      "upgrade_eligible": {
       "type": "boolean",
       "title": "Upgrade Eligible"
+     },
+     "categories": {
+      "items": {
+       "$ref": "#/components/schemas/Category"
+      },
+      "type": "array",
+      "title": "Categories"
+     },
+     "max_categories": {
+      "type": "integer",
+      "title": "Max Categories"
      },
      "active_attempt": {
       "anyOf": [
@@ -9467,8 +9728,12 @@
      "declared_grade_id",
      "verified_specialization_id",
      "verified_grade_id",
+     "viewed_specialization_id",
+     "viewed_grade_id",
      "grade_locked_until",
      "upgrade_eligible",
+     "categories",
+     "max_categories",
      "active_attempt",
      "eligibility",
      "history",

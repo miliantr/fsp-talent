@@ -4,6 +4,13 @@ import type { testing as ru } from '../ru/testing'
 export const testing: { readonly [K in keyof typeof ru]: Msg } = {
   'test.sub': 'The category employers see is determined only by the test for the grade you claim. Every variant is unique, but the difficulty is the same for everyone.',
   'test.surveySaved': 'Survey saved',
+  'test.cat.title': 'Your categories',
+  'test.cat.limit': { one: 'up to {n} category', other: 'up to {n} categories' },
+  'test.cat.none': 'None yet: a category is assigned only by a passed test.',
+  'test.cat.makePrimary': 'Make primary',
+  'test.cat.primarySaved': 'Primary category changed',
+  'test.cat.how': 'One category per specialization. The primary one is shown in your profile; in a shortlist the employer sees the one that fits the requirement. Each category has its own grade-change period.',
+  'test.cat.extraHint': 'A {spec} test adds a second category — your primary one ({main}) stays.',
   'test.active': 'You have an unfinished attempt: {spec} · {grade} — {answered} of {total} answered. Time until {time}.',
   'test.continue': 'Continue',
   'test.survey': 'Industry and specialization survey',

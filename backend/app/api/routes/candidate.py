@@ -14,11 +14,12 @@ from app.schemas.candidate import (
     FSPOut,
     ResumeParseOut,
 )
-from app.schemas.common import Message
+from app.schemas.common import Message, SpecId
 from app.schemas.employer import InvitationOut, ReportIn, RespondIn
 from app.schemas.jobs import CandidateDashboard, SubmissionIn, TaskOut
 from app.services import (
     candidate_service,
+    categories,
     fsp_service,
     invitation_service,
     presenters,
@@ -34,8 +35,8 @@ def dashboard(c: Candidate, db: DB):
 
 
 @router.get("/profile", response_model=CandidateProfileOut, summary="Профиль и резюме")
-def get_profile(c: Candidate):
-    return candidate_service.profile_view(c)
+def get_profile(c: Candidate, db: DB):
+    return candidate_service.profile_view(db, c)
 
 
 @router.put("/profile", response_model=CandidateProfileOut, responses=errors(422),
@@ -44,7 +45,14 @@ def update_profile(body: CandidateProfileIn, c: Candidate, db: DB):
     data = body.model_dump(exclude_unset=True)
     if body.skills is not None:
         data["skills"] = [s.model_dump() for s in body.skills]
-    return candidate_service.profile_view(candidate_service.update_profile(db, c, data))
+    return candidate_service.profile_view(db, candidate_service.update_profile(db, c, data))
+
+
+@router.put("/categories/{specialization_id}/primary", response_model=CandidateProfileOut, responses=errors(404),
+            summary="Сделать подтверждённую категорию основной")
+def set_primary_category(specialization_id: SpecId, c: Candidate, db: DB):
+    categories.set_primary(db, c, specialization_id)
+    return candidate_service.profile_view(db, c)
 
 
 @router.post("/resume/parse", response_model=ResumeParseOut, responses=errors(422),

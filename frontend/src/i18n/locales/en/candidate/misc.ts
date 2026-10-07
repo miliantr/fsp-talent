@@ -43,7 +43,7 @@ export const misc: { readonly [K in keyof typeof ru]: Msg } = {
   'cand.print.save': 'Save as PDF',
   'cand.print.spec': 'Specialization (survey)',
   'cand.print.specValue': '{spec} · claimed {grade}',
-  'cand.print.grade': 'Verified grade',
+  'cand.print.grade': 'Verified categories',
   'cand.print.notVerified': 'not verified',
   'cand.print.experience': 'Experience',
   'cand.print.format': 'Format',

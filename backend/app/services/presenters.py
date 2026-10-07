@@ -2,18 +2,51 @@
 applying the privacy rules computed in services.privacy."""
 
 from app.db.base import utcnow
-from app.domain.catalog import GRADE_NAMES, SPEC_NAMES
+from app.domain.catalog import GRADE_NAMES, GRADE_RANK, SPEC_NAMES
 from app.i18n import competency_name, get_locale, has, render, skill_name, t
-from app.models import CandidateProfile, EmployerProfile, FSPProfile, Invitation, Job, TestAttempt, TestResult
+from app.models import (
+    CandidateCategory,
+    CandidateProfile,
+    EmployerProfile,
+    FSPProfile,
+    Invitation,
+    Job,
+    TestAttempt,
+    TestResult,
+)
+from app.services import categories as category_service
 from app.services import privacy
 from app.services.fsp.scoring import FSPSummary
 from app.services.testing.scoring import category_label, recommendation
 
 
-def category(c: CandidateProfile) -> dict | None:
+def category_view(k: CandidateCategory) -> dict:
+    return {
+        "label": category_label(k.specialization_id, k.grade_id),
+        "specialization_id": k.specialization_id,
+        "specialization_name": SPEC_NAMES[k.specialization_id],
+        "grade_id": k.grade_id,
+        "grade_name": GRADE_NAMES[k.grade_id],
+        "verified_at": k.verified_at,
+        "scaled_score": k.scaled_score,
+        "confidence": k.confidence,
+        "theta": k.theta,
+        "locked_until": k.grade_locked_until,
+        "upgrade_eligible": k.upgrade_eligible,
+        "is_primary": k.is_primary,
+        "competency_scores": k.competency_scores or {},
+    }
+
+
+def category(c: CandidateProfile, specialization: str | None = None) -> dict | None:
+    """The category representing the candidate: for a requirement of `specialization` — the category of
+    that (or the closest) specialization; otherwise the primary one."""
     if not c.is_verified:
         return None
-    return {
+    k = category_service.for_spec(c, specialization)
+    if k is not None:
+        return category_view(k)
+    return {  # profile columns (rows created before categories were introduced)
         "label": category_label(c.verified_specialization_id, c.verified_grade_id),
         "specialization_id": c.verified_specialization_id,
         "specialization_name": SPEC_NAMES[c.verified_specialization_id],
@@ -25,7 +58,28 @@ def category(c: CandidateProfile) -> dict | None:
         "theta": c.ability_theta,
         "locked_until": c.grade_locked_until,
         "upgrade_eligible": c.upgrade_eligible,
+        "is_primary": True,
+        "competency_scores": c.competency_scores or {},
     }
+
+
+def declared(c: CandidateProfile) -> dict | None:
+    """The grade the candidate claims in the survey; `confirmed` — the test confirmed it (or higher).
+    Shown to an employer when an applicant has no verified category yet: «Backend · Middle — не подтверждён»."""
+    if not c.specialization_id or not c.declared_grade_id:
+        return None
+    k = category_service.get(c, c.specialization_id)
+    return {"label": category_label(c.specialization_id, c.declared_grade_id),
+            "specialization_id": c.specialization_id, "grade_id": c.declared_grade_id,
+            "confirmed": bool(k and GRADE_RANK[k.grade_id] >= GRADE_RANK[c.declared_grade_id])}
+
+
+def categories(c: CandidateProfile) -> list[dict]:
+    """All verified categories, the primary first."""
+    if c.categories:
+        return [category_view(k) for k in sorted(c.categories, key=lambda k: not k.is_primary)]
+    one = category(c)
+    return [one] if one else []
 
 
 def competency_list(scores: dict) -> list[dict]:
@@ -59,10 +113,14 @@ def match(m: dict) -> dict:
 
 
 def skills(c: CandidateProfile, graph) -> list[dict]:
+    """Declared skills; a skill counts as confirmed when the competency that covers it was scored ≥ 60%
+    in any of the candidate's verified categories."""
+    tested = {k["specialization_id"]: k["competency_scores"] for k in categories(c)}
     out = []
     for cs in sorted(c.skills, key=lambda s: (-s.level, s.skill.name)):
-        comp = graph.competency(cs.skill.slug, c.verified_specialization_id or c.specialization_id or "")
-        score = c.competency_scores.get(comp) if comp and c.competency_scores else None
+        scores = [sc[comp] for spec, sc in tested.items()
+                  if (comp := graph.competency(cs.skill.slug, spec)) and comp in sc]
+        score = max(scores) if scores else None
         out.append({"slug": cs.skill.slug, "name": skill_name(cs.skill.slug), "level": cs.level, "years": cs.years,
                     "verified": score is not None and score >= 60, "competency_score": score})
     return out
@@ -90,7 +148,8 @@ def fsp_profile(fp: FSPProfile | None) -> dict | None:
     }
 
 
-def candidate_card(c: CandidateProfile, graph, fsp: FSPSummary, contacts_visible: bool = False) -> dict:
+def candidate_card(c: CandidateProfile, graph, fsp: FSPSummary, contacts_visible: bool = False,
+                   specialization: str | None = None) -> dict:
     last = max([t for t in (c.last_active_at, c.verified_at) if t], default=None)
     return {
         "candidate_id": c.id,
@@ -100,7 +159,9 @@ def candidate_card(c: CandidateProfile, graph, fsp: FSPSummary, contacts_visible
         "experience_years": c.experience_years,
         "work_format": c.work_format,
         "expected_salary": c.expected_salary if c.show_salary else None,
-        "category": category(c),
+        "category": category(c, specialization),
+        "categories": categories(c),
+        "declared": declared(c),
         "skills": skills(c, graph)[:8],
         "fsp": fsp_summary(fsp) if c.show_fsp else fsp_summary(FSPSummary(available=False)),
         "last_active_days": (utcnow() - last).days if last else None,

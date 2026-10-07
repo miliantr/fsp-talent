@@ -8,6 +8,8 @@ Rules (configurable through settings):
     failing a higher one (the grade is never lowered forcibly, the profile is never blocked);
   * a verified grade changes at most once per GRADE_CHANGE_COOLDOWN_DAYS (grade_locked_until),
     except the fast track: a confident result (upgrade_eligible) unlocks the next grade test at once;
+  * every specialization is a separate category with its own lock: a test in another
+    specialization adds a category (up to MAX_CATEGORIES) and never replaces the existing one;
   * re-confirming the current grade is allowed after the retake cooldown and refreshes the profile.
 """
 
@@ -29,10 +31,14 @@ class AttemptRecord:
 
 @dataclass
 class CandidateGradeState:
+    """The candidate's category in the specialization being checked (None fields — no category yet)."""
+
     verified_specialization: str | None
     verified_grade: str | None
     grade_locked_until: datetime | None
     upgrade_eligible: bool
+    categories_count: int = 0
+    max_categories: int = 3
 
 
 @dataclass
@@ -68,15 +74,8 @@ def check_eligibility(state: CandidateGradeState, history: list[AttemptRecord], 
         )
 
     verified = state.verified_grade if state.verified_specialization == specialization else None
-    if state.verified_grade and state.verified_specialization != specialization:
-        # switching specialization changes the category -> same lock as a grade change
-        if state.grade_locked_until and now < state.grade_locked_until:
-            return Eligibility(
-                target, False, "blocked",
-                t("test.policy.change_after", date={"date": state.grade_locked_until.isoformat()}),
-                state.grade_locked_until,
-            )
-        return Eligibility(target, True, "change")
+    if verified is None and state.categories_count >= state.max_categories:
+        return Eligibility(target, False, "blocked", t("test.policy.max_categories", n=state.max_categories))
 
     if verified is None:
         failed_higher = any(

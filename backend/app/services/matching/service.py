@@ -19,42 +19,53 @@ from app.models import (
 )
 from app.repositories import candidates as cand_repo
 from app.repositories.reference import skill_graph
+from app.services import categories as category_service
 from app.services import fsp_service, presenters, privacy
 from app.services.fsp.scoring import summarize
 from app.services.matching import engine
 from app.services.matching.config import ENGINE_VERSION, get_weights
 from app.services.testing import service as testing_service
-from app.services.testing.scoring import category_label
 
 SNAPSHOT_TTL = timedelta(minutes=5)
 # Candidates below this compatibility are not part of the selection (noise for the employer).
 MIN_MATCH_SCORE = 0.35
 
 
-def candidate_features(c: CandidateProfile, today=None) -> engine.CandidateFeatures:
+def candidate_features(c: CandidateProfile, today=None, specialization: str | None = None) -> engine.CandidateFeatures:
+    """Features of the candidate as seen by a requirement of `specialization`: the category of that
+    specialization (or the closest one) represents the candidate; other categories add skill evidence."""
     today = today or utcnow().date()
     by_spec = {}
     if c.show_fsp and c.fsp_profile:
         achs = fsp_service.to_achievements(c.fsp_profile)
         for s in SPECIALIZATIONS:
             by_spec[s["id"]] = summarize(achs, s["id"], today, c.fsp_profile.sport_rank)
+    cat = category_service.for_spec(c, specialization)
+    if cat is not None:
+        spec, grade, theta, score = cat.specialization_id, cat.grade_id, cat.theta, cat.scaled_score
+        conf, comps, verified_at, upgrade = cat.confidence, cat.competency_scores, cat.verified_at, cat.upgrade_eligible
+    else:  # profile columns (rows created before categories were introduced)
+        spec, grade, theta, score = c.verified_specialization_id, c.verified_grade_id, c.ability_theta, c.scaled_score
+        conf, comps, verified_at, upgrade = c.category_confidence, c.competency_scores, c.verified_at, c.upgrade_eligible
     return engine.CandidateFeatures(
         id=c.id,
-        specialization=c.verified_specialization_id,
-        grade=c.verified_grade_id,
-        theta=c.ability_theta or 0.0,
-        scaled_score=c.scaled_score or 0,
-        confidence=c.category_confidence or 0.5,
-        competency_scores=c.competency_scores or {},
+        specialization=spec,
+        grade=grade,
+        theta=theta or 0.0,
+        scaled_score=score or 0,
+        confidence=conf or 0.5,
+        competency_scores=comps or {},
         skills={cs.skill.slug: cs.level for cs in c.skills},
         experience_years=c.experience_years or 0,
         expected_salary=c.expected_salary if c.show_salary else None,
         work_format=c.work_format,
         city=c.city,
         last_active_at=c.last_active_at,
-        verified_at=c.verified_at,
-        upgrade_eligible=c.upgrade_eligible,
+        verified_at=verified_at,
+        upgrade_eligible=upgrade,
         fsp_by_spec=by_spec,
+        other_competencies={k.specialization_id: k.competency_scores or {} for k in c.categories
+                            if k.specialization_id != spec},
     )
 
 
@@ -80,7 +91,7 @@ def run(db: Session, job: Job, now: datetime | None = None) -> list[MatchResult]
     now = now or utcnow()
     specs = [s["id"] for s in SPECIALIZATIONS if spec_similarity(s["id"], job.specialization_id) > 0]
     pool = cand_repo.searchable(db, specs)
-    feats = [candidate_features(c, now.date()) for c in pool]
+    feats = [candidate_features(c, now.date(), job.specialization_id) for c in pool]
     ranked = [m for m in engine.rank(feats, job_features(job), skill_graph(), now) if m.score >= MIN_MATCH_SCORE]
 
     old = {m.candidate_id: m for m in db.scalars(select(MatchResult).where(MatchResult.job_id == job.id))}
@@ -128,21 +139,22 @@ def list_matches(db: Session, employer: EmployerProfile, job: Job, *, grades: li
     applied = set(db.scalars(select(Application.candidate_id).where(Application.job_id == job.id)))
 
     # categories are aggregated over the full ranking, so refining filters never loses the selection
+    # the category that represents each candidate for this requirement (one per candidate)
+    shown = {r.candidate_id: presenters.category(profiles[r.candidate_id], job.specialization_id) for r in rows}
     cat_stats: dict[str, dict] = {}
     for r in rows:
-        c = profiles[r.candidate_id]
-        label = category_label(c.verified_specialization_id, c.verified_grade_id)
-        s = cat_stats.setdefault(label, {"label": label, "specialization_id": c.verified_specialization_id,
-                                         "grade_id": c.verified_grade_id, "count": 0, "sum": 0.0, "top": 0})
+        k = shown[r.candidate_id]
+        s = cat_stats.setdefault(k["label"], {"label": k["label"], "specialization_id": k["specialization_id"],
+                                              "grade_id": k["grade_id"], "count": 0, "sum": 0.0, "top": 0})
         s["count"] += 1
         s["sum"] += r.score
         s["top"] = max(s["top"], round(r.score * 100))
 
     def keep(r: MatchResult) -> bool:
         c = profiles[r.candidate_id]
-        if grades and c.verified_grade_id not in grades:
+        if grades and shown[c.id]["grade_id"] not in grades:
             return False
-        if categories and category_label(c.verified_specialization_id, c.verified_grade_id) not in categories:
+        if categories and shown[c.id]["label"] not in categories:
             return False
         if has_fsp is not None and (bool(c.fsp_profile and c.fsp_profile.achievements and c.show_fsp) != has_fsp):
             return False
@@ -159,7 +171,7 @@ def list_matches(db: Session, employer: EmployerProfile, job: Job, *, grades: li
     for r in filtered[offset:offset + limit]:
         c = profiles[r.candidate_id]
         fsp = fsp_service.summary_for(c, job.specialization_id)
-        card = presenters.candidate_card(c, graph, fsp)
+        card = presenters.candidate_card(c, graph, fsp, specialization=job.specialization_id)
         card.update({
             "match": presenters.match({
                 "percent": round(r.score * 100), "rank": r.rank, "score": r.score,
@@ -201,7 +213,8 @@ def explain(db: Session, job: Job, candidate: CandidateProfile) -> engine.MatchS
     if not candidate.is_verified:
         return None
     # computed even for candidates outside the ranking gates, so any profile stays explainable
-    return engine.score_candidate(candidate_features(candidate), job_features(job), skill_graph())
+    return engine.score_candidate(candidate_features(candidate, specialization=job.specialization_id),
+                                  job_features(job), skill_graph())
 
 
 def compare(db: Session, job: Job, a: CandidateProfile, b: CandidateProfile) -> dict:
@@ -226,12 +239,18 @@ def search_bank(db: Session, employer: EmployerProfile, *, specialization: str |
     invitations = {i.candidate_id: i.status for i in db.scalars(select(Invitation).where(
         Invitation.employer_id == employer.id).order_by(Invitation.created_at))}
     rows = []
+    cats: dict[str, int] = {}
     for c in pool:
-        if grades and c.verified_grade_id not in grades:
+        own = presenters.categories(c)
+        for k in own:
+            if not specialization or k["specialization_id"] == specialization:
+                cats[k["label"]] = cats.get(k["label"], 0) + 1
+        # the category shown on the card: the filtered one, else the specialization's, else the primary
+        cat = next((k for k in own if k["label"] in categories), None) if categories else \
+            presenters.category(c, specialization)
+        if cat is None or (grades and cat["grade_id"] not in grades):
             continue
-        if categories and category_label(c.verified_specialization_id, c.verified_grade_id) not in categories:
-            continue
-        fsp = fsp_service.summary_for(c, c.verified_specialization_id)
+        fsp = fsp_service.summary_for(c, cat["specialization_id"])
         if has_fsp is not None and (fsp.available and c.show_fsp) != has_fsp:
             continue
         if skills:
@@ -239,19 +258,15 @@ def search_bank(db: Session, employer: EmployerProfile, *, specialization: str |
             # skill graph aware: a close skill (Flask for FastAPI) counts as a partial hit
             if not all(any(graph.similarity(h, s) >= 0.6 for h in have) for s in skills):
                 continue
-        strength = engine.profile_strength(candidate_features(c, now.date()), now)
-        rows.append((strength, c, fsp))
+        strength = engine.profile_strength(candidate_features(c, now.date(), cat["specialization_id"]), now)
+        rows.append((strength, c, fsp, cat))
     rows.sort(key=lambda x: -x[0])
     items = []
-    for strength, c, fsp in rows[offset:offset + limit]:
-        card = presenters.candidate_card(c, graph, fsp)
+    for strength, c, fsp, cat in rows[offset:offset + limit]:
+        card = presenters.candidate_card(c, graph, fsp, specialization=cat["specialization_id"])
         card["profile_strength"] = round(strength * 100)
         card["invitation_status"] = invitations.get(c.id)
         items.append(card)
-    cats: dict[str, int] = {}
-    for _, c, _ in rows:
-        label = category_label(c.verified_specialization_id, c.verified_grade_id)
-        cats[label] = cats.get(label, 0) + 1
     return {"total": len(rows), "items": items,
             "categories": [{"label": k, "count": v} for k, v in sorted(cats.items())]}
 
@@ -268,7 +283,7 @@ def candidate_detail(db: Session, employer: EmployerProfile, candidate_id: int, 
     graph = skill_graph()
     spec = job.specialization_id if job else c.verified_specialization_id
     fsp = fsp_service.summary_for(c, spec)
-    card = presenters.candidate_card(c, graph, fsp, contacts_visible=visible)
+    card = presenters.candidate_card(c, graph, fsp, contacts_visible=visible, specialization=spec)
     card["skills"] = presenters.skills(c, graph)
     history = [{"attempt_id": r.attempt_id, "target_grade": r.attempt.target_grade_id,
                 "specialization_id": r.attempt.specialization_id, "outcome": r.outcome,
@@ -280,7 +295,8 @@ def candidate_detail(db: Session, employer: EmployerProfile, candidate_id: int, 
     card.update({
         "about": c.about, "education": c.education, "team_roles": c.team_roles or [],
         "soft_skills": c.soft_skills or [],
-        "competencies": presenters.competency_list(c.competency_scores or {}),
+        "competencies": presenters.competency_list(card["category"]["competency_scores"]
+                                                   if card["category"] else {}),
         "test_history": history,
         "fsp_profile": presenters.fsp_profile(c.fsp_profile) if c.show_fsp else None,
         "contacts_visible": visible,
