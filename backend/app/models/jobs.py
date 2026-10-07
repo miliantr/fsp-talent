@@ -184,8 +184,21 @@ class ContactAccessLog(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
 
+class TaskMode:
+    SOLVE = "solve"          # a concrete answer (number / short text), checked automatically
+    APPROACH = "approach"    # an approach in free text, reviewed by the employer with a rubric
+    ALL = (SOLVE, APPROACH)
+
+
+class TaskAudience:
+    TARGETED = "targeted"    # the system offers the task to suitable candidates one by one
+    CATEGORY = "category"    # an open challenge for the whole category
+    ALL = (TARGETED, CATEGORY)
+
+
 class ShortTask(Base):
-    """Regular short task from an employer: keeps candidate profiles fresh."""
+    """Regular short task from an employer: keeps candidate profiles fresh and gives the employer a
+    fresh signal. It never changes the grade — only the test does."""
 
     __tablename__ = "short_tasks"
 
@@ -196,10 +209,57 @@ class ShortTask(Base):
     specialization_id: Mapped[str] = mapped_column(ForeignKey("specializations.id"))
     title: Mapped[str] = mapped_column(String(128))
     description: Mapped[str] = mapped_column(Text)
+    mode: Mapped[str] = mapped_column(String(16), default=TaskMode.APPROACH)
+    audience: Mapped[str] = mapped_column(String(16), default=TaskAudience.TARGETED)
+    grade_id: Mapped[str | None] = mapped_column(ForeignKey("grades.id"))       # level the task is made for
+    job_id: Mapped[int | None] = mapped_column(ForeignKey("jobs.id", ondelete="SET NULL"))  # vacancy-specific
+    competency_id: Mapped[str | None] = mapped_column(String(32))              # what the task checks
+    # solve: {"kind": "number", "value": 42, "tolerance": 0.5} | {"kind": "text", "accepted": ["..."]}
+    answer_spec: Mapped[dict | None] = mapped_column(JSON)
+    # approach: reference ideas of a good answer (pre-score and the reviewer's checklist)
+    key_points: Mapped[list] = mapped_column(JSON, default=list)
+    time_limit_days: Mapped[int] = mapped_column(Integer, default=7)
+    max_offers: Mapped[int] = mapped_column(Integer, default=20)              # caps the employer's review load
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     employer: Mapped[EmployerProfile] = relationship()
+    job: Mapped[Job | None] = relationship()
+
+
+class AssignmentStatus:
+    OFFERED = "offered"
+    SUBMITTED = "submitted"
+    DECLINED = "declined"
+    EXPIRED = "expired"
+
+
+class TaskAssignment(Base):
+    """A task offered to one candidate (by the system or by the employer personally)."""
+
+    __tablename__ = "task_assignments"
+    __table_args__ = (UniqueConstraint("task_id", "candidate_id", name="uq_task_assignment"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    task_id: Mapped[int] = mapped_column(ForeignKey("short_tasks.id", ondelete="CASCADE"), index=True)
+    candidate_id: Mapped[int] = mapped_column(
+        ForeignKey("candidate_profiles.id", ondelete="CASCADE"), index=True
+    )
+    source: Mapped[str] = mapped_column(String(16), default="system")  # system | employer
+    reason: Mapped[list] = mapped_column(JSON, default=list)             # message objects: why this task
+    status: Mapped[str] = mapped_column(String(16), default=AssignmentStatus.OFFERED, index=True)
+    offered_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    due_at: Mapped[datetime] = mapped_column(DateTime)
+    responded_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+    task: Mapped[ShortTask] = relationship()
+    candidate: Mapped[CandidateProfile] = relationship()
+
+
+class SubmissionStatus:
+    CHECKED = "checked"              # solve: checked automatically
+    PENDING_REVIEW = "pending_review"
+    REVIEWED = "reviewed"            # approach: scored by the employer's rubric
 
 
 class TaskSubmission(Base):
@@ -214,11 +274,17 @@ class TaskSubmission(Base):
     candidate_id: Mapped[int] = mapped_column(
         ForeignKey("candidate_profiles.id", ondelete="CASCADE"), index=True
     )
+    assignment_id: Mapped[int | None] = mapped_column(ForeignKey("task_assignments.id", ondelete="SET NULL"))
     answer: Mapped[str] = mapped_column(Text)
-    rating: Mapped[int | None] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String(16), default=SubmissionStatus.PENDING_REVIEW)
+    auto_score: Mapped[float | None] = mapped_column(Float)  # solve: 1/0; approach: key-point coverage
+    auto_detail: Mapped[dict | None] = mapped_column(JSON)   # matched / missed key points (employer only)
+    rubric: Mapped[dict | None] = mapped_column(JSON)        # {"correctness": 0..2, "completeness": .., "reasoning": ..}
+    score: Mapped[float | None] = mapped_column(Float)       # final 0..1
+    rating: Mapped[int | None] = mapped_column(Integer)      # 1..5 derived from the score (compatibility)
     reviewer_comment: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     reviewed_at: Mapped[datetime | None] = mapped_column(DateTime)
 
     task: Mapped[ShortTask] = relationship()
-    candidate: Mapped[CandidateProfile] = relationship()
+    candidate: Mapped[CandidateProfile] = relationship(back_populates="task_submissions")

@@ -20,6 +20,7 @@ export const dashboard: { readonly [K in keyof typeof ru]: Msg } = {
   'cand.dash.confidence': 'Confidence',
   'cand.dash.completeness': 'Completeness',
   'cand.dash.invitations': 'Invitations from employers',
+  'cand.dash.taskOffer': 'A task for you',
   'cand.dash.all': 'All ({n})',
   'cand.dash.noInvitations': 'No invitations yet',
   'cand.dash.noInvitationsVisible': 'Employers can already see your profile. To raise your chances: complete the profile, link your FSP ID, solve short tasks.',

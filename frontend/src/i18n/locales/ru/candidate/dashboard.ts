@@ -17,6 +17,7 @@ export const dashboard = {
   'cand.dash.confidence': 'Уверенность',
   'cand.dash.completeness': 'Заполненность',
   'cand.dash.invitations': 'Приглашения от работодателей',
+  'cand.dash.taskOffer': 'Задание для вас',
   'cand.dash.all': 'Все ({n})',
   'cand.dash.noInvitations': 'Пока нет приглашений',
   'cand.dash.noInvitationsVisible': 'Работодатели уже видят ваш профиль. Повысить шансы: заполните профиль, привяжите ФСП ID, решайте короткие задания.',

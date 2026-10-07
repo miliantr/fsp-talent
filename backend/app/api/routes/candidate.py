@@ -16,7 +16,7 @@ from app.schemas.candidate import (
 )
 from app.schemas.common import Message, SpecId
 from app.schemas.employer import InvitationOut, ReportIn, RespondIn
-from app.schemas.jobs import CandidateDashboard, SubmissionIn, TaskOut
+from app.schemas.jobs import CandidateDashboard, CandidateTasksOut, SubmissionIn, TaskResultOut
 from app.services import (
     candidate_service,
     categories,
@@ -143,13 +143,20 @@ def report(inv_id: int, body: ReportIn, c: Candidate, db: DB):
 
 # ------------------------------------------------------------------ regular tasks
 
-@router.get("/tasks", response_model=list[TaskOut], summary="Короткие задания от работодателей")
+@router.get("/tasks", response_model=CandidateTasksOut,
+            summary="Регулярные задания: адресные предложения, челленджи категории, история")
 def tasks(c: Candidate, db: DB):
     return tasks_service.for_candidate(db, c)
 
 
-@router.post("/tasks/{task_id}/submit", response_model=Message, responses=errors(404, 409, 422),
-             summary="Отправить решение или подход")
+@router.post("/tasks/{task_id}/submit", response_model=TaskResultOut, status_code=201,
+             responses=errors(404, 409, 422), summary="Отправить решение (автопроверка) или подход (на проверку)")
 def submit_task(task_id: int, body: SubmissionIn, c: Candidate, db: DB):
-    tasks_service.submit(db, c, task_id, body.answer)
-    return Message(message=t("message.solution_sent"))
+    return tasks_service.submit(db, c, task_id, body.answer)
+
+
+@router.post("/tasks/offers/{assignment_id}/decline", response_model=Message, responses=errors(404, 409),
+             summary="Отказаться от предложенного задания")
+def decline_task(assignment_id: int, c: Candidate, db: DB):
+    tasks_service.decline(db, c, assignment_id)
+    return Message(message=t("message.task_declined"))

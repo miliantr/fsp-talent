@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, Circle, Eye, EyeOff, Inbox, Lock, Trophy } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Circle, Eye, EyeOff, Inbox, ListChecks, Lock, Trophy } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useApi } from '../../api/hooks'
 import type { CandidateDashboard } from '../../api/types'
@@ -82,6 +82,19 @@ export default function CandidateDashboardPage() {
           </div>
         )}
       </div>
+
+      {data.task_offer && (
+        <div className="card row between wrap" style={{ gap: 16, borderColor: 'var(--primary)' }}>
+          <div className="row" style={{ gap: 14, alignItems: 'flex-start' }}>
+            <ListChecks size={22} color="var(--primary)" style={{ flex: 'none', marginTop: 2 }} />
+            <div><div className="tiny muted" style={{ textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 700 }}>{t('cand.dash.taskOffer')}</div>
+              <div className="bold">{data.task_offer.task.title}</div>
+              <div className="small muted">{data.task_offer.task.company.name} · {t('cand.tasks.due', { date: fmt.date(data.task_offer.due_at) })}</div>
+              {data.task_offer.reasons[1] && <div className="small" style={{ marginTop: 4 }}>{data.task_offer.reasons[1]}</div>}</div>
+          </div>
+          <Link className="btn" to="/candidate/tasks">{t('cand.tasks.solve')} <ArrowRight size={15} /></Link>
+        </div>
+      )}
 
       <div className="split">
         <div className="stack-lg">

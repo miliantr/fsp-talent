@@ -4,6 +4,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useApi } from '../../api/hooks'
 import type { CandidateDetail, Company, Requirement } from '../../api/types'
 import { InviteModal } from '../../components/InviteModal'
+import { OfferTaskCard, TasksSignalBadge } from '../../components/TasksSignal'
 import {
   AchievementList,
   Avatar,
@@ -54,7 +55,7 @@ export default function CandidateView() {
             <div className="stack" style={{ gap: 8 }}>
               <h1>{c.display_name}</h1>
               <div className="muted">{c.headline} · {t('emp.cand.experience', { value: fmt.years(c.experience_years) })} · {c.city ?? '—'} · {t(workFormatKey(c.work_format))}</div>
-              <div className="row wrap"><CategoryBadge category={c.category} size="lg" /><MoreCategories categories={c.categories} shown={c.category} /><FspSummary fsp={c.fsp} /></div>
+              <div className="row wrap"><CategoryBadge category={c.category} size="lg" /><MoreCategories categories={c.categories} shown={c.category} /><FspSummary fsp={c.fsp} /><TasksSignalBadge signal={c.tasks} /></div>
             </div>
           </div>
           <div className="row" style={{ gap: 20 }}>
@@ -130,6 +131,7 @@ export default function CandidateView() {
               <p className="small muted">{t('emp.cand.contactsHidden')}</p>
             )}
           </div>
+          <OfferTaskCard candidateId={c.candidate_id} specialization={c.category?.specialization_id} />
           <div className="card stack">
             <h3>{t('emp.cand.yourInvitations')}</h3>
             {c.invitations.length === 0 ? <p className="small muted">{t('emp.cand.notInvited')}</p> : c.invitations.map((i) => (

@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     grade_change_cooldown_days: int = 90    # verified grade may change at most once per 90 days
     max_categories: int = 3                 # verified categories per candidate (one per specialization)
 
+    # --- regular tasks ------------------------------------------------------
+    task_offer_interval_days: int = 7       # at most one new addressed task per candidate per period
+    task_offer_loop_minutes: int = 60       # background pass offering due tasks (0 — only on demand)
+
     # --- invitations --------------------------------------------------------
     invitation_ttl_days: int = 14
     invitations_daily_limit: int = 40       # anti-spam guard per employer

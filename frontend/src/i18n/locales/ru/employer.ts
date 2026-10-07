@@ -180,17 +180,4 @@ export const employer = {
   'emp.apps.match': 'совпадение {pct}%',
   'emp.apps.reject': 'Отказать',
 
-  'emp.tasks.sub': 'Небольшие задачи для кандидатов категории: свежий сигнал о навыках и повод для знакомства.',
-  'emp.tasks.new': 'Новое задание',
-  'emp.tasks.newTitle': 'Новое короткое задание',
-  'emp.tasks.empty': 'Заданий нет',
-  'emp.tasks.view': 'Смотреть решения',
-  'emp.tasks.published': 'Задание опубликовано',
-  'emp.tasks.rated': 'Оценка сохранена',
-  'emp.tasks.solutionsTitle': 'Решения: {title}',
-  'emp.tasks.noSolutions': 'Решений пока нет.',
-  'emp.tasks.rate': 'Оценка {n}',
-  'emp.tasks.title': 'Название',
-  'emp.tasks.statement': 'Условие',
-  'emp.tasks.publish': 'Опубликовать',
 } as const

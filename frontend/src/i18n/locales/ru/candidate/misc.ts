@@ -1,16 +1,5 @@
-// Tasks, settings and the printable profile.
+// Settings and the printable profile.
 export const misc = {
-  'cand.tasks.sub': 'Работодатели периодически публикуют небольшие задачи. Решение или предложенный подход — свежий сигнал о вас: профиль поднимается в подборках как актуальный.',
-  'cand.tasks.sent': 'Решение отправлено — профиль отмечен как активный',
-  'cand.tasks.empty': 'Заданий по вашей специализации пока нет',
-  'cand.tasks.solutions': 'Решений: {n}',
-  'cand.tasks.rating': 'Оценка {n}/5',
-  'cand.tasks.awaiting': 'Отправлено, ждёт оценки',
-  'cand.tasks.propose': 'Предложить решение',
-  'cand.tasks.comment': 'Комментарий: {text}',
-  'cand.tasks.answer': 'Решение или подход',
-  'cand.tasks.send': 'Отправить',
-
   'cand.settings.sub': 'Приватность, согласия на обработку и публикацию данных (152-ФЗ), язык интерфейса, связь с ФСП ID.',
   'cand.settings.saved': 'Настройки сохранены',
   'cand.settings.searchable': 'Ваш профиль участвует в подборках работодателей.',

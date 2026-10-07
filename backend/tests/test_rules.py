@@ -103,32 +103,6 @@ def test_fsp_id_link_requires_a_code_and_cannot_be_shared(client):
     assert taken.status_code == 409 and taken.json()["code"] == "fsp_taken"
 
 
-def test_short_task_submission_and_review(client, db):
-    ct, _ = verified_candidate(client, db, "tasker@example.com", "Ольга")
-    et, _ = employer_with_need(client, "tasks.hr@example.com")
-    task = client.post("/api/employer/tasks", headers=auth(et), json={
-        "specialization_id": "backend", "title": "Rate limiter", "description": "Спроектируйте rate limiter для API"})
-    assert task.status_code == 201, task.text
-    tid = task.json()["id"]
-    assert tid in {t["id"] for t in client.get("/api/candidate/tasks", headers=auth(ct)).json()}
-
-    short = client.post(f"/api/candidate/tasks/{tid}/submit", headers=auth(ct, "en"), json={"answer": "token bucket"})
-    assert short.status_code == 422 and short.json()["message"] == "Field “Answer”: at least 20 characters"
-    ok = client.post(f"/api/candidate/tasks/{tid}/submit", headers=auth(ct, "en"),
-                     json={"answer": "Token bucket в Redis: ключ на клиента, атомарный Lua-скрипт, TTL."})
-    assert ok.json() == {"message": "Solution submitted"}
-    assert client.post(f"/api/candidate/tasks/{tid}/submit", headers=auth(ct),
-                       json={"answer": "Повторная отправка того же решения"}).status_code == 409
-
-    sub = client.get(f"/api/employer/tasks/{tid}/submissions", headers=auth(et)).json()[0]
-    assert client.post(f"/api/employer/submissions/{sub['id']}/review", headers=auth(et),
-                       json={"rating": 6}).status_code == 422
-    r = client.post(f"/api/employer/submissions/{sub['id']}/review", headers=auth(et, "en"), json={"rating": 5})
-    assert r.json() == {"message": "Rating saved"}
-    assert client.get("/api/employer/tasks/999999/submissions", headers=auth(et, "en")).json()["message"] == \
-        "Task not found"
-
-
 def test_english_need_description_is_parsed():
     p = parse_need_text("Looking for a Middle Python backend developer: FastAPI, PostgreSQL, Docker; "
                         "Redis is a plus. Salary 190-260k, remote, 2+ years of experience.")

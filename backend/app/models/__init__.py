@@ -4,6 +4,7 @@ from app.models.fsp import FSPAchievement, FSPProfile
 from app.models.jobs import (
     Application,
     ApplicationStatus,
+    AssignmentStatus,
     ContactAccessLog,
     Invitation,
     InvitationStatus,
@@ -11,6 +12,10 @@ from app.models.jobs import (
     JobSkill,
     MatchResult,
     ShortTask,
+    SubmissionStatus,
+    TaskAssignment,
+    TaskAudience,
+    TaskMode,
     TaskSubmission,
 )
 from app.models.reference import Competency, Grade, Skill, Specialization
@@ -32,6 +37,7 @@ for _cls in (TestAnswer, TestAttempt, TestItem, TestResult):
 __all__ = [
     "Application",
     "ApplicationStatus",
+    "AssignmentStatus",
     "AttemptStatus",
     "CandidateProfile",
     "CandidateCategory",
@@ -51,6 +57,10 @@ __all__ = [
     "QuestionType",
     "Role",
     "ShortTask",
+    "SubmissionStatus",
+    "TaskAssignment",
+    "TaskAudience",
+    "TaskMode",
     "Skill",
     "Specialization",
     "TaskSubmission",

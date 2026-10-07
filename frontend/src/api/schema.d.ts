@@ -380,7 +380,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Короткие задания от работодателей */
+        /** Регулярные задания: адресные предложения, челленджи категории, история */
         get: operations["tasks_api_candidate_tasks_get"];
         put?: never;
         post?: never;
@@ -399,8 +399,25 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Отправить решение или подход */
+        /** Отправить решение (автопроверка) или подход (на проверку) */
         post: operations["submit_task_api_candidate_tasks__task_id__submit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/candidate/tasks/offers/{assignment_id}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Отказаться от предложенного задания */
+        post: operations["decline_task_api_candidate_tasks_offers__assignment_id__decline_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -763,11 +780,45 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Короткие задания компании */
+        /** Регулярные задания компании и статистика */
         get: operations["tasks_api_employer_tasks_get"];
         put?: never;
-        /** Create Task */
+        /** Опубликовать задание: автопроверка или подход, адресно или челлендж */
         post: operations["create_task_api_employer_tasks_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/employer/tasks/{task_id}/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Снять задание с публикации или вернуть */
+        put: operations["set_task_active_api_employer_tasks__task_id__active_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/employer/tasks/{task_id}/offer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Предложить задание конкретному кандидату */
+        post: operations["offer_task_api_employer_tasks__task_id__offer_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -952,6 +1003,29 @@ export interface components {
             /** Total */
             total: number;
         };
+        /**
+         * AnswerSpec
+         * @description Key of an auto-checked task: a number (± tolerance) or accepted short texts.
+         */
+        AnswerSpec: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "number" | "text";
+            /** Value */
+            value?: number | null;
+            /**
+             * Tolerance
+             * @default 0
+             */
+            tolerance: number;
+            /**
+             * Accepted
+             * @default []
+             */
+            accepted: string[];
+        };
         /** ApiError */
         ApiError: {
             /** Code */
@@ -1131,6 +1205,8 @@ export interface components {
             fsp: components["schemas"]["FSPSummaryView"];
             /** Last Active Days */
             last_active_days: number | null;
+            /** @description Свежий сигнал: регулярные задания за 90 дней */
+            tasks?: components["schemas"]["TasksSignal"] | null;
             match?: components["schemas"]["MatchOut"] | null;
             /**
              * Shortlisted
@@ -1156,6 +1232,7 @@ export interface components {
             steps: components["schemas"]["Step"][];
             /** Searchable */
             searchable: boolean;
+            task_offer?: components["schemas"]["TaskOfferOut"] | null;
         };
         /** CandidateDetail */
         CandidateDetail: {
@@ -1188,6 +1265,8 @@ export interface components {
             fsp: components["schemas"]["FSPSummaryView"];
             /** Last Active Days */
             last_active_days: number | null;
+            /** @description Свежий сигнал: регулярные задания за 90 дней */
+            tasks?: components["schemas"]["TasksSignal"] | null;
             match?: components["schemas"]["MatchOut"] | null;
             /**
              * Shortlisted
@@ -1376,6 +1455,21 @@ export interface components {
             verified: boolean;
             /** Competency Score */
             competency_score?: number | null;
+        };
+        /** CandidateTasksOut */
+        CandidateTasksOut: {
+            /** Offered */
+            offered: components["schemas"]["TaskOfferOut"][];
+            /** Challenges */
+            challenges: components["schemas"]["TaskView"][];
+            /** History */
+            history: components["schemas"]["TaskResultOut"][];
+            /** Next Offer At */
+            next_offer_at: string | null;
+            /** Interval Days */
+            interval_days: number;
+            /** Verified */
+            verified: boolean;
         };
         /** Category */
         Category: {
@@ -1656,6 +1750,59 @@ export interface components {
             };
             /** Acceptance Rate */
             acceptance_rate: number | null;
+        };
+        /** EmployerTaskOut */
+        EmployerTaskOut: {
+            /** Id */
+            id: number;
+            /** Title */
+            title: string;
+            /** Description */
+            description: string;
+            /** Mode */
+            mode: string;
+            /** Audience */
+            audience: string;
+            /**
+             * Answer Kind
+             * @description number | text для задач с автопроверкой
+             */
+            answer_kind: string | null;
+            /** Specialization Id */
+            specialization_id: string;
+            /** Specialization Name */
+            specialization_name: string;
+            /** Grade Id */
+            grade_id: string | null;
+            /** Grade Name */
+            grade_name: string | null;
+            /** Competency Id */
+            competency_id: string | null;
+            /** Competency Name */
+            competency_name: string | null;
+            /** Requirement Title */
+            requirement_title: string | null;
+            /** Time Limit Days */
+            time_limit_days: number;
+            /** Is Active */
+            is_active: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            company: components["schemas"]["Company"];
+            /** Job Id */
+            job_id: number | null;
+            /** Answer Spec */
+            answer_spec: {
+                [key: string]: unknown;
+            } | null;
+            /** Key Points */
+            key_points: string[];
+            /** Max Offers */
+            max_offers: number;
+            stats: components["schemas"]["TaskStats"];
         };
         /** FSPAchievementView */
         FSPAchievementView: {
@@ -2025,21 +2172,10 @@ export interface components {
             /** Message */
             message: string;
         };
-        /** MySubmission */
-        MySubmission: {
-            /** Id */
-            id: number;
-            /** Answer */
-            answer: string;
-            /** Rating */
-            rating: number | null;
-            /** Reviewer Comment */
-            reviewer_comment: string | null;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
+        /** OfferTaskIn */
+        OfferTaskIn: {
+            /** Candidate Id */
+            candidate_id: number;
         };
         /** ParseNeedIn */
         ParseNeedIn: {
@@ -2452,10 +2588,27 @@ export interface components {
         };
         /** ReviewIn */
         ReviewIn: {
-            /** Rating */
-            rating: number;
+            rubric: components["schemas"]["Rubric"];
             /** Comment */
             comment?: string | null;
+        };
+        /** Rubric */
+        Rubric: {
+            /**
+             * Correctness
+             * @description Решение верно и применимо
+             */
+            correctness: number;
+            /**
+             * Completeness
+             * @description Учтены крайние случаи и ограничения
+             */
+            completeness: number;
+            /**
+             * Reasoning
+             * @description Обоснованы компромиссы
+             */
+            reasoning: number;
         };
         /** SkillMatchOut */
         SkillMatchOut: {
@@ -2541,6 +2694,23 @@ export interface components {
             id: number;
             /** Answer */
             answer: string;
+            /** Status */
+            status: string;
+            /**
+             * Auto Score
+             * @description Автопроверка (1/0) или доля ключевых идей — предварительно
+             */
+            auto_score: number | null;
+            /** Auto Detail */
+            auto_detail: {
+                [key: string]: unknown;
+            } | null;
+            /** Rubric */
+            rubric: {
+                [key: string]: number;
+            } | null;
+            /** Score */
+            score: number | null;
             /** Rating */
             rating: number | null;
             /** Reviewer Comment */
@@ -2554,6 +2724,13 @@ export interface components {
             candidate_id: number;
             /** Candidate Name */
             candidate_name: string;
+            /** Category Label */
+            category_label: string | null;
+        };
+        /** TaskActiveIn */
+        TaskActiveIn: {
+            /** Is Active */
+            is_active: boolean;
         };
         /** TaskIn */
         TaskIn: {
@@ -2566,19 +2743,157 @@ export interface components {
             title: string;
             /** Description */
             description: string;
+            /**
+             * Mode
+             * @description solve — ответ проверяется автоматически; approach — подход, рубрика
+             * @default approach
+             * @enum {string}
+             */
+            mode: "solve" | "approach";
+            /**
+             * Audience
+             * @description targeted — система предлагает адресно; category — челлендж категории
+             * @default targeted
+             * @enum {string}
+             */
+            audience: "targeted" | "category";
+            /**
+             * Grade Id
+             * @description Грейд, на который рассчитано задание
+             */
+            grade_id?: ("junior" | "middle" | "senior") | null;
+            /**
+             * Job Id
+             * @description Потребность, к которой относится задание
+             */
+            job_id?: number | null;
+            /**
+             * Competency Id
+             * @description Проверяемая компетенция
+             */
+            competency_id?: string | null;
+            answer_spec?: components["schemas"]["AnswerSpec"] | null;
+            /**
+             * Key Points
+             * @description Ключевые идеи хорошего ответа
+             * @default []
+             */
+            key_points: string[];
+            /**
+             * Time Limit Days
+             * @default 7
+             */
+            time_limit_days: number;
+            /**
+             * Max Offers
+             * @description Сколько кандидатам предложить адресно
+             * @default 20
+             */
+            max_offers: number;
         };
-        /** TaskOut */
-        TaskOut: {
+        /** TaskOfferOut */
+        TaskOfferOut: {
+            /** Assignment Id */
+            assignment_id: number;
+            /**
+             * Source
+             * @description system — подобрано системой, employer — лично от работодателя
+             */
+            source: string;
+            /** Reasons */
+            reasons: string[];
+            /**
+             * Offered At
+             * Format: date-time
+             */
+            offered_at: string;
+            /**
+             * Due At
+             * Format: date-time
+             */
+            due_at: string;
+            task: components["schemas"]["TaskView"];
+        };
+        /**
+         * TaskResultOut
+         * @description The candidate's own result: the auto-check verdict or the employer's rubric (never the key).
+         */
+        TaskResultOut: {
+            /** Id */
+            id: number;
+            /** Task Id */
+            task_id: number;
+            /** Task Title */
+            task_title: string;
+            /** Mode */
+            mode: string;
+            company: components["schemas"]["Company"];
+            /** Answer */
+            answer: string;
+            /** Status */
+            status: string;
+            /** Correct */
+            correct: boolean | null;
+            /** Rubric */
+            rubric: {
+                [key: string]: number;
+            } | null;
+            /** Score */
+            score: number | null;
+            /** Reviewer Comment */
+            reviewer_comment: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Reviewed At */
+            reviewed_at: string | null;
+        };
+        /** TaskStats */
+        TaskStats: {
+            /** Offered */
+            offered: number;
+            /** Submitted */
+            submitted: number;
+            /** Pending Review */
+            pending_review: number;
+            /** Avg Score */
+            avg_score: number | null;
+        };
+        /** TaskView */
+        TaskView: {
             /** Id */
             id: number;
             /** Title */
             title: string;
             /** Description */
             description: string;
+            /** Mode */
+            mode: string;
+            /** Audience */
+            audience: string;
+            /**
+             * Answer Kind
+             * @description number | text для задач с автопроверкой
+             */
+            answer_kind: string | null;
             /** Specialization Id */
             specialization_id: string;
             /** Specialization Name */
             specialization_name: string;
+            /** Grade Id */
+            grade_id: string | null;
+            /** Grade Name */
+            grade_name: string | null;
+            /** Competency Id */
+            competency_id: string | null;
+            /** Competency Name */
+            competency_name: string | null;
+            /** Requirement Title */
+            requirement_title: string | null;
+            /** Time Limit Days */
+            time_limit_days: number;
             /** Is Active */
             is_active: boolean;
             /**
@@ -2587,9 +2902,36 @@ export interface components {
              */
             created_at: string;
             company: components["schemas"]["Company"];
-            /** Submissions */
-            submissions: number;
-            my_submission: components["schemas"]["MySubmission"] | null;
+        };
+        /**
+         * TasksSignal
+         * @description Recent regular-task results of a candidate (last 90 days): a fresh signal for employers.
+         */
+        TasksSignal: {
+            /**
+             * Done
+             * @description Проверенных решений
+             */
+            done: number;
+            /**
+             * Pending
+             * @description Ждут проверки работодателем
+             */
+            pending: number;
+            /**
+             * Avg Score
+             * @description Средний балл, %
+             */
+            avg_score: number | null;
+            /** Last Title */
+            last_title: string;
+            /** Last Score */
+            last_score: number | null;
+            /**
+             * Last At
+             * Format: date-time
+             */
+            last_at: string;
         };
         /** TestHistoryItem */
         TestHistoryItem: {
@@ -3896,7 +4238,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TaskOut"][];
+                    "application/json": components["schemas"]["CandidateTasksOut"];
                 };
             };
             /** @description Требуется авторизация */
@@ -3933,6 +4275,73 @@ export interface operations {
                 "application/json": components["schemas"]["SubmissionIn"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaskResultOut"];
+                };
+            };
+            /** @description Требуется авторизация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Конфликт состояния (кулдаун, дубликат, закрытая сущность) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Ошибка валидации */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    decline_task_api_candidate_tasks_offers__assignment_id__decline_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assignment_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
@@ -3979,13 +4388,13 @@ export interface operations {
                     "application/json": components["schemas"]["ApiError"];
                 };
             };
-            /** @description Ошибка валидации */
+            /** @description Validation Error */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ApiError"];
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -5432,7 +5841,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TaskOut"][];
+                    "application/json": components["schemas"]["EmployerTaskOut"][];
                 };
             };
             /** @description Требуется авторизация */
@@ -5474,7 +5883,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TaskOut"];
+                    "application/json": components["schemas"]["EmployerTaskOut"];
                 };
             };
             /** @description Требуется авторизация */
@@ -5495,6 +5904,15 @@ export interface operations {
                     "application/json": components["schemas"]["ApiError"];
                 };
             };
+            /** @description Не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
             /** @description Ошибка валидации */
             422: {
                 headers: {
@@ -5502,6 +5920,139 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    set_task_active_api_employer_tasks__task_id__active_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskActiveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Требуется авторизация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    offer_task_api_employer_tasks__task_id__offer_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OfferTaskIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"];
+                };
+            };
+            /** @description Требуется авторизация */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Недостаточно прав */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Не найдено */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Конфликт состояния (кулдаун, дубликат, закрытая сущность) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

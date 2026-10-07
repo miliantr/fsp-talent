@@ -3,7 +3,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload, selectinload
 
-from app.models import CandidateCategory, CandidateProfile, CandidateSkill, FSPProfile, User
+from app.models import CandidateCategory, CandidateProfile, CandidateSkill, FSPProfile, TaskSubmission, User
 
 
 def _base():
@@ -14,6 +14,7 @@ def _base():
             joinedload(CandidateProfile.user),
             selectinload(CandidateProfile.skills).joinedload(CandidateSkill.skill),
             selectinload(CandidateProfile.fsp_profile).selectinload(FSPProfile.achievements),
+            selectinload(CandidateProfile.task_submissions).joinedload(TaskSubmission.task),
         )
     )
 

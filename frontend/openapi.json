@@ -1472,7 +1472,7 @@
     "tags": [
      "Кабинет кандидата"
     ],
-    "summary": "Короткие задания от работодателей",
+    "summary": "Регулярные задания: адресные предложения, челленджи категории, история",
     "operationId": "tasks_api_candidate_tasks_get",
     "responses": {
      "200": {
@@ -1480,11 +1480,7 @@
       "content": {
        "application/json": {
         "schema": {
-         "items": {
-          "$ref": "#/components/schemas/TaskOut"
-         },
-         "type": "array",
-         "title": "Response Tasks Api Candidate Tasks Get"
+         "$ref": "#/components/schemas/CandidateTasksOut"
         }
        }
       }
@@ -1522,7 +1518,7 @@
     "tags": [
      "Кабинет кандидата"
     ],
-    "summary": "Отправить решение или подход",
+    "summary": "Отправить решение (автопроверка) или подход (на проверку)",
     "operationId": "submit_task_api_candidate_tasks__task_id__submit_post",
     "security": [
      {
@@ -1550,6 +1546,93 @@
       }
      }
     },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TaskResultOut"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Конфликт состояния (кулдаун, дубликат, закрытая сущность)",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Ошибка валидации",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/candidate/tasks/offers/{assignment_id}/decline": {
+   "post": {
+    "tags": [
+     "Кабинет кандидата"
+    ],
+    "summary": "Отказаться от предложенного задания",
+    "operationId": "decline_task_api_candidate_tasks_offers__assignment_id__decline_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "assignment_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Assignment Id"
+      }
+     }
+    ],
     "responses": {
      "200": {
       "description": "Successful Response",
@@ -1602,11 +1685,11 @@
       }
      },
      "422": {
-      "description": "Ошибка валидации",
+      "description": "Validation Error",
       "content": {
        "application/json": {
         "schema": {
-         "$ref": "#/components/schemas/ApiError"
+         "$ref": "#/components/schemas/HTTPValidationError"
         }
        }
       }
@@ -3738,7 +3821,7 @@
     "tags": [
      "Кабинет работодателя"
     ],
-    "summary": "Короткие задания компании",
+    "summary": "Регулярные задания компании и статистика",
     "operationId": "tasks_api_employer_tasks_get",
     "responses": {
      "200": {
@@ -3747,7 +3830,7 @@
        "application/json": {
         "schema": {
          "items": {
-          "$ref": "#/components/schemas/TaskOut"
+          "$ref": "#/components/schemas/EmployerTaskOut"
          },
          "type": "array",
          "title": "Response Tasks Api Employer Tasks Get"
@@ -3786,7 +3869,7 @@
     "tags": [
      "Кабинет работодателя"
     ],
-    "summary": "Create Task",
+    "summary": "Опубликовать задание: автопроверка или подход, адресно или челлендж",
     "operationId": "create_task_api_employer_tasks_post",
     "requestBody": {
      "content": {
@@ -3804,7 +3887,7 @@
       "content": {
        "application/json": {
         "schema": {
-         "$ref": "#/components/schemas/TaskOut"
+         "$ref": "#/components/schemas/EmployerTaskOut"
         }
        }
       }
@@ -3829,6 +3912,16 @@
        }
       }
      },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
      "422": {
       "description": "Ошибка валидации",
       "content": {
@@ -3845,6 +3938,190 @@
       "HTTPBearer": []
      }
     ]
+   }
+  },
+  "/api/employer/tasks/{task_id}/active": {
+   "put": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Снять задание с публикации или вернуть",
+    "operationId": "set_task_active_api_employer_tasks__task_id__active_put",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "task_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Task Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/TaskActiveIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Message"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/employer/tasks/{task_id}/offer": {
+   "post": {
+    "tags": [
+     "Кабинет работодателя"
+    ],
+    "summary": "Предложить задание конкретному кандидату",
+    "operationId": "offer_task_api_employer_tasks__task_id__offer_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "task_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Task Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/OfferTaskIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Message"
+        }
+       }
+      }
+     },
+     "401": {
+      "description": "Требуется авторизация",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "403": {
+      "description": "Недостаточно прав",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "404": {
+      "description": "Не найдено",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "409": {
+      "description": "Конфликт состояния (кулдаун, дубликат, закрытая сущность)",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ApiError"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
    }
   },
   "/api/employer/tasks/{task_id}/submissions": {
@@ -4503,6 +4780,50 @@
     ],
     "title": "AnswerOut"
    },
+   "AnswerSpec": {
+    "properties": {
+     "kind": {
+      "type": "string",
+      "enum": [
+       "number",
+       "text"
+      ],
+      "title": "Kind"
+     },
+     "value": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Value"
+     },
+     "tolerance": {
+      "type": "number",
+      "minimum": 0.0,
+      "title": "Tolerance",
+      "default": 0
+     },
+     "accepted": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "maxItems": 10,
+      "title": "Accepted",
+      "default": []
+     }
+    },
+    "type": "object",
+    "required": [
+     "kind"
+    ],
+    "title": "AnswerSpec",
+    "description": "Key of an auto-checked task: a number (± tolerance) or accepted short texts."
+   },
    "ApiError": {
     "properties": {
      "code": {
@@ -4924,6 +5245,17 @@
       ],
       "title": "Last Active Days"
      },
+     "tasks": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/TasksSignal"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Свежий сигнал: регулярные задания за 90 дней"
+     },
      "match": {
       "anyOf": [
        {
@@ -5011,6 +5343,16 @@
      "searchable": {
       "type": "boolean",
       "title": "Searchable"
+     },
+     "task_offer": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/TaskOfferOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
      }
     },
     "type": "object",
@@ -5118,6 +5460,17 @@
        }
       ],
       "title": "Last Active Days"
+     },
+     "tasks": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/TasksSignal"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Свежий сигнал: регулярные задания за 90 дней"
      },
      "match": {
       "anyOf": [
@@ -5930,6 +6283,61 @@
      "verified"
     ],
     "title": "CandidateSkillView"
+   },
+   "CandidateTasksOut": {
+    "properties": {
+     "offered": {
+      "items": {
+       "$ref": "#/components/schemas/TaskOfferOut"
+      },
+      "type": "array",
+      "title": "Offered"
+     },
+     "challenges": {
+      "items": {
+       "$ref": "#/components/schemas/TaskView"
+      },
+      "type": "array",
+      "title": "Challenges"
+     },
+     "history": {
+      "items": {
+       "$ref": "#/components/schemas/TaskResultOut"
+      },
+      "type": "array",
+      "title": "History"
+     },
+     "next_offer_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Next Offer At"
+     },
+     "interval_days": {
+      "type": "integer",
+      "title": "Interval Days"
+     },
+     "verified": {
+      "type": "boolean",
+      "title": "Verified"
+     }
+    },
+    "type": "object",
+    "required": [
+     "offered",
+     "challenges",
+     "history",
+     "next_offer_at",
+     "interval_days",
+     "verified"
+    ],
+    "title": "CandidateTasksOut"
    },
    "Category": {
     "properties": {
@@ -6866,6 +7274,184 @@
      "acceptance_rate"
     ],
     "title": "EmployerInvitationStats"
+   },
+   "EmployerTaskOut": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "description": {
+      "type": "string",
+      "title": "Description"
+     },
+     "mode": {
+      "type": "string",
+      "title": "Mode"
+     },
+     "audience": {
+      "type": "string",
+      "title": "Audience"
+     },
+     "answer_kind": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Answer Kind",
+      "description": "number | text для задач с автопроверкой"
+     },
+     "specialization_id": {
+      "type": "string",
+      "title": "Specialization Id"
+     },
+     "specialization_name": {
+      "type": "string",
+      "title": "Specialization Name"
+     },
+     "grade_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Grade Id"
+     },
+     "grade_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Grade Name"
+     },
+     "competency_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Competency Id"
+     },
+     "competency_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Competency Name"
+     },
+     "requirement_title": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Requirement Title"
+     },
+     "time_limit_days": {
+      "type": "integer",
+      "title": "Time Limit Days"
+     },
+     "is_active": {
+      "type": "boolean",
+      "title": "Is Active"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     },
+     "company": {
+      "$ref": "#/components/schemas/Company"
+     },
+     "job_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Job Id"
+     },
+     "answer_spec": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Answer Spec"
+     },
+     "key_points": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Key Points"
+     },
+     "max_offers": {
+      "type": "integer",
+      "title": "Max Offers"
+     },
+     "stats": {
+      "$ref": "#/components/schemas/TaskStats"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "title",
+     "description",
+     "mode",
+     "audience",
+     "answer_kind",
+     "specialization_id",
+     "specialization_name",
+     "grade_id",
+     "grade_name",
+     "competency_id",
+     "competency_name",
+     "requirement_title",
+     "time_limit_days",
+     "is_active",
+     "created_at",
+     "company",
+     "job_id",
+     "answer_spec",
+     "key_points",
+     "max_offers",
+     "stats"
+    ],
+    "title": "EmployerTaskOut"
    },
    "FSPAchievementView": {
     "properties": {
@@ -7977,53 +8563,18 @@
     ],
     "title": "Message"
    },
-   "MySubmission": {
+   "OfferTaskIn": {
     "properties": {
-     "id": {
+     "candidate_id": {
       "type": "integer",
-      "title": "Id"
-     },
-     "answer": {
-      "type": "string",
-      "title": "Answer"
-     },
-     "rating": {
-      "anyOf": [
-       {
-        "type": "integer"
-       },
-       {
-        "type": "null"
-       }
-      ],
-      "title": "Rating"
-     },
-     "reviewer_comment": {
-      "anyOf": [
-       {
-        "type": "string"
-       },
-       {
-        "type": "null"
-       }
-      ],
-      "title": "Reviewer Comment"
-     },
-     "created_at": {
-      "type": "string",
-      "format": "date-time",
-      "title": "Created At"
+      "title": "Candidate Id"
      }
     },
     "type": "object",
     "required": [
-     "id",
-     "answer",
-     "rating",
-     "reviewer_comment",
-     "created_at"
+     "candidate_id"
     ],
-    "title": "MySubmission"
+    "title": "OfferTaskIn"
    },
    "ParseNeedIn": {
     "properties": {
@@ -9164,11 +9715,8 @@
    },
    "ReviewIn": {
     "properties": {
-     "rating": {
-      "type": "integer",
-      "maximum": 5.0,
-      "minimum": 1.0,
-      "title": "Rating"
+     "rubric": {
+      "$ref": "#/components/schemas/Rubric"
      },
      "comment": {
       "anyOf": [
@@ -9185,9 +9733,41 @@
     },
     "type": "object",
     "required": [
-     "rating"
+     "rubric"
     ],
     "title": "ReviewIn"
+   },
+   "Rubric": {
+    "properties": {
+     "correctness": {
+      "type": "integer",
+      "maximum": 2.0,
+      "minimum": 0.0,
+      "title": "Correctness",
+      "description": "Решение верно и применимо"
+     },
+     "completeness": {
+      "type": "integer",
+      "maximum": 2.0,
+      "minimum": 0.0,
+      "title": "Completeness",
+      "description": "Учтены крайние случаи и ограничения"
+     },
+     "reasoning": {
+      "type": "integer",
+      "maximum": 2.0,
+      "minimum": 0.0,
+      "title": "Reasoning",
+      "description": "Обоснованы компромиссы"
+     }
+    },
+    "type": "object",
+    "required": [
+     "correctness",
+     "completeness",
+     "reasoning"
+    ],
+    "title": "Rubric"
    },
    "SkillMatchOut": {
     "properties": {
@@ -9386,7 +9966,7 @@
      "answer": {
       "type": "string",
       "maxLength": 6000,
-      "minLength": 20,
+      "minLength": 1,
       "title": "Answer"
      }
     },
@@ -9405,6 +9985,59 @@
      "answer": {
       "type": "string",
       "title": "Answer"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "auto_score": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Auto Score",
+      "description": "Автопроверка (1/0) или доля ключевых идей — предварительно"
+     },
+     "auto_detail": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Auto Detail"
+     },
+     "rubric": {
+      "anyOf": [
+       {
+        "additionalProperties": {
+         "type": "integer"
+        },
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rubric"
+     },
+     "score": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Score"
      },
      "rating": {
       "anyOf": [
@@ -9440,19 +10073,49 @@
      "candidate_name": {
       "type": "string",
       "title": "Candidate Name"
+     },
+     "category_label": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Category Label"
      }
     },
     "type": "object",
     "required": [
      "id",
      "answer",
+     "status",
+     "auto_score",
+     "auto_detail",
+     "rubric",
+     "score",
      "rating",
      "reviewer_comment",
      "created_at",
      "candidate_id",
-     "candidate_name"
+     "candidate_name",
+     "category_label"
     ],
     "title": "SubmissionOut"
+   },
+   "TaskActiveIn": {
+    "properties": {
+     "is_active": {
+      "type": "boolean",
+      "title": "Is Active"
+     }
+    },
+    "type": "object",
+    "required": [
+     "is_active"
+    ],
+    "title": "TaskActiveIn"
    },
    "TaskIn": {
     "properties": {
@@ -9477,6 +10140,103 @@
       "maxLength": 4000,
       "minLength": 10,
       "title": "Description"
+     },
+     "mode": {
+      "type": "string",
+      "enum": [
+       "solve",
+       "approach"
+      ],
+      "title": "Mode",
+      "description": "solve — ответ проверяется автоматически; approach — подход, рубрика",
+      "default": "approach"
+     },
+     "audience": {
+      "type": "string",
+      "enum": [
+       "targeted",
+       "category"
+      ],
+      "title": "Audience",
+      "description": "targeted — система предлагает адресно; category — челлендж категории",
+      "default": "targeted"
+     },
+     "grade_id": {
+      "anyOf": [
+       {
+        "type": "string",
+        "enum": [
+         "junior",
+         "middle",
+         "senior"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Grade Id",
+      "description": "Грейд, на который рассчитано задание"
+     },
+     "job_id": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Job Id",
+      "description": "Потребность, к которой относится задание"
+     },
+     "competency_id": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 32
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Competency Id",
+      "description": "Проверяемая компетенция"
+     },
+     "answer_spec": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/AnswerSpec"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "key_points": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "maxItems": 8,
+      "title": "Key Points",
+      "description": "Ключевые идеи хорошего ответа",
+      "default": []
+     },
+     "time_limit_days": {
+      "type": "integer",
+      "maximum": 30.0,
+      "minimum": 1.0,
+      "title": "Time Limit Days",
+      "default": 7
+     },
+     "max_offers": {
+      "type": "integer",
+      "maximum": 200.0,
+      "minimum": 1.0,
+      "title": "Max Offers",
+      "description": "Сколько кандидатам предложить адресно",
+      "default": 20
      }
     },
     "type": "object",
@@ -9487,7 +10247,198 @@
     ],
     "title": "TaskIn"
    },
-   "TaskOut": {
+   "TaskOfferOut": {
+    "properties": {
+     "assignment_id": {
+      "type": "integer",
+      "title": "Assignment Id"
+     },
+     "source": {
+      "type": "string",
+      "title": "Source",
+      "description": "system — подобрано системой, employer — лично от работодателя"
+     },
+     "reasons": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Reasons"
+     },
+     "offered_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Offered At"
+     },
+     "due_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Due At"
+     },
+     "task": {
+      "$ref": "#/components/schemas/TaskView"
+     }
+    },
+    "type": "object",
+    "required": [
+     "assignment_id",
+     "source",
+     "reasons",
+     "offered_at",
+     "due_at",
+     "task"
+    ],
+    "title": "TaskOfferOut"
+   },
+   "TaskResultOut": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "task_id": {
+      "type": "integer",
+      "title": "Task Id"
+     },
+     "task_title": {
+      "type": "string",
+      "title": "Task Title"
+     },
+     "mode": {
+      "type": "string",
+      "title": "Mode"
+     },
+     "company": {
+      "$ref": "#/components/schemas/Company"
+     },
+     "answer": {
+      "type": "string",
+      "title": "Answer"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "correct": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Correct"
+     },
+     "rubric": {
+      "anyOf": [
+       {
+        "additionalProperties": {
+         "type": "integer"
+        },
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Rubric"
+     },
+     "score": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Score"
+     },
+     "reviewer_comment": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reviewer Comment"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     },
+     "reviewed_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Reviewed At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "task_id",
+     "task_title",
+     "mode",
+     "company",
+     "answer",
+     "status",
+     "correct",
+     "rubric",
+     "score",
+     "reviewer_comment",
+     "created_at",
+     "reviewed_at"
+    ],
+    "title": "TaskResultOut",
+    "description": "The candidate's own result: the auto-check verdict or the employer's rubric (never the key)."
+   },
+   "TaskStats": {
+    "properties": {
+     "offered": {
+      "type": "integer",
+      "title": "Offered"
+     },
+     "submitted": {
+      "type": "integer",
+      "title": "Submitted"
+     },
+     "pending_review": {
+      "type": "integer",
+      "title": "Pending Review"
+     },
+     "avg_score": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Avg Score"
+     }
+    },
+    "type": "object",
+    "required": [
+     "offered",
+     "submitted",
+     "pending_review",
+     "avg_score"
+    ],
+    "title": "TaskStats"
+   },
+   "TaskView": {
     "properties": {
      "id": {
       "type": "integer",
@@ -9501,6 +10452,26 @@
       "type": "string",
       "title": "Description"
      },
+     "mode": {
+      "type": "string",
+      "title": "Mode"
+     },
+     "audience": {
+      "type": "string",
+      "title": "Audience"
+     },
+     "answer_kind": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Answer Kind",
+      "description": "number | text для задач с автопроверкой"
+     },
      "specialization_id": {
       "type": "string",
       "title": "Specialization Id"
@@ -9508,6 +10479,65 @@
      "specialization_name": {
       "type": "string",
       "title": "Specialization Name"
+     },
+     "grade_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Grade Id"
+     },
+     "grade_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Grade Name"
+     },
+     "competency_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Competency Id"
+     },
+     "competency_name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Competency Name"
+     },
+     "requirement_title": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Requirement Title"
+     },
+     "time_limit_days": {
+      "type": "integer",
+      "title": "Time Limit Days"
      },
      "is_active": {
       "type": "boolean",
@@ -9520,20 +10550,6 @@
      },
      "company": {
       "$ref": "#/components/schemas/Company"
-     },
-     "submissions": {
-      "type": "integer",
-      "title": "Submissions"
-     },
-     "my_submission": {
-      "anyOf": [
-       {
-        "$ref": "#/components/schemas/MySubmission"
-       },
-       {
-        "type": "null"
-       }
-      ]
      }
     },
     "type": "object",
@@ -9541,15 +10557,79 @@
      "id",
      "title",
      "description",
+     "mode",
+     "audience",
+     "answer_kind",
      "specialization_id",
      "specialization_name",
+     "grade_id",
+     "grade_name",
+     "competency_id",
+     "competency_name",
+     "requirement_title",
+     "time_limit_days",
      "is_active",
      "created_at",
-     "company",
-     "submissions",
-     "my_submission"
+     "company"
     ],
-    "title": "TaskOut"
+    "title": "TaskView"
+   },
+   "TasksSignal": {
+    "properties": {
+     "done": {
+      "type": "integer",
+      "title": "Done",
+      "description": "Проверенных решений"
+     },
+     "pending": {
+      "type": "integer",
+      "title": "Pending",
+      "description": "Ждут проверки работодателем"
+     },
+     "avg_score": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Avg Score",
+      "description": "Средний балл, %"
+     },
+     "last_title": {
+      "type": "string",
+      "title": "Last Title"
+     },
+     "last_score": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Score"
+     },
+     "last_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Last At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "done",
+     "pending",
+     "avg_score",
+     "last_title",
+     "last_score",
+     "last_at"
+    ],
+    "title": "TasksSignal",
+    "description": "Recent regular-task results of a candidate (last 90 days): a fresh signal for employers."
    },
    "TestHistoryItem": {
     "properties": {

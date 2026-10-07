@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.core.security import hash_password
 from app.db.base import Base, utcnow
+from app.i18n import msg
 from app.models import (
     Application,
     CandidateProfile,
@@ -23,6 +24,7 @@ from app.models import (
     Role,
     ShortTask,
     Skill,
+    TaskAssignment,
     TaskSubmission,
     TestAttempt,
     TestItem,
@@ -41,7 +43,7 @@ from app.seed.personas import (
     demo_personas,
 )
 from app.seed.reference import seed_reference
-from app.services import employer_service, fsp_service, invitation_service, jobs_service
+from app.services import employer_service, fsp_service, invitation_service, jobs_service, tasks_service
 from app.services.fsp.registry import DATA_FILE, get_mock_registry
 from app.services.matching import service as matching
 from app.services.testing import service as testing
@@ -253,25 +255,82 @@ def run(db: Session, *, wipe: bool = False) -> dict:
                 except Exception:
                     db.rollback()
 
-    for t in TASKS:
-        task = ShortTask(employer_id=employers[t["company"]].id, specialization_id=t["spec"], title=t["title"],
-                         description=t["description"], created_at=now - timedelta(days=5))
-        db.add(task)
-        db.flush()
-        pool = [c for c in cands.values() if any(k.specialization_id == t["spec"] for k in c.categories)
-                and c.id != star.id][:3]
-        for c in pool:
-            db.add(TaskSubmission(task_id=task.id, candidate_id=c.id, rating=rng.choice([3, 4, 5, None]),
-                                  answer="Предлагаю следующий подход: зафиксировать требования, выбрать "
-                                         "решение с понятными гарантиями и измерить эффект метриками.",
-                                  created_at=now - timedelta(days=rng.randint(1, 4))))
-    db.commit()
+    seed_tasks(db, employers, jobs, cands, now)
     for job in jobs:
         matching.run(db, job)
 
     return {"candidates": len(cands), "employers": len(employers), "jobs": len(jobs),
             "verified": sum(1 for c in cands.values() if c.verified_grade_id),
             "invitations": db.query(Invitation).count(), "applications": db.query(Application).count()}
+
+
+def seed_tasks(db: Session, employers: dict, jobs: list[Job], cands: dict[str, CandidateProfile], now) -> None:
+    """Regular tasks with a realistic history, produced by the production code paths: the system offers
+    tasks (tasks_service.offer_due) week after week, candidates answer or let offers expire, employers
+    review approaches with the rubric. The showcase candidate ends with one open offer."""
+    rng = random.Random(77)
+    by_title = {j.title: j for j in jobs}
+    tasks: list[tuple[ShortTask, dict]] = []
+    for spec in TASKS:
+        job = by_title.get(spec["job"]) if spec.get("job") else None
+        task = tasks_service.create(db, employers[spec["company"]], {
+            "specialization_id": spec["spec"], "title": spec["title"], "description": spec["description"],
+            "mode": spec["mode"], "audience": spec["audience"], "grade_id": spec.get("grade"),
+            "job_id": job.id if job else None, "competency_id": spec.get("competency"),
+            "answer_spec": spec.get("answer_spec"), "key_points": spec.get("key_points", []),
+            "time_limit_days": 7, "max_offers": 40,
+        })
+        task.created_at = now - timedelta(days=30)
+        tasks.append((task, spec))
+    db.commit()
+    star = cands["demo_candidate"]
+    others = [c for c in cands.values() if c.categories and c.id != star.id]
+
+    def answer_and_review(c, task, spec, when):
+        quality = rng.choices([0, 1, 2], weights=[0.45, 0.35, 0.2])[0]
+        try:
+            tasks_service.submit(db, c, task.id, spec["answers"][quality], now=when)
+        except Exception:
+            db.rollback()
+            return
+        if task.mode == "approach" and rng.random() < 0.75:
+            sub = db.scalar(select(TaskSubmission).where(TaskSubmission.task_id == task.id,
+                                                         TaskSubmission.candidate_id == c.id))
+            r = [{"correctness": 2, "completeness": 2, "reasoning": 2}, {"correctness": 2, "completeness": 1,
+                 "reasoning": 1}, {"correctness": 0, "completeness": 0, "reasoning": 1}][quality]
+            tasks_service.review(db, task.employer, sub.id, r, None, now=when + timedelta(days=1))
+
+    # four weekly rounds of system offers in the past
+    for week in (28, 21, 14, 8):
+        when = now - timedelta(days=week)
+        for c in others:
+            a = tasks_service.offer_due(db, c, when)
+            if a is None:
+                continue
+            spec = next(sp for task, sp in tasks if task.id == a.task_id)
+            if rng.random() < 0.7:
+                answer_and_review(c, a.task, spec, when + timedelta(days=rng.randint(0, 3)))
+            elif rng.random() < 0.5:
+                tasks_service.decline(db, c, a.id, when + timedelta(days=1))
+    # open challenges taken voluntarily
+    for task, spec in tasks:
+        if task.audience != "category":
+            continue
+        pool = [c for c in others if any(k.specialization_id == task.specialization_id for k in c.categories)]
+        for c in rng.sample(pool, k=min(4, len(pool))):
+            answer_and_review(c, task, spec, now - timedelta(days=rng.randint(2, 20)))
+
+    # the showcase candidate: solved the throughput task 12 days ago, today gets the idempotency task
+    solve = next(task for task, sp in tasks if sp["mode"] == "solve" and sp["spec"] == "backend")
+    db.add(TaskAssignment(task_id=solve.id, candidate_id=star.id, source="system", status="offered",
+                          reason=[msg("task.reason.category", label="Backend · Middle"),
+                                  msg("task.reason.competency", name={"competency": solve.competency_id}, score=0)],
+                          offered_at=now - timedelta(days=12), due_at=now - timedelta(days=5)))
+    db.commit()
+    tasks_service.submit(db, star, solve.id, "200", now=now - timedelta(days=11))
+    tasks_service.offer_due(db, star, now)
+    star.last_active_at = now - timedelta(days=6)
+    db.commit()
 
 
 def _invite(db, employer, candidate, job, status, created, rng, title=None, contact=None, salary=None):

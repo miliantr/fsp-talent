@@ -175,7 +175,14 @@ def candidate_card(c: CandidateProfile, graph, fsp: FSPSummary, contacts_visible
         "skills": skills(c, graph)[:8],
         "fsp": fsp_summary(fsp) if c.show_fsp else fsp_summary(FSPSummary(available=False)),
         "last_active_days": (utcnow() - last).days if last else None,
+        "tasks": _tasks_signal(c),
     }
+
+
+def _tasks_signal(c: CandidateProfile) -> dict | None:
+    from app.services.tasks_service import signal  # tasks_service builds views with presenters
+
+    return signal(c)
 
 
 def company(e: EmployerProfile) -> dict:

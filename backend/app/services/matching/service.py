@@ -20,7 +20,7 @@ from app.models import (
 from app.repositories import candidates as cand_repo
 from app.repositories.reference import skill_graph
 from app.services import categories as category_service
-from app.services import fsp_service, presenters, privacy
+from app.services import fsp_service, presenters, privacy, tasks_service
 from app.services.fsp.scoring import summarize
 from app.services.matching import engine
 from app.services.matching.config import ENGINE_VERSION, get_weights
@@ -66,7 +66,15 @@ def candidate_features(c: CandidateProfile, today=None, specialization: str | No
         fsp_by_spec=by_spec,
         other_competencies={k.specialization_id: k.competency_scores or {} for k in c.categories
                             if k.specialization_id != spec},
+        task_signal=_task_signal(c),
     )
+
+
+def _task_signal(c: CandidateProfile) -> tuple[str, int, int] | None:
+    sig = tasks_service.signal(c)
+    if not sig or sig["last_score"] is None:
+        return None
+    return sig["last_title"], sig["last_score"], (utcnow() - sig["last_at"]).days
 
 
 def job_features(j: Job) -> engine.JobFeatures:

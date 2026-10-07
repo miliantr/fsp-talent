@@ -4,6 +4,7 @@ import { candidate } from './candidate'
 import { common } from './common'
 import { employer } from './employer'
 import { landing } from './landing'
+import { tasks } from './tasks'
 import { testing } from './testing'
 
-export const en: Dictionary = { ...common, ...landing, ...auth, ...candidate, ...testing, ...employer }
+export const en: Dictionary = { ...common, ...landing, ...auth, ...candidate, ...testing, ...employer, ...tasks }

@@ -1,9 +1,12 @@
+import asyncio
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.concurrency import run_in_threadpool
 
 from app.api.routes import auth, candidate, employer, jobs, mock_fsp, reference, testing
 from app.core.config import get_settings
@@ -11,8 +14,38 @@ from app.core.errors import DomainError
 from app.i18n import has, negotiate, reset_locale, set_locale, t
 
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("fsp_talent")
 
 settings = get_settings()
+
+
+def _offer_pass() -> int:
+    from app.db.session import SessionLocal
+    from app.services import tasks_service
+
+    with SessionLocal() as db:
+        return tasks_service.offer_all_due(db)
+
+
+async def _offer_loop(minutes: int) -> None:
+    """Regular tasks are offered periodically, not only when a candidate opens the page."""
+    while True:
+        await asyncio.sleep(minutes * 60)
+        try:
+            n = await run_in_threadpool(_offer_pass)
+            if n:
+                logger.info("regular tasks: %s new offers", n)
+        except Exception:  # a failed pass must not stop the loop
+            logger.exception("regular tasks: offer pass failed")
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    loop = asyncio.create_task(_offer_loop(settings.task_offer_loop_minutes)) \
+        if settings.task_offer_loop_minutes > 0 else None
+    yield
+    if loop:
+        loop.cancel()
 
 DESCRIPTION = """
 **FSP Talent** — платформа подбора ИТ-специалистов с обратной механикой: кандидаты автоматически
@@ -31,6 +64,7 @@ app = FastAPI(
     openapi_url=f"{settings.api_prefix}/openapi.json",
     docs_url=f"{settings.api_prefix}/docs",
     redoc_url=f"{settings.api_prefix}/redoc",
+    lifespan=lifespan,
 )
 
 class LocaleMiddleware:

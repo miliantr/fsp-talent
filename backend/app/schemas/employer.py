@@ -15,6 +15,7 @@ from app.schemas.common import (
     FSPSummaryView,
     GradeId,
     SpecId,
+    TasksSignal,
     WorkFormatT,
 )
 
@@ -185,6 +186,7 @@ class CandidateCard(BaseModel):
     skills: list[CandidateSkillView]
     fsp: FSPSummaryView
     last_active_days: int | None
+    tasks: TasksSignal | None = Field(default=None, description="Свежий сигнал: регулярные задания за 90 дней")
     match: MatchOut | None = None
     shortlisted: bool = False
     invitation_status: str | None = None

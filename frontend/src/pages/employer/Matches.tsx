@@ -21,6 +21,7 @@ import {
   SkillMatchChips,
   useToast,
 } from '../../components/ui'
+import { TasksSignalBadge } from '../../components/TasksSignal'
 import { useI18n } from '../../i18n/context'
 import { COMPONENT_COLORS, workFormatKey } from '../../lib/format'
 
@@ -184,7 +185,7 @@ export default function Matches() {
                     <div className="small muted">{c.headline} · {fmt.years(c.experience_years)} · {c.city ?? '—'} · {t(workFormatKey(c.work_format))}
                       {c.expected_salary ? ` · ${t('emp.match.expectation', { value: fmt.money(c.expected_salary) })}` : ''}</div></div>
                 </div>
-                <div className="row wrap"><CategoryBadge category={c.category} /><span className="badge outline">{t('emp.match.test', { score: c.category?.scaled_score ?? 0 })}</span><MoreCategories categories={c.categories} shown={c.category} /><FspSummary fsp={c.fsp} compact />
+                <div className="row wrap"><CategoryBadge category={c.category} /><span className="badge outline">{t('emp.match.test', { score: c.category?.scaled_score ?? 0 })}</span><MoreCategories categories={c.categories} shown={c.category} /><FspSummary fsp={c.fsp} compact /><TasksSignalBadge signal={c.tasks} />
                   {c.last_active_days != null && <span className="badge muted">{fmt.activeAgo(c.last_active_days)}</span>}</div>
                 {c.match && <SkillMatchChips items={c.match.skill_matches} />}
                 {c.match && <Reasons reasons={c.match.reasons} limit={4} />}

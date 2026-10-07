@@ -24,10 +24,12 @@ from app.schemas.employer import (
 from app.schemas.jobs import (
     ApplicationStatusIn,
     EmployerApplicationOut,
+    EmployerTaskOut,
+    OfferTaskIn,
     ReviewIn,
     SubmissionOut,
+    TaskActiveIn,
     TaskIn,
-    TaskOut,
 )
 from app.services import employer_service, invitation_service, jobs_service, presenters, tasks_service
 from app.services.matching import service as matching
@@ -175,15 +177,32 @@ def application_status(app_id: int, body: ApplicationStatusIn, e: Employer, db: 
 
 # ------------------------------------------------------------------ regular short tasks
 
-@router.get("/tasks", response_model=list[TaskOut], summary="Короткие задания компании")
+@router.get("/tasks", response_model=list[EmployerTaskOut], summary="Регулярные задания компании и статистика")
 def tasks(e: Employer, db: DB):
     return tasks_service.for_employer(db, e)
 
 
-@router.post("/tasks", response_model=TaskOut, status_code=status.HTTP_201_CREATED, responses=errors(422))
+@router.post("/tasks", response_model=EmployerTaskOut, status_code=status.HTTP_201_CREATED,
+             responses=errors(404, 422), summary="Опубликовать задание: автопроверка или подход, адресно или челлендж")
 def create_task(body: TaskIn, e: Employer, db: DB):
-    task = tasks_service.create(db, e, body.specialization_id, body.title, body.description)
+    data = body.model_dump()
+    data["answer_spec"] = body.answer_spec.model_dump() if body.answer_spec else None
+    task = tasks_service.create(db, e, data)
     return next(x for x in tasks_service.for_employer(db, e) if x["id"] == task.id)
+
+
+@router.put("/tasks/{task_id}/active", response_model=Message, responses=errors(404),
+            summary="Снять задание с публикации или вернуть")
+def set_task_active(task_id: int, body: TaskActiveIn, e: Employer, db: DB):
+    tasks_service.set_active(db, e, task_id, body.is_active)
+    return Message(message=t("message.task_updated"))
+
+
+@router.post("/tasks/{task_id}/offer", response_model=Message, responses=errors(404, 409),
+             summary="Предложить задание конкретному кандидату")
+def offer_task(task_id: int, body: OfferTaskIn, e: Employer, db: DB):
+    tasks_service.offer_to(db, e, task_id, body.candidate_id)
+    return Message(message=t("message.task_offered"))
 
 
 @router.get("/tasks/{task_id}/submissions", response_model=list[SubmissionOut], responses=errors(404))
@@ -193,5 +212,5 @@ def task_submissions(task_id: int, e: Employer, db: DB):
 
 @router.post("/submissions/{submission_id}/review", response_model=Message, responses=errors(404, 422))
 def review(submission_id: int, body: ReviewIn, e: Employer, db: DB):
-    tasks_service.review(db, e, submission_id, body.rating, body.comment)
+    tasks_service.review(db, e, submission_id, body.rubric.model_dump(), body.comment)
     return Message(message=t("message.rating_saved"))

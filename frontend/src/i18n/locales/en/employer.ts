@@ -180,17 +180,4 @@ export const employer: { readonly [K in keyof typeof ru]: Msg } = {
   'emp.apps.match': '{pct}% match',
   'emp.apps.reject': 'Decline',
 
-  'emp.tasks.sub': 'Small tasks for candidates of a category: a fresh signal about skills and a reason to get acquainted.',
-  'emp.tasks.new': 'New task',
-  'emp.tasks.newTitle': 'New short task',
-  'emp.tasks.empty': 'No tasks',
-  'emp.tasks.view': 'View solutions',
-  'emp.tasks.published': 'Task published',
-  'emp.tasks.rated': 'Rating saved',
-  'emp.tasks.solutionsTitle': 'Solutions: {title}',
-  'emp.tasks.noSolutions': 'No solutions yet.',
-  'emp.tasks.rate': 'Rate {n}',
-  'emp.tasks.title': 'Title',
-  'emp.tasks.statement': 'Task statement',
-  'emp.tasks.publish': 'Publish',
 }

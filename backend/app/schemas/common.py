@@ -61,6 +61,17 @@ class GradeStatus(BaseModel):
     confirmed_grade_id: str | None
 
 
+class TasksSignal(BaseModel):
+    """Recent regular-task results of a candidate (last 90 days): a fresh signal for employers."""
+
+    done: int = Field(description="Проверенных решений")
+    pending: int = Field(description="Ждут проверки работодателем")
+    avg_score: int | None = Field(description="Средний балл, %")
+    last_title: str
+    last_score: int | None
+    last_at: datetime
+
+
 class CandidateSkillView(BaseModel):
     slug: str
     name: str

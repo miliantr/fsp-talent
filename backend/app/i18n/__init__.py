@@ -143,6 +143,8 @@ def _resolve(value: Any, locale: str) -> Any:
             return money(value["money"], locale)
         if "skill" in value:
             return skill_name(value["skill"], locale)
+        if "competency" in value:
+            return competency_name(value["competency"], locale)
         if "date" in value:
             return date_text(value["date"], locale)
         if "ordinal" in value:

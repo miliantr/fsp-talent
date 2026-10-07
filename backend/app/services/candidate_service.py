@@ -7,7 +7,7 @@ from app.domain.catalog import GRADE_RANK, SPEC_NAMES
 from app.i18n import t
 from app.models import CandidateProfile, CandidateSkill, InvitationStatus, Skill, WorkFormat
 from app.repositories.reference import skill_graph
-from app.services import categories, fsp_service, invitation_service, presenters
+from app.services import categories, fsp_service, invitation_service, presenters, tasks_service
 from app.services.nlp.extractor import parse_resume_text, pdf_to_text
 from app.services.testing import service as testing_service
 
@@ -107,6 +107,7 @@ def settings_view(c: CandidateProfile) -> dict:
 
 def dashboard(db: Session, c: CandidateProfile) -> dict:
     testing_service.expire_overdue(db, c)
+    tasks = tasks_service.for_candidate(db, c)  # also offers the next task when one is due
     invs = invitation_service.for_candidate(db, c)
     results = testing_service.results(db, c)
     comp = completeness(c)
@@ -134,6 +135,7 @@ def dashboard(db: Session, c: CandidateProfile) -> dict:
         if last else None,
         "steps": steps,
         "searchable": c.is_searchable,
+        "task_offer": tasks["offered"][0] if tasks["offered"] else None,
     }
 
 

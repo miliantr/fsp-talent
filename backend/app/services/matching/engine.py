@@ -85,6 +85,8 @@ class CandidateFeatures:
     # competency scores of the candidate's other verified categories {specialization: {competency: %}}:
     # a skill tested in another category (Docker in DevOps) is still evidence for this requirement
     other_competencies: dict[str, dict[str, int]] = field(default_factory=dict)
+    # the latest scored regular task: (title, score %, days ago) — a fresh signal in the explanation
+    task_signal: tuple[str, int, int] | None = None
 
 
 @dataclass
@@ -474,6 +476,11 @@ def _reasons(c: CandidateFeatures, job: JobFeatures, comps: dict[str, Component]
                               msg("match.reason.active_days", n=days)))
         elif days > 180:
             out.append(Reason("negative", "freshness", msg("match.reason.stale", n=days)))
+    if c.task_signal and c.task_signal[2] <= 30:
+        title, score, ago = c.task_signal
+        out.append(Reason("positive" if score >= 60 else "neutral", "freshness",
+                          msg("match.reason.task_today", title=title, score=score) if ago == 0
+                          else msg("match.reason.task", title=title, score=score, n=ago)))
 
     if comps["salary"].available and c.expected_salary:
         salary = {"money": c.expected_salary}

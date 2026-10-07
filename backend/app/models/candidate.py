@@ -104,6 +104,9 @@ class CandidateProfile(Base):
     skills: Mapped[list["CandidateSkill"]] = relationship(
         back_populates="candidate", cascade="all, delete-orphan"
     )
+    task_submissions: Mapped[list["TaskSubmission"]] = relationship(  # noqa: F821
+        back_populates="candidate", viewonly=True
+    )
     categories: Mapped[list["CandidateCategory"]] = relationship(
         back_populates="candidate", cascade="all, delete-orphan", lazy="selectin",
         order_by="(CandidateCategory.is_primary.desc(), CandidateCategory.verified_at)",

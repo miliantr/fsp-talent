@@ -6,6 +6,7 @@ import type { BankOut, CandidateCard, Company } from '../../api/types'
 import { InviteModal } from '../../components/InviteModal'
 import { SkillSelect } from '../../components/SkillPicker'
 import { Avatar, CategoryBadge, Empty, ErrorBox, FspSummary, InvitationStatusBadge, Loading, MoreCategories, ScoreRing, useToast } from '../../components/ui'
+import { TasksSignalBadge } from '../../components/TasksSignal'
 import { useI18n } from '../../i18n/context'
 import { workFormatKey } from '../../lib/format'
 import { useReference } from '../../lib/reference'
@@ -52,7 +53,7 @@ export default function Bank() {
               <div className="stack" style={{ gap: 8 }}>
                 <div className="row"><Avatar name={c.display_name} /><div><div className="name">{c.display_name}</div>
                   <div className="small muted">{c.headline} · {fmt.years(c.experience_years)} · {c.city ?? '—'} · {t(workFormatKey(c.work_format))}{c.expected_salary ? ` · ${fmt.money(c.expected_salary)}` : ''}</div></div></div>
-                <div className="row wrap"><CategoryBadge category={c.category} /><span className="badge outline">{t('emp.match.test', { score: c.category?.scaled_score ?? 0 })}</span><MoreCategories categories={c.categories} shown={c.category} /><FspSummary fsp={c.fsp} compact /></div>
+                <div className="row wrap"><CategoryBadge category={c.category} /><span className="badge outline">{t('emp.match.test', { score: c.category?.scaled_score ?? 0 })}</span><MoreCategories categories={c.categories} shown={c.category} /><FspSummary fsp={c.fsp} compact /><TasksSignalBadge signal={c.tasks} /></div>
                 <div className="row wrap">{c.skills.map((s) => <span key={s.slug} className={`chip ${s.verified ? 'verified' : ''}`}>{s.name}</span>)}</div>
               </div>
               <div className="actions">

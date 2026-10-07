@@ -2,17 +2,6 @@ import type { Msg } from '../../../core'
 import type { misc as ru } from '../../ru/candidate/misc'
 
 export const misc: { readonly [K in keyof typeof ru]: Msg } = {
-  'cand.tasks.sub': 'Employers publish small tasks from time to time. A solution or a proposed approach is a fresh signal about you: your profile rises in shortlists as an active one.',
-  'cand.tasks.sent': 'Solution sent — your profile is marked as active',
-  'cand.tasks.empty': 'No tasks for your specialization yet',
-  'cand.tasks.solutions': 'Solutions: {n}',
-  'cand.tasks.rating': 'Rated {n}/5',
-  'cand.tasks.awaiting': 'Sent, awaiting a rating',
-  'cand.tasks.propose': 'Propose a solution',
-  'cand.tasks.comment': 'Comment: {text}',
-  'cand.tasks.answer': 'Solution or approach',
-  'cand.tasks.send': 'Send',
-
   'cand.settings.sub': 'Privacy, consents to data processing and publication (Russian Federal Law 152-FZ), interface language, FSP ID link.',
   'cand.settings.saved': 'Settings saved',
   'cand.settings.searchable': 'Your profile takes part in employer shortlists.',
