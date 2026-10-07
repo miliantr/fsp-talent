@@ -56,3 +56,23 @@ def test_mock_registry_contract(tmp_path):
     assert reg.get_participant("fsp-1").achievements[0].place == 1
     assert reg.find_by_email("A@B.C").fsp_id == "FSP-1"
     assert reg.get_participant("FSP-404") is None
+
+
+def test_discipline_relevance_depends_on_the_specialization_not_on_the_discipline():
+    """All FSP disciplines are equally valuable; an information-security competition is core evidence
+    for DevOps and a weak signal for Frontend (client clarification)."""
+    from datetime import date
+
+    from app.services.fsp.scoring import AchievementLike, relevance, relevance_level, summarize
+
+    ctf = AchievementLike("CTF", "Программирование систем информационной безопасности", "all_russian",
+                          date(2026, 3, 1), 1, 80, None, None)
+    assert relevance_level(relevance(ctf, "devops")) == "core"
+    assert relevance_level(relevance(ctf, "frontend")) == "other"
+    today = date(2026, 10, 1)
+    ops, front = summarize([ctf], "devops", today), summarize([ctf], "frontend", today)
+    assert ops.strength > front.strength and ops.relevance > front.relevance
+    # the same placement in a core discipline of each specialization weighs the same
+    prod = AchievementLike("Кубок", "Продуктовое программирование", "all_russian", date(2026, 3, 1), 1, 80,
+                           None, None)
+    assert relevance(prod, "frontend") == relevance(prod, "backend")

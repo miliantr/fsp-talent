@@ -1,6 +1,7 @@
 """Visibility rules. Single place that decides what an employer may see about a candidate.
 
-Contacts (full name, e-mail, phone, Telegram) are disclosed to an employer only after
+The name, the profile and the work history are visible to employers (the last name can be hidden by
+the candidate). Contacts (e-mail, phone, Telegram) are disclosed to an employer only after
   * the candidate accepted this employer's invitation, or
   * the candidate applied to this employer's vacancy himself/herself.
 Every disclosure is recorded in contact_access_log (152-FZ audit).

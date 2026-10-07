@@ -298,7 +298,7 @@ def candidate_detail(db: Session, employer: EmployerProfile, candidate_id: int, 
         "competencies": presenters.competency_list(card["category"]["competency_scores"]
                                                    if card["category"] else {}),
         "test_history": history,
-        "fsp_profile": presenters.fsp_profile(c.fsp_profile) if c.show_fsp else None,
+        "fsp_profile": presenters.fsp_profile(c.fsp_profile, spec) if c.show_fsp else None,
         "contacts_visible": visible,
         "contacts_reason": reason,
         "contacts": privacy.contacts(c) if visible else None,

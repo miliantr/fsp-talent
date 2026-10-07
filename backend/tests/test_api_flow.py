@@ -70,7 +70,7 @@ def test_full_reverse_matching_flow(client, db):
     data = r.json()
     me = next(i for i in data["items"] if i["candidate_id"] == cand_id)
     assert me["match"]["percent"] > 50 and me["match"]["reasons"]
-    assert me["display_name"] == "Иван П."  # anonymised before contact
+    assert me["display_name"] == "Иван Петров" and "contacts" not in me  # name is visible, contacts are not
     assert data["categories"][0]["label"].startswith("Backend")
 
     # refining filters keeps the stored selection

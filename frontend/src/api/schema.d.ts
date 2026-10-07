@@ -1686,6 +1686,11 @@ export interface components {
             score?: number | null;
             /** Certificate Url */
             certificate_url?: string | null;
+            /**
+             * Relevance
+             * @description Близость дисциплины к специализации потребности
+             */
+            relevance?: ("core" | "adjacent" | "other") | null;
         };
         /** FSPConfirmIn */
         FSPConfirmIn: {

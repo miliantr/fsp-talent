@@ -16,10 +16,11 @@ def test_privacy_settings_control_name_and_visibility(client, db):
     ct, cid = verified_candidate(client, db, "privacy@example.com", "Пётр")
     et, job = employer_with_need(client, "privacy.hr@example.com")
 
+    # the full name is visible before contact (only contacts are closed); the last name can be hidden
     card = client.get(f"/api/employer/candidates/{cid}", headers=auth(et)).json()
-    assert card["display_name"] == "Пётр Т." and card["contacts"] is None
-    client.put("/api/candidate/settings", headers=auth(ct), json={"show_full_name": True})
-    assert client.get(f"/api/employer/candidates/{cid}", headers=auth(et)).json()["display_name"] == "Пётр Тестов"
+    assert card["display_name"] == "Пётр Тестов" and card["contacts"] is None
+    client.put("/api/candidate/settings", headers=auth(ct), json={"show_full_name": False})
+    assert client.get(f"/api/employer/candidates/{cid}", headers=auth(et)).json()["display_name"] == "Пётр Т."
 
     # "not open to offers" removes the candidate from search and blocks invitations
     client.put("/api/candidate/settings", headers=auth(ct), json={"open_to_offers": False})

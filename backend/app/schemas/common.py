@@ -99,6 +99,8 @@ class FSPAchievementView(BaseModel):
     role: str | None = None
     score: float | None = None
     certificate_url: str | None = None
+    relevance: Literal["core", "adjacent", "other"] | None = Field(
+        default=None, description="Близость дисциплины к специализации потребности")
 
 
 class FSPProfileView(BaseModel):

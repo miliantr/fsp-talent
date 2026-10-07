@@ -100,6 +100,10 @@ export const common = {
   'fsp.placeOf': '{place} место из {total}',
   'fsp.participants': { one: '{n} участник', few: '{n} участника', many: '{n} участников', other: '{n} участника' },
   'fsp.team': 'Команда «{team}»',
+  'fsp.relevance.core': 'Профильная дисциплина',
+  'fsp.relevance.adjacent': 'Смежная дисциплина',
+  'fsp.relevance.other': 'Другое направление',
+  'fsp.relevance.hint': 'Все дисциплины ФСП равноценны; вес достижения в подборке зависит от близости дисциплины к специализации.',
   'fsp.role': 'Роль: {role}',
   'fsp.points': { one: '{n} балл', few: '{n} балла', many: '{n} баллов', other: '{n} балла' },
 

@@ -77,7 +77,7 @@ def update_settings(body: CandidateSettingsIn, c: Candidate, db: DB):
 def _fsp_out(c) -> dict:
     return {"linked": bool(c.fsp_id), "fsp_id": c.fsp_id, "pending_fsp_id": c.fsp_pending_id,
             "summary": presenters.fsp_summary(fsp_service.summary_for(c, None)),
-            "profile": presenters.fsp_profile(c.fsp_profile)}
+            "profile": presenters.fsp_profile(c.fsp_profile, c.verified_specialization_id or c.specialization_id)}
 
 
 @router.get("/fsp", response_model=FSPOut, summary="Достижения ФСП (пустой список — это нормально)")

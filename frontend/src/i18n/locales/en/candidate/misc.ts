@@ -21,7 +21,7 @@ export const misc: { readonly [K in keyof typeof ru]: Msg } = {
   'cand.settings.open': 'Open to offers',
   'cand.settings.openHint': 'Take part in shortlists and receive invitations',
   'cand.settings.fullName': 'Show my last name before contact',
-  'cand.settings.fullNameHint': 'By default an employer sees “First name L.”',
+  'cand.settings.fullNameHint': 'Employers see your name and work history right away; contacts only after your consent. Turn off to show “First name L.”',
   'cand.settings.fsp': 'Show FSP achievements',
   'cand.settings.fspHint': 'If turned off, FSP is not used in ranking either',
   'cand.settings.salary': 'Show my salary expectation',

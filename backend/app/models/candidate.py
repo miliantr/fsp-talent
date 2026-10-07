@@ -75,7 +75,9 @@ class CandidateProfile(Base):
 
     # --- privacy & consents (152-FZ) ---
     open_to_offers: Mapped[bool] = mapped_column(Boolean, default=True)
-    show_full_name: Mapped[bool] = mapped_column(Boolean, default=False)
+    # the full name and the work history may be shown before contact (client clarification): only the
+    # contacts are closed; a candidate can still hide the last name
+    show_full_name: Mapped[bool] = mapped_column(Boolean, default=True)
     show_fsp: Mapped[bool] = mapped_column(Boolean, default=True)
     show_salary: Mapped[bool] = mapped_column(Boolean, default=True)
     consent_processing_at: Mapped[datetime | None] = mapped_column(DateTime)

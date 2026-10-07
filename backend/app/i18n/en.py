@@ -259,6 +259,10 @@ MESSAGES: dict[str, str | dict[str, str]] = {
     "fsp.place": "{place} place",
     "fsp.participant": "participant",
     "fsp.achievement": "{place} — {event} ({year})",
+    "fsp.achievement_rel": "{place} — {event} ({year}) · {relevance}",
+    "fsp.relevance.core": "core discipline",
+    "fsp.relevance.adjacent": "adjacent discipline",
+    "fsp.relevance.other": "other discipline",
 
     # ---------------------------------------------------------------- candidate profile
     "profile.missing.name": "First and last name",

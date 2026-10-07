@@ -154,11 +154,13 @@ def test_fsp_achievement_description_is_localized():
     a = AchievementLike("Кубок ФСП", "Продуктовое программирование", "all_russian", date(2026, 5, 1), 2, 120,
                         "backend", None)
     s = summarize([a], "backend", date(2026, 10, 1))
-    assert render(s.best, "ru") == "2 место — Кубок ФСП (2026)"
-    assert render(s.best, "en") == "2nd place — Кубок ФСП (2026)"  # event names are registry data
+    assert render(s.best, "ru") == "2 место — Кубок ФСП (2026) · профильная дисциплина"
+    # event names are registry data and stay as published
+    assert render(s.best, "en") == "2nd place — Кубок ФСП (2026) · core discipline"
     p = AchievementLike("Олимпиада", "Алгоритмическое программирование", "regional", date(2025, 1, 1), None,
                         None, None, None)
-    assert render(summarize([p], "backend", date(2026, 1, 1)).best, "en") == "participant — Олимпиада (2025)"
+    assert render(summarize([p], "frontend", date(2026, 1, 1)).best, "en") == \
+        "participant — Олимпиада (2025) · adjacent discipline"
 
 
 @pytest.mark.parametrize("outcome, grade, expected", [

@@ -98,6 +98,10 @@ export const common: { readonly [K in keyof typeof ru]: Msg } = {
   'fsp.placeOf': 'place {place} of {total}',
   'fsp.participants': { one: '{n} participant', other: '{n} participants' },
   'fsp.team': 'Team “{team}”',
+  'fsp.relevance.core': 'Core discipline',
+  'fsp.relevance.adjacent': 'Adjacent discipline',
+  'fsp.relevance.other': 'Other discipline',
+  'fsp.relevance.hint': 'All FSP disciplines are equally valuable; the weight of an achievement in a shortlist depends on how close the discipline is to the specialization.',
   'fsp.role': 'Role: {role}',
   'fsp.points': { one: '{n} point', other: '{n} points' },
 

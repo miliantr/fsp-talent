@@ -16,7 +16,7 @@ from app.models import (
 )
 from app.services import categories as category_service
 from app.services import privacy
-from app.services.fsp.scoring import FSPSummary
+from app.services.fsp.scoring import AchievementLike, FSPSummary, relevance, relevance_level
 from app.services.testing.scoring import category_label, recommendation
 
 
@@ -132,9 +132,19 @@ def fsp_summary(s: FSPSummary) -> dict:
             "highlights": [render(h) for h in s.highlights]}
 
 
-def fsp_profile(fp: FSPProfile | None) -> dict | None:
+def fsp_profile(fp: FSPProfile | None, specialization: str | None = None) -> dict | None:
+    """The registry record; with a specialization every achievement carries the relevance of its
+    discipline to it (core / adjacent / other) — the same rule the matching engine weights by."""
     if not fp:
         return None
+
+    def rel(a) -> str | None:
+        if not specialization:
+            return None
+        like = AchievementLike(a.event_name, a.discipline, a.level, a.date, a.place, a.participants_total,
+                               a.role, a.specialization_hint)
+        return relevance_level(relevance(like, specialization))
+
     return {
         "fsp_id": fp.fsp_id, "full_name": fp.full_name, "region": fp.region, "sport_rank": fp.sport_rank,
         "source": fp.source, "synced_at": fp.synced_at,
@@ -143,7 +153,7 @@ def fsp_profile(fp: FSPProfile | None) -> dict | None:
             "level": a.level, "level_name": t(f"fsp.level.{a.level}") if has(f"fsp.level.{a.level}") else a.level,
             "date": a.date,
             "place": a.place, "participants_total": a.participants_total, "team_name": a.team_name,
-            "role": a.role, "score": a.score, "certificate_url": a.certificate_url,
+            "role": a.role, "score": a.score, "certificate_url": a.certificate_url, "relevance": rel(a),
         } for a in fp.achievements],
     }
 

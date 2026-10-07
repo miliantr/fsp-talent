@@ -6959,6 +6959,23 @@
        }
       ],
       "title": "Certificate Url"
+     },
+     "relevance": {
+      "anyOf": [
+       {
+        "type": "string",
+        "enum": [
+         "core",
+         "adjacent",
+         "other"
+        ]
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Relevance",
+      "description": "Близость дисциплины к специализации потребности"
      }
     },
     "type": "object",

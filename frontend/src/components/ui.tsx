@@ -274,6 +274,10 @@ export function AchievementList({ items }: { items: FSPAchievementView[] }) {
               {a.team_name && <Badge tone="outline">{t('fsp.team', { team: a.team_name })}</Badge>}
               {a.role && <Badge tone="violet">{t('fsp.role', { role: a.role })}</Badge>}
               {a.score != null && <Badge tone="outline">{t('fsp.points', { n: a.score })}</Badge>}
+              {a.relevance && (
+                <span className={`badge ${a.relevance === 'core' ? 'success' : a.relevance === 'adjacent' ? 'info' : 'muted'}`}
+                  title={t('fsp.relevance.hint')}>{t(`fsp.relevance.${a.relevance}`)}</span>
+              )}
             </div>
           </div>
         </div>

@@ -105,7 +105,7 @@ curl -s "localhost:8000/api/employer/requirements/13/matches?limit=3" -H "Author
 
 ```json
 {
-  "name": "Алексей Д.", "category": "Backend · Middle", "percent": 93,
+  "name": "Алексей Демидов", "category": "Backend · Middle", "percent": 93,
   "why": ["Специализация Backend совпадает", "Подтверждённый грейд Middle — как требуется",
           "Совместимость стека 90%: 4 из 4 обязательных навыков, 3 подтверждены тестом",
           "Тест: 76/100 (уверенность 100%)",
