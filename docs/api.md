@@ -32,8 +32,9 @@
 ### Кабинет кандидата
 | Метод | Путь | Назначение |
 |---|---|---|
-| GET | `/api/candidate/dashboard` | Категория, заполненность, шаги, приглашения, последний тест |
-| GET/PUT | `/api/candidate/profile` | Профиль, резюме, опрос (специализация, грейд), навыки |
+| GET | `/api/candidate/dashboard` | Категория, заполненность, шаги, приглашения, последний тест, предложенное задание |
+| GET/PUT | `/api/candidate/profile` | Профиль, резюме, опрос (специализация, грейд), навыки; `categories` — все подтверждённые категории, `grade_status` — статус заявленного грейда |
+| PUT | `/api/candidate/categories/{specialization_id}/primary` | Сделать категорию основной |
 | POST | `/api/candidate/resume/parse` | Распознавание PDF-резюме (без сохранения) |
 | GET/PUT | `/api/candidate/settings` | Приватность и согласие на публикацию |
 | GET | `/api/candidate/fsp` | Достижения ФСП и сила сигнала |
@@ -42,16 +43,18 @@
 | GET | `/api/candidate/invitations` | Входящие приглашения |
 | GET | `/api/candidate/invitations/{id}` | Открыть (статус → `viewed`) |
 | POST | `/api/candidate/invitations/{id}/accept` · `/reject` · `/report` | Ответ / жалоба |
-| GET | `/api/candidate/tasks` · POST `/tasks/{id}/submit` | Короткие задания |
+| GET | `/api/candidate/tasks` | Регулярные задания: адресные предложения (с причинами и сроком), челленджи категории, мои результаты; при необходимости предлагает следующее |
+| POST | `/api/candidate/tasks/{id}/submit` | Ответ: автопроверка (`correct`) или подход на проверку работодателю |
+| POST | `/api/candidate/tasks/offers/{assignment_id}/decline` | Отказаться от предложенного задания |
 
 ### Тестирование
 | Метод | Путь | Назначение |
 |---|---|---|
-| GET | `/api/candidate/testing?specialization_id=` | Доступность по грейдам (кулдауны), активная попытка, история, правила |
+| GET | `/api/candidate/testing?specialization_id=` | Доступность по грейдам (кулдауны категории этой специализации), категории, активная попытка, история, правила |
 | POST | `/api/candidate/testing/start` | Сгенерировать индивидуальный вариант `{specialization_id, target_grade}` |
 | GET | `/api/candidate/testing/attempts/{id}` | Вопросы попытки (без правильных ответов) |
-| POST | `/api/candidate/testing/answer` | Сохранить ответ `{attempt_id, item_id, answer: [...]}` |
-| POST | `/api/candidate/testing/finish` | Завершить → грейд, категория, компетенции, уверенность |
+| POST | `/api/candidate/testing/answer` | Сохранить ответ `{attempt_id, item_id, answer: [...], time_ms?, pasted?, client?: {focus_lost, away_ms, copies}}` |
+| POST | `/api/candidate/testing/finish` | Завершить `{attempt_id, client?}` → грейд, категория, компетенции, уверенность, `integrity` (проверка честности) |
 | GET | `/api/candidate/testing/results/{attempt_id}` | Результат |
 
 ### Кабинет работодателя
@@ -70,7 +73,11 @@
 | GET/POST | `/api/employer/invitations` | История / отправка приглашения (зарплата обязательна) |
 | POST | `/api/employer/invitations/{id}/withdraw` | Отозвать |
 | GET | `/api/employer/applications` · POST `/applications/{id}/status` | Отклики на вакансии |
-| GET/POST | `/api/employer/tasks` · GET `/tasks/{id}/submissions` · POST `/submissions/{id}/review` | Короткие задания |
+| GET/POST | `/api/employer/tasks` | Задания компании со статистикой / публикация: `mode` (solve / approach), `audience` (targeted / category), `grade_id`, `job_id`, `competency_id`, `answer_spec`, `key_points`, `time_limit_days`, `max_offers` |
+| PUT | `/api/employer/tasks/{id}/active` | Снять с публикации / вернуть |
+| POST | `/api/employer/tasks/{id}/offer` | Предложить задание кандидату лично `{candidate_id}` |
+| GET | `/api/employer/tasks/{id}/submissions` | Решения: автопроверка или предварительная оценка по ключевым идеям (что найдено / упущено) |
+| POST | `/api/employer/submissions/{id}/review` | Оценка по рубрике `{rubric: {correctness, completeness, reasoning: 0..2}, comment}` |
 
 ### Вакансии и отклики
 | GET | `/api/jobs` | Опубликованные вакансии (для кандидата — с % совпадения, обратный матчинг) |

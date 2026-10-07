@@ -281,7 +281,13 @@ def run(n_jobs: int, n_cands: int, seed: int, dataset: str | None) -> dict:
         if preset != "balanced":
             rankers[f"Preset: {preset}"] = (lambda p: (lambda j: rank_engine(j, cands, graph, preset=p)))(preset)
     res = evaluate(jobs, cands, graph, rankers)
+    # speed: ranking the whole pool for one requirement (features + scoring + explanations), one core
+    t0 = time.perf_counter()
+    for j in jobs:
+        rank_engine(j, cands, graph)
+    rank_ms = (time.perf_counter() - t0) * 1000 / len(jobs)
     return {"seed": seed, "jobs": len(jobs), "candidates": len(cands), "k": K, "results": res,
+            "speed": {"rank_ms_per_requirement": round(rank_ms, 1), "pool": len(cands)},
             "fsp_fairness": fsp_fairness(jobs, cands, graph),
             "label_distribution": {
                 str(v): sum(1 for j in jobs for c in cands if relevance(j, c, graph) == v) for v in range(4)}}
@@ -311,6 +317,12 @@ def markdown(r: dict) -> str:
                ["Без истории ФСП", fair["without_fsp"], fair["n"]["without_fsp"]]]),
         "",
         "Распределение меток: " + ", ".join(f"{k}: {v}" for k, v in r["label_distribution"].items()),
+        "",
+        "## Скорость",
+        "",
+        f"Ранжирование всего пула ({r['speed']['pool']} кандидатов) под одну потребность — признаки, оценка "
+        f"9 компонентов и объяснения: **{r['speed']['rank_ms_per_requirement']} мс** на одном ядре. Подборка "
+        "сохраняется снимком и обновляется не чаще раза в 5 минут или при изменении потребности.",
         "",
     ])
 

@@ -216,7 +216,8 @@ def _finish(db: Session, candidate: CandidateProfile, att: TestAttempt, now: dat
     ev = att.client_events or {}
     integrity = assess(
         [ItemTrace(it.qtype, it.difficulty, it.irt_a, it.irt_b, it.irt_c, bool(it.answer and it.answer.is_correct),
-                   it.answer.time_ms if it.answer else None, bool(it.answer and it.answer.pasted)) for it in att.items],
+                   it.answer.time_ms if it.answer else None, bool(it.answer and it.answer.pasted),
+                   it.family is not None) for it in att.items],
         out.theta, ClientEvents(int(ev.get("focus_lost", 0)), int(ev.get("away_ms", 0)), int(ev.get("copies", 0))),
         int((now - att.started_at).total_seconds() * 1000),
     )

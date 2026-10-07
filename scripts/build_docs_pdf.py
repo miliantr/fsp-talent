@@ -21,6 +21,7 @@ OUT = DOCS / "FSP_Talent_documentation.pdf"
 
 CHAPTERS = [
     ("README.md", "Обзор решения"),
+    ("docs/clarifications.md", "Уточнения заказчика"),
     ("docs/architecture.md", "Архитектура"),
     ("docs/matching.md", "Механика подбора"),
     ("docs/testing.md", "Механика тестирования"),

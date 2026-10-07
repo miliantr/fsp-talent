@@ -432,6 +432,12 @@ TASKS = [
                     "Какую максимальную пропускную способность (запросов в секунду) выдержит сервис? Ответ — число.",
      "answer_spec": {"kind": "number", "value": 200, "tolerance": 0},
      "answers": ["200", "200", "320"]},
+    {"company": "emp2", "spec": "backend", "title": "Поиск в сбалансированном дереве", "mode": "solve",
+     "audience": "category", "grade": None, "job": None, "competency": "be_algo",
+     "description": "Какова асимптотическая сложность поиска элемента в сбалансированном бинарном дереве поиска "
+                    "из n элементов? Ответ — в нотации «О большое».",
+     "answer_spec": {"kind": "text", "accepted": ["O(log n)", "log n", "O(logn)", "логарифмическая"]},
+     "answers": ["O(log n)", "O(log n)", "O(n)"]},
     {"company": "emp2", "spec": "frontend", "title": "Виртуализация длинного списка", "mode": "approach",
      "audience": "category", "grade": None, "job": None, "competency": "fe_browser",
      "description": "Каталог из 10 000 карточек тормозит при прокрутке. Опишите подход к оптимизации и как "

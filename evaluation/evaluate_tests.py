@@ -14,12 +14,17 @@ known ground truth (a standard psychometric approach):
 
 Metrics:
   1. Grade classification vs ground truth (accuracy, weighted κ, over-/under-grading).
-  2. Test–retest consistency on two independent parallel forms (agreement, κ, r).
+  2. Test–retest: (a) the same profile goes through the whole grading procedure twice on fresh
+     forms — agreement of the ASSIGNED grades; (b) two parallel forms of one target grade.
   3. Form equivalence: spread of form difficulty for blueprint forms vs naive random forms.
-  4. Discrimination: item–rest point-biserial, AUC Junior vs Senior, score by true grade.
+  4. Discrimination: item–rest point-biserial, upper–lower index D per item, AUC, score by grade.
   5. Leak resistance: pass-rate inflation for a weak candidate who memorised K leaked forms,
      compared with a single fixed test.
   6. Item calibration: recovery of the true difficulties from response data.
+  8. Behavioural integrity (cheating detection): detection and false-positive rates for simulated
+     honest candidates, «look it up elsewhere» cheaters and pre-knowledge cheaters, with a
+     response-time model.
+  9. Speed of generating, scoring and checking a test.
 """
 
 import argparse
@@ -33,6 +38,7 @@ from app.core.config import get_settings
 from app.domain.catalog import COMPETENCIES, GRADE_CUTS
 from app.domain.question_bank import bank_items
 from app.services.testing.generator import DIFFICULTY_PROFILE, ItemSpec, build_blueprint, generate_form
+from app.services.testing.integrity import ClientEvents, ItemTrace, assess, expected_seconds
 from app.services.testing.irt import p_correct, scaled_score
 from app.services.testing.scoring import GradedItem, grade_attempt
 
@@ -109,9 +115,10 @@ def take_with_confirmation(bank, grade, theta, rng, seen=None, known=None):
     return out, seen, flagged
 
 
-def protocol(bank, declared, theta, rng):
-    """Production rules: test on the declared grade; on failure — optional lower-grade test."""
-    out, seen, flag = take_with_confirmation(bank, declared, theta, rng)
+def protocol(bank, declared, theta, rng, seen=None):
+    """Production rules: test on the declared grade; on failure — optional lower-grade test.
+    Items the candidate has already seen are excluded, as in production."""
+    out, seen, flag = take_with_confirmation(bank, declared, theta, rng, seen)
     tests, flags = 1 + flag, int(flag)
     grade = declared
     while not out.passed and LOWER[grade]:
@@ -120,7 +127,11 @@ def protocol(bank, declared, theta, rng):
         seen |= seen2
         tests += 1 + flag
         flags += int(flag)
-    return (out.verified_grade or "none"), out, tests, flags
+    return (out.verified_grade or "none"), out, tests, flags, seen
+
+
+def nearest_cut_distance(theta: float) -> float:
+    return min(abs(theta - c) for c in GRADE_CUTS.values())
 
 
 def population(n: int, rng: random.Random):
@@ -144,15 +155,20 @@ def run(n: int, seed: int) -> dict:
     labels = ["none", "junior", "middle", "senior"]
     all_true, all_pred, over, under, ntests, nflags = [], [], 0, 0, [], 0
     retest_a, retest_b, theta_a, theta_b = [], [], [], []
+    grade_rt: list[tuple[str, str, float, float, float]] = []  # grade 1, grade 2, |θ − cut|, conf 1, conf 2
     scores_by_grade = {g: [] for g in labels}
     item_resp: dict[int, list[tuple[float, bool]]] = {}
+    item_spec: dict[int, str] = {}
     per_spec = {}
 
     for spec in SPECS:
         bank = Bank(spec, random.Random(seed + 101 * SPECS.index(spec)))
         tp, pp = [], []
         for _, theta, tg, declared in population(n, rng):
-            pred, out, k, f = protocol(bank, declared, theta, rng)
+            pred, out, k, f, seen = protocol(bank, declared, theta, rng)
+            # the same profile goes through the whole procedure again, on forms it has not seen
+            pred2, out2, _, _, _ = protocol(bank, declared, theta, rng, seen)
+            grade_rt.append((pred, pred2, nearest_cut_distance(theta), out.confidence, out2.confidence))
             nflags += f
             tp.append(tg)
             pp.append(pred)
@@ -167,8 +183,9 @@ def run(n: int, seed: int) -> dict:
             theta_b.append(o2.theta)
             total = sum(g.is_correct for g in g1)
             for it, g in zip(f1, g1, strict=True):
-                item_resp.setdefault(it.question_id + 10000 * SPECS.index(spec), []).append(
-                    (total - g.is_correct, g.is_correct))
+                key = it.question_id + 10000 * SPECS.index(spec)
+                item_spec[key] = spec
+                item_resp.setdefault(key, []).append((total - g.is_correct, g.is_correct))
         acc = mean(1.0 if a == b else 0.0 for a, b in zip(tp, pp, strict=True))
         per_spec[spec] = {"accuracy": round(acc, 3),
                           "weighted_kappa": round(cohen_kappa(tp, pp, labels, weighted=True), 3)}
@@ -201,6 +218,27 @@ def run(n: int, seed: int) -> dict:
                                            for a, b in zip(theta_a, theta_b, strict=True)), 2),
     }
 
+    def agreement(rows):
+        return round(mean(1.0 if a == b else 0.0 for a, b, *_ in rows), 3) if rows else None
+
+    g1, g2 = [r[0] for r in grade_rt], [r[1] for r in grade_rt]
+    far = [r for r in grade_rt if r[2] >= 0.25]
+    near = [r for r in grade_rt if r[2] < 0.25]
+    confident = [r for r in grade_rt if r[3] >= 0.8 and r[4] >= 0.8]
+    report["grade_retest"] = {
+        "n": len(grade_rt),
+        "exact_agreement": agreement(grade_rt),
+        "within_one_grade": round(mean(1.0 if abs(labels.index(a) - labels.index(b)) <= 1 else 0.0
+                                       for a, b in zip(g1, g2, strict=True)), 3),
+        "weighted_kappa": round(cohen_kappa(g1, g2, labels, weighted=True), 3),
+        "agreement_far_from_cut": agreement(far), "share_far_from_cut": round(len(far) / len(grade_rt), 3),
+        "agreement_near_cut": agreement(near),
+        "agreement_both_confident": agreement(confident),
+        "share_both_confident": round(len(confident) / len(grade_rt), 3),
+        "confusion": {a: {b: sum(1 for x, y in zip(g1, g2, strict=True) if x == a and y == b) for b in labels}
+                      for a in labels},
+    }
+
     # ---- 3. form equivalence: blueprint vs naive random selection
     eq = {}
     for spec in SPECS:
@@ -230,14 +268,22 @@ def run(n: int, seed: int) -> dict:
     }
 
     # ---- 4. discrimination
-    rpb = []
-    for resp in item_resp.values():
+    rpb, upper_lower, rpb_by_spec = [], [], {sp: [] for sp in SPECS}
+    for key, resp in item_resp.items():
         if len(resp) < 30:
             continue
         rest = [r for r, _ in resp]
         u = [1.0 if x else 0.0 for _, x in resp]
         if 0 < sum(u) < len(u):
-            rpb.append(pearson(rest, u))
+            r_ = pearson(rest, u)
+            rpb.append(r_)
+            rpb_by_spec[item_spec[key]].append(r_)
+            # classic upper–lower index: share correct in the top 27% minus the bottom 27% by rest score
+            ranked = sorted(resp, key=lambda x: x[0])
+            k27 = max(1, round(0.27 * len(ranked)))
+            upper_lower.append(mean(1.0 if x else 0.0 for _, x in ranked[-k27:])
+                               - mean(1.0 if x else 0.0 for _, x in ranked[:k27]))
+    srt = sorted(rpb)
     jun, sen = scores_by_grade["junior"], scores_by_grade["senior"]
     mid = scores_by_grade["middle"]
     pooled = math.sqrt((stdev(jun) ** 2 + stdev(mid) ** 2) / 2)
@@ -245,6 +291,12 @@ def run(n: int, seed: int) -> dict:
         "items_evaluated": len(rpb),
         "mean_item_rest_correlation": round(mean(rpb), 3),
         "share_items_rpb_above_0_2": round(mean(1.0 if r > 0.2 else 0.0 for r in rpb), 3),
+        "rpb_p10_p50_p90": [round(srt[int(q * (len(srt) - 1))], 3) for q in (0.1, 0.5, 0.9)],
+        "mean_rpb_by_spec": {sp: round(mean(v), 3) for sp, v in rpb_by_spec.items() if v},
+        "index_d_mean": round(mean(upper_lower), 3),
+        "share_d_good": round(mean(1.0 if d >= 0.3 else 0.0 for d in upper_lower), 3),
+        "share_d_fair": round(mean(1.0 if 0.2 <= d < 0.3 else 0.0 for d in upper_lower), 3),
+        "share_d_review": round(mean(1.0 if d < 0.2 else 0.0 for d in upper_lower), 3),
         "auc_senior_vs_junior": round(auc(sen, jun), 3),
         "auc_middle_vs_junior": round(auc(mid, jun), 3),
         "cohen_d_middle_vs_junior": round((mean(mid) - mean(jun)) / pooled, 2) if pooled else None,
@@ -323,6 +375,8 @@ def run(n: int, seed: int) -> dict:
         nominal.append(it.b)
         recovered.append(best)
         truth.append(b_true)
+    report["integrity"] = integrity_simulation(seed)
+    report["speed"] = speed(seed)
     report["calibration"] = {
         "items_calibrated": len(truth),
         "corr_nominal_vs_true_b": round(pearson(nominal, truth), 3),
@@ -331,6 +385,92 @@ def run(n: int, seed: int) -> dict:
         "rmse_recovered": round(math.sqrt(mean((a - b) ** 2 for a, b in zip(recovered, truth, strict=True))), 3),
     }
     return report
+
+
+def _simulate_behaviour(bank, form, theta, rng, kind, known):
+    """Answers + client events for one attempt. Response time: expected time of the item × lognormal
+    noise. kind: honest | lookup (searches for answers it does not know) | preknowledge (memorised leak)."""
+    traces, graded = [], []
+    ev = ClientEvents(focus_lost=_poisson(rng, 0.5), copies=_poisson(rng, 0.05))
+    ev.away_ms = sum(int(rng.uniform(5, 40) * 1000) for _ in range(ev.focus_lost))
+    for it in form:
+        a, b, c = bank.true[it.question_id]
+        p = p_correct(theta, a, b, c)
+        exp_s = expected_seconds(it.qtype, it.difficulty)
+        t = exp_s * math.exp(rng.gauss(0, 0.45))
+        pasted = False
+        if kind == "preknowledge" and it.question_id in known and not it.family:
+            ok, t = True, exp_s * rng.uniform(0.08, 0.2)
+        elif kind == "lookup" and p < 0.6 and rng.random() < 0.75:
+            ok = rng.random() < 0.9
+            away = rng.uniform(30, 120)
+            ev.focus_lost += 1
+            ev.away_ms += int(away * 1000)
+            ev.copies += rng.random() < 0.6
+            pasted = it.qtype == "numeric" and rng.random() < 0.5
+        else:
+            ok = rng.random() < p
+        traces.append(ItemTrace(it.qtype, it.difficulty, it.a, it.b, it.c, ok, int(t * 1000), pasted,
+                                it.family is not None))
+        graded.append(GradedItem(it.competency, it.a, it.b, it.c, ok, 1.0 if ok else 0.0, it.family is not None))
+    return traces, graded, ev
+
+
+def _poisson(rng, lam):
+    k, p, threshold = 0, 1.0, math.exp(-lam)
+    while True:
+        p *= rng.random()
+        if p <= threshold:
+            return k
+        k += 1
+
+
+def integrity_simulation(seed: int, n: int = 400) -> dict:
+    """Junior-level people (θ ∈ [−0.7, −0.1]) take the Middle test: honestly, looking answers up
+    elsewhere, or with memorised answers of 3 leaked forms. Honest Middle-level people (θ ∈ [0.2, 1.2])
+    measure false positives where it matters — on candidates who pass."""
+    rng = random.Random(seed + 500)
+    bank = Bank("backend", random.Random(seed))
+    out = {}
+    for kind in ("honest_strong", "honest_weak", "lookup", "preknowledge"):
+        risk, attention, passed_plain, passed_checked = [], [], [], []
+        for trial in range(n):
+            theta = rng.uniform(0.2, 1.2) if kind == "honest_strong" else rng.uniform(-0.7, -0.1)
+            known: set[int] = set()
+            if kind == "preknowledge":
+                for j in range(3):
+                    known |= {x.question_id for x in bank.form("middle", random.Random(90_000 + trial * 7 + j),
+                                                               exposure=False)}
+            form = bank.form("middle", rng, exposure=False)
+            behaviour = "honest" if kind.startswith("honest") else kind
+            traces, graded, ev = _simulate_behaviour(bank, form, theta, rng, behaviour, known)
+            res = grade_attempt(graded, "middle")
+            total_ms = sum(t.time_ms for t in traces) + ev.away_ms
+            integ = assess(traces, res.theta, ev, total_ms)
+            risk.append(integ.level == "risk")
+            attention.append(integ.level == "attention")
+            passed_plain.append(res.passed)
+            passed_checked.append(res.passed and integ.level != "risk")
+        out[kind] = {"risk_rate": round(mean(1.0 if x else 0.0 for x in risk), 3),
+                     "attention_rate": round(mean(1.0 if x else 0.0 for x in attention), 3),
+                     "pass_rate_leak_detector_only": round(mean(1.0 if x else 0.0 for x in passed_plain), 3),
+                     "pass_rate_with_behaviour_check": round(mean(1.0 if x else 0.0 for x in passed_checked), 3)}
+    return out
+
+
+def speed(seed: int) -> dict:
+    """Wall-clock cost of the testing engine operations (pure Python, one core)."""
+    bank = Bank("backend", random.Random(seed))
+    rng = random.Random(seed)
+    t0 = time.perf_counter()
+    forms = [bank.form("middle", rng, exposure=False) for _ in range(200)]
+    t1 = time.perf_counter()
+    graded = [answer(f, 0.3, bank, rng) for f in forms]
+    t2 = time.perf_counter()
+    for g in graded:
+        grade_attempt(g, "middle")
+    t3 = time.perf_counter()
+    return {"generate_form_ms": round((t1 - t0) * 1000 / 200, 2), "grade_attempt_ms": round((t3 - t2) * 1000 / 200, 2)}
 
 
 def markdown(r: dict) -> str:
@@ -368,6 +508,28 @@ def markdown(r: dict) -> str:
             ["Средняя |Δ| шкального балла", t["mean_abs_scaled_diff"]],
         ]),
         "",
+        "### 2а. Повторное прохождение всей процедуры одним профилем",
+        "",
+        "Каждый синтетический кандидат дважды проходит полную процедуру (тест на заявленный грейд → при "
+        "неудаче тест ниже → подтверждающая форма при флаге), во второй раз — на заданиях, которых он ещё "
+        "не видел. Сравниваются присвоенные грейды.",
+        "",
+        table(["Метрика", "Значение"], [
+            ["Совпадение присвоенного грейда", r["grade_retest"]["exact_agreement"]],
+            ["В пределах ±1 грейда", r["grade_retest"]["within_one_grade"]],
+            ["Взвешенная κ между прохождениями", r["grade_retest"]["weighted_kappa"]],
+            [f"Совпадение, если θ дальше 0,25 от порога (доля таких {r['grade_retest']['share_far_from_cut']})",
+             r["grade_retest"]["agreement_far_from_cut"]],
+            ["Совпадение у пограничных (|θ − порог| < 0,25)", r["grade_retest"]["agreement_near_cut"]],
+            [f"Совпадение, если оба результата уверенные ≥ 0,8 (доля {r['grade_retest']['share_both_confident']})",
+             r["grade_retest"]["agreement_both_confident"]],
+        ]),
+        "",
+        "Матрица: строки — грейд после первого прохождения, столбцы — после второго:",
+        "",
+        table(["1-е \\ 2-е"] + list(r["grade_retest"]["confusion"]),
+              [[k] + list(v.values()) for k, v in r["grade_retest"]["confusion"].items()]),
+        "",
         "## 3. Эквивалентность форм",
         "Разброс (SD) ожидаемой доли верных ответов кандидата на пороге грейда по 300 формам:",
         "",
@@ -381,6 +543,11 @@ def markdown(r: dict) -> str:
         table(["Метрика", "Значение"], [
             ["Средняя корреляция задание–остаток (r_pb)", d["mean_item_rest_correlation"]],
             ["Доля заданий с r_pb > 0,2", d["share_items_rpb_above_0_2"]],
+            ["r_pb: 10-й / 50-й / 90-й перцентиль", " / ".join(str(x) for x in d["rpb_p10_p50_p90"])],
+            ["Индекс D (верхние 27% − нижние 27%), среднее", d["index_d_mean"]],
+            ["Задания с D ≥ 0,3 (хорошо разделяют)", d["share_d_good"]],
+            ["Задания с D 0,2–0,3 (приемлемо)", d["share_d_fair"]],
+            ["Задания с D < 0,2 (на пересмотр)", d["share_d_review"]],
             ["AUC Senior vs Junior", d["auc_senior_vs_junior"]],
             ["AUC Middle vs Junior", d["auc_middle_vs_junior"]],
             ["d Коэна Middle vs Junior", d["cohen_d_middle_vs_junior"]],
@@ -401,6 +568,22 @@ def markdown(r: dict) -> str:
         f"Ложные срабатывания детектора на честных кандидатах: **{r['classification']['honest_flag_rate']}** "
         "(им предлагается одна подтверждающая форма, грейд не теряется).",
         "",
+        "Средняя r_pb по специализациям: " + ", ".join(f"{k}: {v}" for k, v in d["mean_rpb_by_spec"].items()) + ".",
+        "",
+        "## 5а. Проверка честности по поведению",
+        "",
+        "Модель времени ответа: ожидаемое время задания × логнормальный шум. «Ищет ответы» — на незнакомых "
+        "вопросах уходит со вкладки, копирует вопрос, вставляет числовой ответ. «Знает слитые ответы» — "
+        "выучил 3 варианта и отвечает на их статические задания быстро и верно. Уровень Junior "
+        "(θ ∈ [−0,7; −0,1]) проходит тест Middle; ложные срабатывания — на честных Middle (θ ∈ [0,2; 1,2]).",
+        "",
+        table(["Группа", "Риск (нужна подтверждающая форма)", "Замечания", "Сдали: только детектор утечки",
+               "Сдали: + проверка поведения"],
+              [[{"honest_strong": "Честные, уровень Middle", "honest_weak": "Честные, уровень Junior",
+                 "lookup": "Ищут ответы на стороне", "preknowledge": "Знают слитые ответы"}[k],
+                v["risk_rate"], v["attention_rate"], v["pass_rate_leak_detector_only"],
+                v["pass_rate_with_behaviour_check"]] for k, v in r["integrity"].items()]),
+        "",
         "## 6. Надёжность в зависимости от длины теста",
         table(["Заданий", "Корреляция θ (параллельные формы)", "Согласие «сдал/не сдал»"],
               [[k, v["theta_correlation"], v["pass_fail_agreement"]] for k, v in r["reliability_by_length"].items()]),
@@ -411,6 +594,11 @@ def markdown(r: dict) -> str:
              r["calibration"]["corr_recovered_vs_true_b"]],
             ["RMSE", r["calibration"]["rmse_nominal"], r["calibration"]["rmse_recovered"]],
         ]),
+        "",
+        "## 9. Скорость",
+        "",
+        f"Генерация индивидуального варианта: **{r['speed']['generate_form_ms']} мс**, оценка попытки (EAP, "
+        f"person-fit, детектор утечки): **{r['speed']['grade_attempt_ms']} мс** — на одном ядре, без БД.",
         "",
     ]
     return "\n".join(lines)

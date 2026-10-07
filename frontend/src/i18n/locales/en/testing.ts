@@ -10,7 +10,7 @@ export const testing: { readonly [K in keyof typeof ru]: Msg } = {
   'test.cat.makePrimary': 'Make primary',
   'test.cat.primarySaved': 'Primary category changed',
   'test.cat.how': 'One category per specialization. The primary one is shown in your profile; in a shortlist the employer sees the one that fits the requirement. Each category has its own grade-change period.',
-  'test.cat.extraHint': 'A {spec} test adds a second category — your primary one ({main}) stays.',
+  'test.cat.extraHint': 'A {spec} test adds another category — your primary one ({main}) stays.',
   'test.active': 'You have an unfinished attempt: {spec} · {grade} — {answered} of {total} answered. Time until {time}.',
   'test.continue': 'Continue',
   'test.survey': 'Industry and specialization survey',

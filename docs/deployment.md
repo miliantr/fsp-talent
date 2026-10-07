@@ -56,8 +56,8 @@ npm run dev                        # http://127.0.0.1:5173, /api проксир�
 ## Проверки качества
 
 ```bash
-cd backend && pytest -q && ruff check app tests scripts      # 381 тест, линтер
-cd frontend && npm test                  # 107 тестов: i18n, API-клиент, переключение языка, страницы
+cd backend && pytest -q && ruff check app tests scripts      # 435 тестов, линтер
+cd frontend && npm test                  # 119 тестов: i18n, API-клиент, язык, страницы, задания
 cd frontend && npm run typecheck && npm run lint && npm run build
 python evaluation/evaluate_tests.py      # валидация механики тестирования (~2 мин)
 python evaluation/evaluate_matching.py   # бенчмарк подбора (~30 с)
@@ -79,6 +79,8 @@ python evaluation/tune_matching.py       # подбор гиперпарамет
 | `SMTP_HOST` / `SMTP_PORT` | — / 1025 | SMTP (в compose — Mailpit) |
 | `TEST_LENGTH`, `TEST_TIME_LIMIT_MINUTES` | 20, 30 | Параметры теста |
 | `RETAKE_COOLDOWN_DAYS`, `GRADE_CHANGE_COOLDOWN_DAYS` | 30, 90 | Кулдауны |
+| `MAX_CATEGORIES` | 3 | Сколько подтверждённых категорий может быть у кандидата |
+| `TASK_OFFER_INTERVAL_DAYS`, `TASK_OFFER_LOOP_MINUTES` | 7, 60 | Регулярные задания: не чаще раза в N дней на кандидата; фоновый проход (0 — только по запросу) |
 | `FSP_REGISTRY_MODE`, `FSP_REGISTRY_URL` | `mock` | Источник данных ФСП: `mock` или `http` |
 | `MATCHING_WEIGHTS_JSON` | — | Переопределение весов матчинга |
 | `INVITATIONS_DAILY_LIMIT` | 40 | Анти-спам лимит приглашений |

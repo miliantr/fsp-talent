@@ -84,3 +84,16 @@ def test_honest_attempt_passes_without_remarks(client, db):
     _answer_all(client, db, token, att, client={"focus_lost": 1, "away_ms": 2_000, "copies": 0})
     res = client.post("/api/candidate/testing/finish", headers=auth(token), json={"attempt_id": att["id"]}).json()
     assert res["passed"] and res["integrity"] == {"level": "ok", "reasons": []}
+
+
+def test_reference_ability_is_not_inflated_by_memorised_answers():
+    """Wrong answers to parametric (leak-proof) items and fast right answers to hard static ones: the
+    overall estimate looks strong, the leak-proof reference does not — the pre-knowledge pattern."""
+    leak_proof = [ItemTrace("numeric", 3, 1.3, 0.5, 0.0, False, 60_000, False, True) for _ in range(5)]
+    memorised = [ItemTrace("single", 4, 1.4, 1.0, 0.2, True, 3_000) for _ in range(6)]
+    r = assess(leak_proof + memorised, 1.5, ClientEvents(), 10 * 60_000)
+    assert r.signals["theta_ref"] < 0 and r.signals["fast_correct"] == 6
+    assert r.level == "risk" and r.reasons == ["fast_correct"]
+    # the same speed on the same items is unremarkable for someone who also solves the parametric ones
+    solved = [ItemTrace("numeric", 3, 1.3, 0.5, 0.0, True, 60_000, False, True) for _ in range(5)]
+    assert assess(solved + memorised, 1.5, ClientEvents(), 10 * 60_000).level == "ok"

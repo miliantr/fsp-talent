@@ -129,6 +129,7 @@ class Step(BaseModel):
 
 class LastResult(BaseModel):
     attempt_id: int
+    specialization_id: str
     outcome: str
     scaled_score: int
     target_grade: str

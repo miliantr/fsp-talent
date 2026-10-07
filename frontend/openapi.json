@@ -8455,6 +8455,10 @@
       "type": "integer",
       "title": "Attempt Id"
      },
+     "specialization_id": {
+      "type": "string",
+      "title": "Specialization Id"
+     },
      "outcome": {
       "type": "string",
       "title": "Outcome"
@@ -8476,6 +8480,7 @@
     "type": "object",
     "required": [
      "attempt_id",
+     "specialization_id",
      "outcome",
      "scaled_score",
      "target_grade",

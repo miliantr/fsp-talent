@@ -93,6 +93,10 @@
       "jobs": 60
     }
   },
+  "speed": {
+    "rank_ms_per_requirement": 56.9,
+    "pool": 600
+  },
   "fsp_fairness": {
     "with_fsp": 0.036,
     "without_fsp": 0.045,
@@ -107,5 +111,5 @@
     "2": 911,
     "3": 904
   },
-  "runtime_sec": 22.2
+  "runtime_sec": 38.1
 }

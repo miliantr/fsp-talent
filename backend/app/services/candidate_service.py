@@ -130,7 +130,8 @@ def dashboard(db: Session, c: CandidateProfile) -> dict:
             "accepted": sum(1 for i in invs if i.status == InvitationStatus.ACCEPTED),
             "latest": [presenters.invitation(i, False) for i in invs[:3]],
         },
-        "last_result": {"attempt_id": last.attempt_id, "outcome": last.outcome, "scaled_score": last.scaled_score,
+        "last_result": {"attempt_id": last.attempt_id, "specialization_id": last.attempt.specialization_id,
+                        "outcome": last.outcome, "scaled_score": last.scaled_score,
                         "target_grade": last.attempt.target_grade_id, "created_at": last.created_at}
         if last else None,
         "steps": steps,

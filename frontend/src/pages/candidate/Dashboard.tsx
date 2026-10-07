@@ -20,7 +20,7 @@ import { workFormatKey } from '../../lib/format'
 import { useReference } from '../../lib/reference'
 
 export default function CandidateDashboardPage() {
-  const { gradeName } = useReference()
+  const { gradeName, specName } = useReference()
   const { t, fmt } = useI18n()
   const { data, error, loading, reload } = useApi<CandidateDashboard>('/candidate/dashboard')
   if (loading && !data) return <Loading />
@@ -148,7 +148,7 @@ export default function CandidateDashboardPage() {
             {data.last_result ? (
               <div className="stack">
                 <OutcomeBadge outcome={data.last_result.outcome} />
-                <div className="small muted">{t('cand.dash.target', { grade: gradeName(data.last_result.target_grade), date: fmt.date(data.last_result.created_at) })}</div>
+                <div className="small muted">{t('cand.dash.target', { grade: `${specName(data.last_result.specialization_id)} · ${gradeName(data.last_result.target_grade)}`, date: fmt.date(data.last_result.created_at) })}</div>
                 <div className="row"><b style={{ fontSize: 22, fontFamily: 'var(--display)' }}>{data.last_result.scaled_score}</b><span className="muted">/ 100</span></div>
                 <Link className="btn secondary sm" to={`/candidate/results/${data.last_result.attempt_id}`}>{t('cand.dash.details')}</Link>
               </div>

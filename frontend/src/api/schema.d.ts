@@ -2148,6 +2148,8 @@ export interface components {
         LastResult: {
             /** Attempt Id */
             attempt_id: number;
+            /** Specialization Id */
+            specialization_id: string;
             /** Outcome */
             outcome: string;
             /** Scaled Score */
