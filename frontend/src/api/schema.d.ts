@@ -991,6 +991,18 @@ export interface components {
             item_id: number;
             /** Answer */
             answer: (number | string)[];
+            /**
+             * Time Ms
+             * @description Время на вопросе (видимая вкладка)
+             */
+            time_ms?: number | null;
+            /**
+             * Pasted
+             * @description Ответ вставлен из буфера обмена
+             * @default false
+             */
+            pasted: boolean;
+            client?: components["schemas"]["ClientEventsIn"] | null;
         };
         /** AnswerOut */
         AnswerOut: {
@@ -1523,6 +1535,30 @@ export interface components {
             /** Top Percent */
             top_percent: number;
         };
+        /**
+         * ClientEventsIn
+         * @description What the test page records, cumulative for the attempt (the candidate is told about it).
+         */
+        ClientEventsIn: {
+            /**
+             * Focus Lost
+             * @description Сколько раз уходил со вкладки теста
+             * @default 0
+             */
+            focus_lost: number;
+            /**
+             * Away Ms
+             * @description Сколько времени вне вкладки, мс
+             * @default 0
+             */
+            away_ms: number;
+            /**
+             * Copies
+             * @description Копирования текста вопроса
+             * @default 0
+             */
+            copies: number;
+        };
         /** Company */
         Company: {
             /** Id */
@@ -1913,6 +1949,7 @@ export interface components {
         FinishIn: {
             /** Attempt Id */
             attempt_id: number;
+            client?: components["schemas"]["ClientEventsIn"] | null;
         };
         /** GradeOut */
         GradeOut: {
@@ -1950,6 +1987,19 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** IntegrityOut */
+        IntegrityOut: {
+            /**
+             * Level
+             * @description ok | attention | risk
+             */
+            level: string;
+            /**
+             * Reasons
+             * @description Что замечено, на языке запроса
+             */
+            reasons: string[];
         };
         /** InvitationCandidate */
         InvitationCandidate: {
@@ -2556,6 +2606,7 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            integrity?: components["schemas"]["IntegrityOut"] | null;
         };
         /** ResumeParseOut */
         ResumeParseOut: {

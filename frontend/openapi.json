@@ -4742,6 +4742,36 @@
       "maxItems": 10,
       "minItems": 1,
       "title": "Answer"
+     },
+     "time_ms": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 86400000.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Time Ms",
+      "description": "Время на вопросе (видимая вкладка)"
+     },
+     "pasted": {
+      "type": "boolean",
+      "title": "Pasted",
+      "description": "Ответ вставлен из буфера обмена",
+      "default": false
+     },
+     "client": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/ClientEventsIn"
+       },
+       {
+        "type": "null"
+       }
+      ]
      }
     },
     "type": "object",
@@ -6500,6 +6530,37 @@
     ],
     "title": "CategoryGroup"
    },
+   "ClientEventsIn": {
+    "properties": {
+     "focus_lost": {
+      "type": "integer",
+      "maximum": 10000.0,
+      "minimum": 0.0,
+      "title": "Focus Lost",
+      "description": "Сколько раз уходил со вкладки теста",
+      "default": 0
+     },
+     "away_ms": {
+      "type": "integer",
+      "maximum": 86400000.0,
+      "minimum": 0.0,
+      "title": "Away Ms",
+      "description": "Сколько времени вне вкладки, мс",
+      "default": 0
+     },
+     "copies": {
+      "type": "integer",
+      "maximum": 10000.0,
+      "minimum": 0.0,
+      "title": "Copies",
+      "description": "Копирования текста вопроса",
+      "default": 0
+     }
+    },
+    "type": "object",
+    "title": "ClientEventsIn",
+    "description": "What the test page records, cumulative for the attempt (the candidate is told about it)."
+   },
    "Company": {
     "properties": {
      "id": {
@@ -7813,6 +7874,16 @@
      "attempt_id": {
       "type": "integer",
       "title": "Attempt Id"
+     },
+     "client": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/ClientEventsIn"
+       },
+       {
+        "type": "null"
+       }
+      ]
      }
     },
     "type": "object",
@@ -7928,6 +7999,29 @@
     },
     "type": "object",
     "title": "HTTPValidationError"
+   },
+   "IntegrityOut": {
+    "properties": {
+     "level": {
+      "type": "string",
+      "title": "Level",
+      "description": "ok | attention | risk"
+     },
+     "reasons": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Reasons",
+      "description": "Что замечено, на языке запроса"
+     }
+    },
+    "type": "object",
+    "required": [
+     "level",
+     "reasons"
+    ],
+    "title": "IntegrityOut"
    },
    "InvitationCandidate": {
     "properties": {
@@ -9540,6 +9634,16 @@
       "type": "string",
       "format": "date-time",
       "title": "Created At"
+     },
+     "integrity": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/IntegrityOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
      }
     },
     "type": "object",

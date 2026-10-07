@@ -1,4 +1,4 @@
-import { Check, ChevronLeft, ChevronRight, Clock, Flag } from 'lucide-react'
+import { Check, ChevronLeft, ChevronRight, Clock, Eye, Flag } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { api, ApiError, errorMessage } from '../../api/client'
@@ -6,6 +6,7 @@ import { useApi } from '../../api/hooks'
 import type { AnswerOut, Attempt, TestResult } from '../../api/types'
 import { ErrorBox, Loading, Modal, RichText } from '../../components/ui'
 import { useI18n } from '../../i18n/context'
+import { useAttemptTracker } from '../../lib/integrity'
 import { useReference } from '../../lib/reference'
 
 type AnswerVal = (number | string)[]
@@ -26,6 +27,7 @@ export default function TestRunner() {
   const [finishing, setFinishing] = useState(false)
   const [now, setNow] = useState(() => Date.now())
   const [offset, setOffset] = useState(0)
+  const tracker = useAttemptTracker(data?.items[idx]?.id)
 
   useEffect(() => {
     if (!data) return
@@ -57,7 +59,9 @@ export default function TestRunner() {
     setSaving(true)
     setErr(null)
     try {
-      await api<AnswerOut>('/candidate/testing/answer', { method: 'POST', body: { attempt_id: data.id, item_id: item.id, answer: value } })
+      await api<AnswerOut>('/candidate/testing/answer', { method: 'POST', body: {
+        attempt_id: data.id, item_id: item.id, answer: value, time_ms: tracker.takeTime(item.id),
+        pasted: tracker.wasPasted(item.id), client: tracker.events() } })
     } catch (e) {
       if (e instanceof ApiError && (e.code === 'attempt_expired' || e.code === 'attempt_closed')) {
         nav(`/candidate/results/${data.id}`, { replace: true })
@@ -77,7 +81,7 @@ export default function TestRunner() {
   const finish = async () => {
     setFinishing(true)
     try {
-      await api<TestResult>('/candidate/testing/finish', { method: 'POST', body: { attempt_id: data.id } })
+      await api<TestResult>('/candidate/testing/finish', { method: 'POST', body: { attempt_id: data.id, client: tracker.events() } })
       nav(`/candidate/results/${data.id}`, { replace: true })
     } catch (e) {
       setErr(errorMessage(e))
@@ -99,6 +103,7 @@ export default function TestRunner() {
           <button className="btn" onClick={() => setConfirm(true)}><Flag size={16} />{t('test.run.finish')}</button>
         </div>
       </div>
+      <div className="alert info small"><Eye size={16} /><span>{t('test.run.integrityNote')}</span></div>
       <ErrorBox error={err} />
 
       <div className="split">
@@ -114,6 +119,7 @@ export default function TestRunner() {
                 <label htmlFor="num">{t('test.run.numeric')}</label>
                 <input id="num" className="input" inputMode="decimal" value={current[0] ?? ''} placeholder={t('test.run.numericPlaceholder')}
                   onChange={(e) => setAnswers((a) => ({ ...a, [item.id]: [e.target.value] }))}
+                  onPaste={() => tracker.markPaste(item.id)}
                   onBlur={(e) => e.target.value.trim() && save([e.target.value])} />
               </div>
             ) : (

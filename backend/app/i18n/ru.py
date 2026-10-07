@@ -275,6 +275,11 @@ MESSAGES: dict[str, str | dict[str, str]] = {
                            "периода ожидания.",
     "test.rec.expired": " Время теста истекло.",
     "test.policy.finish_current": "Завершите текущую попытку тестирования",
+    "test.integrity.focus": "уходы со вкладки теста: {focus_lost}",
+    "test.integrity.away": "значительная часть времени вне вкладки теста",
+    "test.integrity.paste": "ответы вставлены из буфера обмена: {pastes}",
+    "test.integrity.copy": "копирование текста вопросов: {copies}",
+    "test.integrity.fast_correct": "быстрые верные ответы на сложные для вас вопросы: {fast_correct}",
     "test.policy.retake_after": "Повторно пройти тест на {grade} можно после {date}",
     "test.policy.max_categories": {
         "one": "Можно подтвердить не больше {n} категории — тест в новой специализации недоступен",

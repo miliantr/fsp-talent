@@ -258,4 +258,7 @@ def result_view(r: TestResult) -> dict:
         "grade_changed": r.grade_changed, "grade_change_blocked": r.grade_change_blocked,
         "upgrade_eligible": r.outcome == "passed_upgrade",
         "answered": sum(1 for i in att.items if i.answer), "total": len(att.items), "created_at": r.created_at,
+        "integrity": {"level": att.integrity["level"],
+                      "reasons": [t(f"test.integrity.{k}", **att.integrity.get("signals", {}))
+                                  for k in att.integrity.get("reasons", [])]} if att.integrity else None,
     }

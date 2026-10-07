@@ -50,6 +50,7 @@ export const testing: { readonly [K in keyof typeof ru]: Msg } = {
   'test.run.loading': 'Loading your variant…',
   'test.run.title': 'Test: {spec} · {grade}',
   'test.run.sub': 'Answers are saved automatically. You can move between questions in any order.',
+  'test.run.integrityNote': 'While the test is open we record leaving the tab, copying questions, pasting answers and time per question — only as an integrity signal. No camera, microphone or screen capture.',
   'test.run.timeLeft': 'Time left: {time}',
   'test.run.finish': 'Finish',
   'test.run.question': 'Question {n} of {total}',
@@ -71,6 +72,10 @@ export const testing: { readonly [K in keyof typeof ru]: Msg } = {
   'test.run.backToQuestions': 'Back to the questions',
 
   'test.result.title': 'Test result',
+  'test.integrity.ok': 'Integrity check: no remarks',
+  'test.integrity.attention': 'Integrity check: remarks',
+  'test.integrity.risk': 'The result needs confirmation',
+  'test.integrity.how': 'We look at leaving the tab, pasting and copying text, and fast correct answers to questions that are hard for you. A single signal decides nothing; at high risk the test is confirmed with one new form — the grade is not lost.',
   'test.result.counting': 'Calculating the result…',
   'test.result.sub': '{spec} · target {grade} · {date} · {answered} of {total} answered',
   'test.result.passed': 'Category verified',

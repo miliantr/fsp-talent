@@ -89,6 +89,10 @@ class TestAttempt(Base):
     started_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     deadline_at: Mapped[datetime] = mapped_column(DateTime)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime)
+    # behaviour reported by the web client, cumulative: {"focus_lost", "away_ms", "copies"}
+    client_events: Mapped[dict] = mapped_column(JSON, default=dict)
+    # behavioural integrity check at finish: {"level": ok|attention|risk, "points", "signals", "reasons"}
+    integrity: Mapped[dict | None] = mapped_column(JSON)
 
     items: Mapped[list["TestItem"]] = relationship(
         back_populates="attempt", cascade="all, delete-orphan", order_by="TestItem.position"
@@ -141,6 +145,8 @@ class TestAnswer(Base):
     is_correct: Mapped[bool] = mapped_column(Boolean, default=False)
     credit: Mapped[float] = mapped_column(Float, default=0)
     answered_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    time_ms: Mapped[int | None] = mapped_column(Integer)          # time on the item while the tab was visible
+    pasted: Mapped[bool] = mapped_column(Boolean, default=False)  # the answer was pasted, not typed
 
     item: Mapped[TestItem] = relationship(back_populates="answer")
 

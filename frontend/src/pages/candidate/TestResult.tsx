@@ -1,8 +1,9 @@
-import { ArrowRight, Award, CheckCircle2, CircleAlert, RotateCcw, TrendingUp } from 'lucide-react'
+import { ArrowRight, Award, CheckCircle2, CircleAlert, RotateCcw, ShieldAlert, ShieldCheck, TrendingUp } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { useApi } from '../../api/hooks'
 import type { TestResult } from '../../api/types'
 import { CompetencyBars, ErrorBox, Loading, OutcomeBadge, ScoreRing, ScoreScale } from '../../components/ui'
+import type { MessageKey } from '../../i18n/core'
 import { useI18n } from '../../i18n/context'
 import { useReference } from '../../lib/reference'
 
@@ -42,6 +43,15 @@ export default function TestResultPage() {
           </div>
         </div>
       </div>
+
+      {r.integrity && (
+        <div className={`alert ${r.integrity.level === 'ok' ? 'success' : r.integrity.level === 'risk' ? 'danger' : 'warning'}`}>
+          {r.integrity.level === 'ok' ? <ShieldCheck size={18} /> : <ShieldAlert size={18} />}
+          <div><b>{t(`test.integrity.${r.integrity.level}` as MessageKey)}</b>
+            {r.integrity.reasons.length > 0 && <span>: {r.integrity.reasons.join('; ')}.</span>}
+            <div className="small" style={{ marginTop: 4 }}>{t('test.integrity.how')}</div></div>
+        </div>
+      )}
 
       <div className="grid grid-2">
         <div className="card">

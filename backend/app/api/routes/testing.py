@@ -75,7 +75,8 @@ def get_attempt(attempt_id: int, c: Candidate, db: DB):
 
 @router.post("/answer", response_model=AnswerOut, responses=errors(404, 409, 422), summary="Сохранить ответ")
 def answer(body: AnswerIn, c: Candidate, db: DB):
-    att = service.answer(db, c, body.attempt_id, body.item_id, body.answer)
+    att = service.answer(db, c, body.attempt_id, body.item_id, body.answer, time_ms=body.time_ms,
+                         pasted=body.pasted, client=body.client.model_dump() if body.client else None)
     return AnswerOut(item_id=body.item_id, saved=True, answered=sum(1 for i in att.items if i.answer),
                      total=len(att.items))
 
@@ -83,7 +84,8 @@ def answer(body: AnswerIn, c: Candidate, db: DB):
 @router.post("/finish", response_model=ResultOut, responses=errors(404, 409),
              summary="Завершить тест: грейд, категория, компетенции, уверенность")
 def finish(body: FinishIn, c: Candidate, db: DB):
-    return result_view(service.finish(db, c, body.attempt_id))
+    return result_view(service.finish(db, c, body.attempt_id,
+                                      client=body.client.model_dump() if body.client else None))
 
 
 @router.get("/results/{attempt_id}", response_model=ResultOut, responses=errors(404), summary="Результат попытки")

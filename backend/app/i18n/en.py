@@ -265,6 +265,11 @@ MESSAGES: dict[str, str | dict[str, str]] = {
                            "waiting period.",
     "test.rec.expired": " Time ran out.",
     "test.policy.finish_current": "Finish the current test attempt first",
+    "test.integrity.focus": "switches away from the test tab: {focus_lost}",
+    "test.integrity.away": "a large share of the time away from the test tab",
+    "test.integrity.paste": "answers pasted from the clipboard: {pastes}",
+    "test.integrity.copy": "question text copied: {copies}",
+    "test.integrity.fast_correct": "fast correct answers to questions that are hard for you: {fast_correct}",
     "test.policy.retake_after": "You can retake the {grade} test after {date}",
     "test.policy.max_categories": {
         "one": "You can hold at most {n} verified category — a test in a new specialization is unavailable",

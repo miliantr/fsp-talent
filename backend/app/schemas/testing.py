@@ -98,10 +98,21 @@ class AttemptOut(BaseModel):
     items: list[ItemOut]
 
 
+class ClientEventsIn(BaseModel):
+    """What the test page records, cumulative for the attempt (the candidate is told about it)."""
+
+    focus_lost: int = Field(default=0, ge=0, le=10_000, description="Сколько раз уходил со вкладки теста")
+    away_ms: int = Field(default=0, ge=0, le=86_400_000, description="Сколько времени вне вкладки, мс")
+    copies: int = Field(default=0, ge=0, le=10_000, description="Копирования текста вопроса")
+
+
 class AnswerIn(BaseModel):
     attempt_id: int
     item_id: int
     answer: list[int | float | str] = Field(min_length=1, max_length=10)
+    time_ms: int | None = Field(default=None, ge=0, le=86_400_000, description="Время на вопросе (видимая вкладка)")
+    pasted: bool = Field(default=False, description="Ответ вставлен из буфера обмена")
+    client: ClientEventsIn | None = None
 
 
 class AnswerOut(BaseModel):
@@ -113,6 +124,12 @@ class AnswerOut(BaseModel):
 
 class FinishIn(BaseModel):
     attempt_id: int
+    client: ClientEventsIn | None = None
+
+
+class IntegrityOut(BaseModel):
+    level: str = Field(description="ok | attention | risk")
+    reasons: list[str] = Field(description="Что замечено, на языке запроса")
 
 
 class ResultOut(BaseModel):
@@ -136,3 +153,4 @@ class ResultOut(BaseModel):
     answered: int
     total: int
     created_at: datetime
+    integrity: IntegrityOut | None = None

@@ -23,6 +23,7 @@ from app.models import (
 )
 from app.services import categories
 from app.services.testing.generator import ItemSpec, build_blueprint, generate_form
+from app.services.testing.integrity import ClientEvents, ItemTrace, assess
 from app.services.testing.policy import (
     AttemptRecord,
     CandidateGradeState,
@@ -141,8 +142,19 @@ def get_attempt(db: Session, candidate: CandidateProfile, attempt_id: int) -> Te
     return att
 
 
+def _merge_client(att: TestAttempt, client: dict | None) -> None:
+    """Client counters are cumulative: keep the maximum ever reported (a reload cannot reset them)."""
+    if not client:
+        return
+    cur = dict(att.client_events or {})
+    for k in ("focus_lost", "away_ms", "copies"):
+        cur[k] = max(int(cur.get(k, 0)), int(client.get(k) or 0))
+    att.client_events = cur
+
+
 def answer(db: Session, candidate: CandidateProfile, attempt_id: int, item_id: int, raw: list,
-           now: datetime | None = None) -> TestAttempt:
+           now: datetime | None = None, time_ms: int | None = None, pasted: bool = False,
+           client: dict | None = None) -> TestAttempt:
     now = now or utcnow()
     att = get_attempt(db, candidate, attempt_id)
     if att.status != AttemptStatus.IN_PROGRESS:
@@ -162,15 +174,24 @@ def answer(db: Session, candidate: CandidateProfile, attempt_id: int, item_id: i
     if item.answer:
         item.answer.answer, item.answer.is_correct, item.answer.credit = value, ok, credit
         item.answer.answered_at = now
+        # a changed answer: time adds up, a paste is remembered
+        if time_ms is not None:
+            item.answer.time_ms = (item.answer.time_ms or 0) + time_ms
+        item.answer.pasted = item.answer.pasted or pasted
     else:
-        item.answer = TestAnswer(answer=value, is_correct=ok, credit=credit, answered_at=now)
+        item.answer = TestAnswer(answer=value, is_correct=ok, credit=credit, answered_at=now, time_ms=time_ms,
+                                 pasted=pasted)
+    _merge_client(att, client)
     db.commit()
     return att
 
 
-def finish(db: Session, candidate: CandidateProfile, attempt_id: int, now: datetime | None = None) -> TestResult:
+def finish(db: Session, candidate: CandidateProfile, attempt_id: int, now: datetime | None = None,
+           client: dict | None = None) -> TestResult:
     now = now or utcnow()
     att = get_attempt(db, candidate, attempt_id)
+    if att.status == AttemptStatus.IN_PROGRESS:
+        _merge_client(att, client)
     if att.status != AttemptStatus.IN_PROGRESS:
         if att.result:
             return att.result
@@ -190,6 +211,19 @@ def _finish(db: Session, candidate: CandidateProfile, att: TestAttempt, now: dat
     out = grade_attempt(graded, att.target_grade_id)
     att.status = AttemptStatus.EXPIRED if expired else AttemptStatus.FINISHED
     att.finished_at = now
+
+    # behavioural integrity: a «risk» result is confirmed by one fresh form, like a leak flag
+    ev = att.client_events or {}
+    integrity = assess(
+        [ItemTrace(it.qtype, it.difficulty, it.irt_a, it.irt_b, it.irt_c, bool(it.answer and it.answer.is_correct),
+                   it.answer.time_ms if it.answer else None, bool(it.answer and it.answer.pasted)) for it in att.items],
+        out.theta, ClientEvents(int(ev.get("focus_lost", 0)), int(ev.get("away_ms", 0)), int(ev.get("copies", 0))),
+        int((now - att.started_at).total_seconds() * 1000),
+    )
+    att.integrity = integrity.to_dict()
+    if integrity.level == "risk" and out.passed:
+        out.flagged, out.passed, out.upgrade_eligible = True, False, False
+        out.outcome, out.verified_grade = "needs_confirmation", None
 
     grade_changed = False
     blocked = False
