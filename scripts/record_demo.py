@@ -7,12 +7,15 @@
 The scenario follows the TЗ: candidate registration (auto-linked to the FSP registry), PDF resume
 parsing, survey and grade test, category assignment, publication consent; the employer describes a
 need, gets the explained shortlist, compares candidates and invites one with a salary range; the
-candidate accepts and the contacts open; finally the classic flow — an application to a vacancy.
+candidate accepts and the contacts open; a regular task offered by the system is answered by the
+candidate and scored by the employer; the classic flow — an application to a vacancy; RU / EN.
 Captions explain the testing and matching mechanics on screen.
 
 The demo database is reset (`python -m app.seed --reset` in the backend container) before and after
 recording. The scripted candidate reads its attempt's answer key from PostgreSQL to produce a
-realistic Middle result (the six hardest items are answered wrong); the key never reaches the UI.
+realistic Middle result (the six hardest static items are answered wrong, the parametric ones right —
+the pattern of an honest Middle, so the behavioural integrity check stays quiet); the key never
+reaches the UI.
 Requires Google Chrome (Playwright channel="chrome").
 """
 
@@ -34,6 +37,9 @@ PASSWORD = "demo12345"
 CANDIDATE = {"first": "Олег", "last": "Олимпиев", "email": "olymp@demo.ru"}  # in the mock FSP registry
 NEED_TEXT = ("Ищем Middle Python-разработчика в команду платёжного шлюза: FastAPI, PostgreSQL, Docker, "
              "желательно Redis. Вилка 190–260 тыс., гибрид, Москва, опыт от 2 лет.")
+TASK_ANSWER = ("Клиент передаёт ключ идемпотентности в заголовке Idempotency-Key. Ключ и результат операции "
+               "храню в базе с уникальным индексом; списание и запись ключа выполняются в одной транзакции. "
+               "Повторный запрос возвращает сохранённый ответ без нового списания. Ключи хранятся 24 часа (TTL).")
 
 RESUME_HTML = """<!doctype html><html lang="ru"><meta charset="utf-8"><style>
 body{font-family:Arial,sans-serif;margin:48px;color:#1c1d22;line-height:1.45}h1{margin:0;font-size:28px}
@@ -97,7 +103,8 @@ def reset_db() -> None:
 
 def answer_key(attempt_id: int) -> list[dict]:
     q = ("select json_agg(json_build_object('qtype', qtype, 'correct', correct, 'n', json_array_length(options),"
-         f" 'b', irt_b) order by position) from test_items where attempt_id = {int(attempt_id)}")
+         " 'b', irt_b, 'family', family is not null) order by position) from test_items"
+         f" where attempt_id = {int(attempt_id)}")
     out = sh("docker", "compose", "exec", "-T", "db", "psql", "-U", "fsp", "-d", "fsp_talent", "-tAc", q)
     return json.loads(out)
 
@@ -227,7 +234,8 @@ def candidate_part(d: Demo, resume: Path) -> None:
     attempt_id = int(pg.url.rstrip("/").split("/")[-1])
     pg.locator(".option, #num").first.wait_for()
     key = answer_key(attempt_id)
-    wrong = set(sorted(range(len(key)), key=lambda i: key[i]["b"])[-6:])  # six hardest items: a typical Middle
+    # a typical Middle: the six hardest static items wrong, the parametric (leak-proof) ones right
+    wrong = set(sorted((i for i in range(len(key)) if not key[i]["family"]), key=lambda i: key[i]["b"])[-6:])
 
     notes = {
         0: "20 заданий из калиброванного банка (252 задания + 25 параметрических семейств). Ответы сохраняются сразу",
@@ -259,6 +267,9 @@ def candidate_part(d: Demo, resume: Path) -> None:
     pg.get_by_text("Категория подтверждена").wait_for(timeout=5000)  # the captions below assume a pass
     d.wait(1.0)
     d.say("Оценка по IRT (3PL, EAP) учитывает сложность именно этих заданий — баллы разных вариантов сопоставимы", 4.0)
+    d.show(pg.get_by_text("Проверка честности"))
+    d.say("Проверка честности: уходы со вкладки, вставка, быстрые верные ответы на трудные вопросы — замечаний нет", 3.6)
+    d.top()
     d.say("Шкала 0–100, пороги 25 / 50 / 75 — Junior / Middle / Senior. Присвоена категория «Backend · Middle»", 3.6)
     d.show(pg.get_by_role("heading", name="Компетенции"))
     d.say("Результат по компетенциям подтверждает навыки профиля — это учитывается в подборе", 3.4)
@@ -317,12 +328,12 @@ def employer_part(d: Demo) -> None:
     pg.keyboard.press("Escape")
     d.wait(0.6)
 
-    ours = pg.locator(".cand").filter(has_text=f"{CANDIDATE['first']} {CANDIDATE['last'][0]}.")
+    ours = pg.locator(".cand").filter(has_text=f"{CANDIDATE['first']} {CANDIDATE['last']}")
     d.show(ours)
     rank = ours.locator(".rank").inner_text().lstrip("#")
-    d.say(f"Новый кандидат — {CANDIDATE['first']} {CANDIDATE['last'][0]}. — уже в подборке, на {rank}-м месте", 3.0)
+    d.say(f"Новый кандидат — {CANDIDATE['first']} {CANDIDATE['last']} — уже в подборке, на {rank}-м месте", 3.0)
     d.click(ours.get_by_role("link", name="Профиль и объяснение"), after=1.4)
-    d.say("Профиль и объяснение совпадения. Контакты скрыты до согласия кандидата", 3.0)
+    d.say("Профиль и объяснение совпадения. ФИО и опыт видны, контакты — только после согласия кандидата", 3.0)
     d.show(pg.get_by_text("Контакты", exact=True), 2.2)
     d.show(pg.locator(".table").first)
     d.say("Разложение балла: оценка, вес и вклад каждого фактора — сумма вкладов равна итогу", 3.6)
@@ -359,9 +370,44 @@ def accept_part(d: Demo) -> None:
     d.logout()
 
 
+def tasks_part(d: Demo) -> None:
+    pg = d.pg
+    d.card("4 · Регулярные задания", "Система сама предлагает задачу — кандидат решает, работодатель оценивает")
+    d.login("candidate@demo.ru")
+    d.say("У этого кандидата две подтверждённые категории: Backend · Middle и DevOps · Junior", 3.2)
+    d.show(pg.get_by_text("Задание для вас"))
+    d.say("Раз в неделю система предлагает задачу от работодателя — по грейду и под потребность, где кандидата уже рассматривают", 3.8)
+    d.nav("Короткие задания")
+    d.show(pg.get_by_text("Почему это задание"), 1.0)
+    d.say("Кандидат видит, почему задание его. Результат — свежий сигнал; грейд меняет только тест", 3.6)
+    d.click(d.btn("Решить"), after=0.8)
+    d.type(pg.locator("#tasks-answer"), TASK_ANSWER, delay=6)
+    d.click(d.btn("Отправить"), after=1.4)
+    d.say("Подход ушёл работодателю на проверку", 2.0)
+    d.say("")
+    d.logout()
+
+    d.login("hr@demo.ru")
+    d.nav("Короткие задания")
+    d.say("У работодателя — статистика по заданию: сколько предложено, решено, ждёт проверки", 3.0)
+    card = pg.locator(".card").filter(has=pg.get_by_role("heading", name="Идемпотентность платежей"))
+    d.click(card.get_by_role("button", name="Решения"), after=1.2)
+    answer = pg.locator(".modal .card.flat").filter(has_text="Алексей Демидов")
+    d.show(answer)
+    d.say("Предварительная оценка — доля ключевых идей работодателя в ответе: что найдено, что упущено", 3.6)
+    for group, value in (("Корректность", "2"), ("Полнота", "2"), ("Обоснование", "1")):
+        d.click(answer.get_by_role("group", name=group).get_by_role("button", name=value), after=0.3)
+    d.click(answer.get_by_role("button", name="Сохранить оценку"), after=1.2)
+    d.show(answer.get_by_text("Итог"))  # the reviewed answer moves below the ones still waiting
+    d.say("Итог ставит работодатель по рубрике: корректность, полнота, обоснование. В подборке появляется «свежий сигнал»", 3.8)
+    pg.keyboard.press("Escape")
+    d.say("")
+    d.logout()
+
+
 def application_part(d: Demo) -> None:
     pg = d.pg
-    d.card("4 · Классический сценарий", "Отклик кандидата на опубликованную вакансию")
+    d.card("5 · Классический сценарий", "Отклик кандидата на опубликованную вакансию")
     d.login(CANDIDATE["email"])
     d.nav("Вакансии и отклики")
     d.say("Публичные вакансии с процентом совпадения для кандидата", 2.6)
@@ -384,7 +430,7 @@ def application_part(d: Demo) -> None:
 
 def language_part(d: Demo) -> None:
     pg = d.pg
-    d.card("5 · Два языка", "Интерфейс, объяснения подбора и тест — на русском и английском")
+    d.card("6 · Два языка", "Интерфейс, объяснения подбора и тест — на русском и английском")
     d.login("hr@demo.ru")
     d.nav("Потребности и подборки")
     d.click(pg.get_by_text("Python-разработчик, платёжный шлюз"), after=1.5)
@@ -425,6 +471,7 @@ def main() -> None:
                 candidate_part(d, resume)
                 employer_part(d)
                 accept_part(d)
+                tasks_part(d)
                 application_part(d)
                 language_part(d)
                 d.card("FSP Talent", "docker compose up --build → http://localhost:8080 · документация: docs/", 4.5)

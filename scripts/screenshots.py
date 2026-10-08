@@ -121,6 +121,15 @@ def main() -> None:
         print("saved 09-compare")
         shot(ep, f"/employer/candidates/{top_id}?requirement_id={job['id']}", "11-candidate-explanation",
              full=True, wait=".table")
+        # regular tasks: the offer at the candidate, the review at the employer
+        shot(cp, "/candidate/tasks", "12-candidate-tasks", wait="text=Почему это задание")
+        ep.goto(args.base + "/employer/tasks")
+        ep.wait_for_selector("text=Идемпотентность платежей")
+        ep.locator(".card").filter(has=ep.get_by_role("heading", name="Идемпотентность платежей"))             .get_by_role("button", name="Решения").click()
+        ep.wait_for_selector(".modal .card.flat")
+        ep.wait_for_timeout(700)
+        ep.screenshot(path=str(out / "13-employer-task-review.png"))
+        print("saved 13-employer-task-review")
         browser.close()
 
 
