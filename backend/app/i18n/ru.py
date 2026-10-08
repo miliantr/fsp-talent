@@ -4,6 +4,8 @@ dict values are plural forms selected by the `n` parameter (one / few / many / o
 MESSAGES: dict[str, str | dict[str, str]] = {
     # ---------------------------------------------------------------- errors
     "error.invalid_data": "Некорректные данные",
+    "error.route_not_found": "Адреса {path} в API нет. Список эндпоинтов — /api/docs",
+    "error.method_not_allowed": "Метод {method} для этого адреса не поддерживается",
     "error.auth_required": "Требуется авторизация",
     "error.token_invalid": "Недействительный или просроченный токен",
     "error.user_inactive": "Пользователь не найден или заблокирован",

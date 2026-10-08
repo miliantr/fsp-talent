@@ -2,10 +2,13 @@
 
 Полная интерактивная спецификация OpenAPI 3.1 (Swagger UI): **http://localhost:8000/api/docs**
 (ReDoc: `/api/redoc`, JSON: `/api/openapi.json`). Все запросы, ответы и коды ошибок описаны в
-спецификации; TypeScript-типы фронтенда генерируются из неё (`npm run gen:api`).
+спецификации; TypeScript-типы фронтенда генерируются из неё (`npm run gen:api`). Корень backend
+(`http://localhost:8000/`, а также `/docs`, `/redoc`, `/openapi.json`) перенаправляет на документацию,
+`GET /api` возвращает ссылки на неё и на `/api/health`.
 
 * Аутентификация: `Authorization: Bearer <JWT>` — токен из `/auth/login` или `/auth/verify-email`.
-* Формат ошибок: `{"code": "cooldown", "message": "…", "details": {...}}`.
+* Формат ошибок: `{"code": "cooldown", "message": "…", "details": {...}}` — в том числе для
+  несуществующего адреса (`route_not_found`, 404) и неподдерживаемого метода (`method_not_allowed`, 405).
 * Язык: заголовок `Accept-Language` (`ru` — по умолчанию, `en`). На нём возвращаются сообщения об
   ошибках (включая 422 с названием поля), объяснения подбора, рекомендации по тесту, справочники и
   тексты заданий; ответ содержит `Content-Language` и `Vary: Accept-Language`. `code` ошибки от языка

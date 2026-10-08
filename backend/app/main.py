@@ -5,8 +5,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from starlette.concurrency import run_in_threadpool
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.routes import auth, candidate, employer, jobs, mock_fsp, reference, testing
 from app.core.config import get_settings
@@ -133,6 +134,20 @@ def validation_message(err: dict) -> str:
     return t("validation.invalid", field=field)
 
 
+@app.exception_handler(StarletteHTTPException)
+async def http_error_handler(request: Request, exc: StarletteHTTPException):
+    """Unknown routes and wrong methods answer in the same {code, message, details} format as every
+    other error (and in the request language) instead of FastAPI's bare {"detail": "Not Found"}."""
+    if exc.status_code == 404 and exc.detail in (None, "Not Found"):
+        code, message = "route_not_found", t("error.route_not_found", path=request.url.path)
+    elif exc.status_code == 405:
+        code, message = "method_not_allowed", t("error.method_not_allowed", method=request.method)
+    else:
+        code, message = "http_error", str(exc.detail)
+    return JSONResponse(status_code=exc.status_code, headers=getattr(exc, "headers", None),
+                        content={"code": code, "message": message, "details": {"path": request.url.path}})
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_error_handler(_: Request, exc: RequestValidationError):
     errs = [{"loc": [str(x) for x in e["loc"]], "msg": validation_message(e), "type": e.get("type")}
@@ -150,3 +165,28 @@ for r in (auth.router, reference.router, candidate.router, testing.router, emplo
 @app.get(f"{settings.api_prefix}/health", tags=["Служебное"])
 def health():
     return {"status": "ok"}
+
+
+@app.get(settings.api_prefix, tags=["Служебное"], summary="Точка входа API: ссылки на документацию")
+@app.get(f"{settings.api_prefix}/", include_in_schema=False)
+def api_index():
+    p = settings.api_prefix
+    return {"name": app.title, "version": app.version, "docs": f"{p}/docs", "redoc": f"{p}/redoc",
+            "openapi": f"{p}/openapi.json", "health": f"{p}/health"}
+
+
+# The API lives under /api; the bare backend address (what a browser opens on :8000) leads to the docs.
+@app.get("/", include_in_schema=False)
+@app.get("/docs", include_in_schema=False)
+def to_docs():
+    return RedirectResponse(f"{settings.api_prefix}/docs")
+
+
+@app.get("/redoc", include_in_schema=False)
+def to_redoc():
+    return RedirectResponse(f"{settings.api_prefix}/redoc")
+
+
+@app.get("/openapi.json", include_in_schema=False)
+def to_openapi():
+    return RedirectResponse(f"{settings.api_prefix}/openapi.json")

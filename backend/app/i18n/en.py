@@ -4,6 +4,8 @@
 MESSAGES: dict[str, str | dict[str, str]] = {
     # ---------------------------------------------------------------- errors
     "error.invalid_data": "Invalid data",
+    "error.route_not_found": "There is no {path} in the API. See /api/docs for the endpoints",
+    "error.method_not_allowed": "Method {method} is not allowed for this address",
     "error.auth_required": "Authentication required",
     "error.token_invalid": "Invalid or expired token",
     "error.user_inactive": "User not found or blocked",
