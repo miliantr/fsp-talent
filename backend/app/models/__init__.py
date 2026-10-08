@@ -1,4 +1,10 @@
-from app.models.candidate import CandidateCategory, CandidateProfile, CandidateSkill, WorkFormat
+from app.models.candidate import (
+    CandidateCategory,
+    CandidateExperience,
+    CandidateProfile,
+    CandidateSkill,
+    WorkFormat,
+)
 from app.models.employer import EmployerProfile
 from app.models.fsp import FSPAchievement, FSPProfile
 from app.models.jobs import (
@@ -41,6 +47,7 @@ __all__ = [
     "AttemptStatus",
     "CandidateProfile",
     "CandidateCategory",
+    "CandidateExperience",
     "CandidateSkill",
     "Competency",
     "ContactAccessLog",

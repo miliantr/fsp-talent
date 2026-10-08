@@ -153,6 +153,7 @@ class Persona:
     open_to_offers: bool = True
     # additional categories: (specialization, grade, ability θ in that specialization)
     extra_categories: list[tuple[str, str, float]] = field(default_factory=list)
+    experience: list[dict] = field(default_factory=list)  # places of work, the most recent first
 
 
 _TR = dict(zip("абвгдеёжзийклмнопрстуфхцчшщъыьэюя",
@@ -221,6 +222,48 @@ def _about(spec: str, grade: str, skills: list[str], years: float) -> str:
             f"Интересны продуктовые задачи, работа в сильной команде и измеримый результат.")
 
 
+# fictional companies for synthetic work histories
+WORKPLACES = ["ИнфоЛайн", "Цифровой ритейл", "ГородСофт", "Логистик Тех", "ФинПоток", "Медиасеть",
+              "Облачные системы", "ДатаПром", "Умный транспорт", "Студия «Пиксель»", "ТелекомСервис", "АгроДата"]
+POSITIONS = {
+    "backend": ("Backend-разработчик", "Младший backend-разработчик", "Ведущий backend-разработчик"),
+    "frontend": ("Frontend-разработчик", "Младший frontend-разработчик", "Ведущий frontend-разработчик"),
+    "data_ml": ("Data Scientist", "Junior Data Scientist", "Ведущий ML-инженер"),
+    "devops": ("DevOps-инженер", "Младший DevOps-инженер", "Ведущий SRE-инженер"),
+}
+
+
+def work_history(key: str, spec: str, grade: str, years: float, today: date) -> list[dict]:
+    """1–3 places of work covering the years of experience; the last one is current. Own RNG per
+    persona, so the main persona stream does not change."""
+    rng = random.Random(f"{key}:jobs")
+    n = {"junior": 1, "middle": rng.randint(1, 2), "senior": rng.randint(2, 3)}[grade]
+    months = max(6, round(years * 12))
+    if months < 12 * n:
+        n = 1
+    weights = [rng.uniform(0.7, 1.3) for _ in range(n)]
+    spans = [round(months * w / sum(weights)) for w in weights]
+    bounds = [0]  # months ago, from now backwards
+    for span in spans:
+        bounds.append(bounds[-1] + span)
+    bounds[-1] = months
+    middle, junior, senior = POSITIONS[spec]
+    title = {"junior": junior, "middle": middle, "senior": senior}
+    companies = rng.sample(WORKPLACES, n)
+    out = []
+    for k in range(n):
+        end_ago, start_ago = bounds[k], bounds[k + 1]
+        level = grade if k == 0 else ("junior" if k == n - 1 and n > 1 else "middle")
+
+        def ym(ago: int) -> str:
+            m = today.year * 12 + today.month - 1 - ago
+            return f"{m // 12}-{m % 12 + 1:02d}"
+
+        out.append({"company": companies[k], "position": title[level], "period_from": ym(start_ago),
+                    "period_to": None if k == 0 else ym(end_ago), "description": ""})
+    return out
+
+
 def build_personas(today: date, seed: int = 2026) -> list[Persona]:
     rng = random.Random(seed)
     plan = ([("backend", g) for g in ["junior"] * 4 + ["middle"] * 7 + ["senior"] * 5]
@@ -259,6 +302,7 @@ def build_personas(today: date, seed: int = 2026) -> list[Persona]:
             p.sport_rank = rng.choice(RANKS)
             strength = {"junior": 0.2, "middle": 0.35, "senior": 0.5}[grade]
             p.achievements = _achievements(rng, spec, strength, rng.randint(1, 4), today)
+        p.experience = work_history(p.key, spec, grade, exp, today)
         personas.append(p)
     # a few people are verified in a second, adjacent specialization (own RNG: the main stream is unchanged)
     xr = random.Random(seed + 1)
@@ -289,6 +333,12 @@ def demo_personas(today: date) -> list[Persona]:
               "программированию.",
         phone="+7 915 123-45-67", telegram="@alexey_demidov", days_ago=6,
         fsp_id="FSP-100777", sport_rank="I разряд", extra_categories=[("devops", "junior", 0.0)],
+        experience=[
+            {"company": "ФинПоток", "position": "Backend-разработчик", "period_from": "2024-02", "period_to": None,
+             "description": "Платёжный API на FastAPI и PostgreSQL, очереди на Kafka, выкладка через Docker и CI."},
+            {"company": "Студия «Пиксель»", "position": "Младший Python-разработчик", "period_from": "2022-06",
+             "period_to": "2024-01", "description": "Интеграции с внешними API, Celery, покрытие тестами."},
+        ],
         achievements=[
             Achievement("ACH-2025-31415", "Всероссийские соревнования по продуктовому программированию",
                         "Продуктовое программирование", "all_russian", today - timedelta(days=150), 2, 180,
@@ -309,6 +359,8 @@ def demo_personas(today: date) -> list[Persona]:
         headline="Python / Django разработчик",
         about="Разрабатываю backend на Django и DRF 2,5 года. Хочу пройти тест и получить подтверждённую категорию.",
         phone="+7 917 555-12-34", telegram="@maria_test", days_ago=1, take_test=False,
+        experience=[{"company": "ГородСофт", "position": "Python-разработчик (Django)", "period_from": "2024-03",
+                     "period_to": None, "description": "Сервисы на Django и DRF для городских заявок."}],
     )
     _ = rng
     return [star, fresh]

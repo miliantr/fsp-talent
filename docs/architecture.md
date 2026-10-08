@@ -61,7 +61,7 @@ Engine — **чистые функции над dataclass-ами** (`ItemSpec`, 
 | Сервисы | `backend/app/services` | Сценарии: регистрация, тестирование, подбор, приглашения, приватность |
 | Движки | `services/testing`, `services/matching` | Генерация форм, IRT-оценка, правила грейдов; скоринг, объяснения |
 | Репозитории | `backend/app/repositories` | Запросы с жадной загрузкой для ранжирования целых категорий |
-| Модели | `backend/app/models` | 25 таблиц, ограничения целостности (CHECK, UNIQUE, FK) |
+| Модели | `backend/app/models` | 26 таблиц, ограничения целостности (CHECK, UNIQUE, FK) |
 | Домен | `backend/app/domain` | Справочники специализаций/грейдов/навыков, банк заданий |
 
 ## 3. Модель данных
@@ -69,6 +69,7 @@ Engine — **чистые функции над dataclass-ами** (`ItemSpec`, 
 ```
 User 1─1 CandidateProfile 1─* CandidateSkill *─1 Skill
                 │ 1─* CandidateCategory (специализация, грейд, θ, компетенции, блокировка; одна основная)
+                │ 1─* CandidateExperience (места работы: компания, должность, период «ГГГГ-ММ»)
                 │ 1─1 FSPProfile 1─* FSPAchievement
                 │ 1─* TestAttempt 1─* TestItem 1─1 TestAnswer        (TestItem → Question)
                 │                  1─1 TestResult

@@ -72,6 +72,19 @@ class TasksSignal(BaseModel):
     last_at: datetime
 
 
+PERIOD = r"^(19|20)\d{2}(-(0[1-9]|1[0-2]))?$"
+
+
+class ExperienceItem(BaseModel):
+    """A place of work: period «YYYY» or «YYYY-MM»; no end — to the present."""
+
+    company: str = Field(min_length=1, max_length=128)
+    position: str = Field(min_length=1, max_length=128)
+    period_from: str = Field(pattern=PERIOD)
+    period_to: str | None = Field(default=None, pattern=PERIOD)
+    description: str = Field(default="", max_length=2000)
+
+
 class CandidateSkillView(BaseModel):
     slug: str
     name: str

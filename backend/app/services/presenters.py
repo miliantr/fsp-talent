@@ -82,6 +82,11 @@ def categories(c: CandidateProfile) -> list[dict]:
     return [one] if one else []
 
 
+def experience(c: CandidateProfile) -> list[dict]:
+    return [{"company": e.company, "position": e.position, "period_from": e.period_from, "period_to": e.period_to,
+             "description": e.description} for e in c.experience]
+
+
 def competency_list(scores: dict) -> list[dict]:
     return [{"id": k, "name": competency_name(k), "score": v} for k, v in scores.items()]
 

@@ -6,6 +6,7 @@ from app.schemas.common import (
     CandidateSkillView,
     Category,
     CompetencyScore,
+    ExperienceItem,
     FSPProfileView,
     FSPSummaryView,
     GradeId,
@@ -38,6 +39,8 @@ class CandidateProfileIn(BaseModel):
     specialization_id: SpecId | None = None
     declared_grade_id: GradeId | None = None
     skills: list[CandidateSkillIn] | None = None
+    experience: list[ExperienceItem] | None = Field(default=None, max_length=20,
+                                                    description="Места работы — заменяют весь список")
 
 
 class CompletenessItem(BaseModel):
@@ -87,6 +90,7 @@ class CandidateProfileOut(BaseModel):
     specialization_id: str | None
     declared_grade_id: str | None
     skills: list[CandidateSkillView]
+    experience: list[ExperienceItem] = []
     category: Category | None = Field(description="Основная категория")
     categories: list[Category] = Field(default=[], description="Все подтверждённые категории, основная первой")
     grade_status: GradeStatus
@@ -117,6 +121,7 @@ class ResumeParseOut(BaseModel):
     work_format: str | None
     expected_salary: int | None
     skills: list[SkillRef]
+    experience: list[ExperienceItem] = []
     text_preview: str
 
 

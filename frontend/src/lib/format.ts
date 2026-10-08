@@ -22,3 +22,6 @@ export const COMPONENT_COLORS: Record<string, string> = {
   skills: '#6b21d6', test: '#2563eb', grade: '#0f9d63', specialization: '#14b8a6', fsp: '#d63aa7',
   freshness: '#f59e0b', salary: '#64748b', experience: '#a78bfa', format: '#94a3b8',
 }
+
+/** A work period «YYYY» (as parsed from a CV) → «YYYY-01» for a month input; «YYYY-MM» stays. */
+export const toMonth = (p: string | null | undefined) => (p ? (p.length === 4 ? `${p}-01` : p) : '')

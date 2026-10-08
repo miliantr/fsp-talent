@@ -1,6 +1,7 @@
 import { Printer } from 'lucide-react'
 import { useApi } from '../../api/hooks'
 import type { CandidateProfile, FSPOut } from '../../api/types'
+import { ExperienceList } from '../../components/Experience'
 import { AchievementList, CategoryBadge, CompetencyBars, ErrorBox, Loading, ScoreScale } from '../../components/ui'
 import { useI18n } from '../../i18n/context'
 import { workFormatKey } from '../../lib/format'
@@ -39,6 +40,8 @@ export default function PrintProfile() {
         </dl>
         {d.category?.scaled_score != null && <div style={{ marginTop: 18 }}><ScoreScale score={d.category.scaled_score} /></div>}
         <h3 style={{ marginTop: 22 }}>{t('cand.profile.about')}</h3><p style={{ marginTop: 6 }}>{d.about || '—'}</p>
+        <h3 style={{ marginTop: 22 }}>{t('exp.title')}</h3>
+        <div style={{ marginTop: 10 }}><ExperienceList items={d.experience} /></div>
         <h3 style={{ marginTop: 22 }}>{t('cand.print.skills')}</h3>
         <div className="row wrap" style={{ marginTop: 8 }}>{d.skills.map((s) => <span key={s.slug} className={`chip ${s.verified ? 'verified' : ''}`}>{s.name} · {s.level}/5</span>)}</div>
         <h3 style={{ marginTop: 22 }}>{t('cand.print.competencies')}</h3>

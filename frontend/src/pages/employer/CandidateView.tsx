@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useApi } from '../../api/hooks'
 import type { CandidateDetail, Company, Requirement } from '../../api/types'
+import { ExperienceList } from '../../components/Experience'
 import { InviteModal } from '../../components/InviteModal'
 import { OfferTaskCard, TasksSignalBadge } from '../../components/TasksSignal'
 import {
@@ -100,6 +101,11 @@ export default function CandidateView() {
             <div className="card-title"><h3><Trophy size={18} color="var(--accent)" />{t('nav.fsp')}</h3></div>
             {c.fsp_profile?.achievements.length ? <AchievementList items={c.fsp_profile.achievements} />
               : <Empty icon={<Trophy size={24} />} title={t('emp.cand.noFspTitle')} text={t('emp.cand.noFspText')} />}
+          </div>
+
+          <div className="card">
+            <h3>{t('exp.title')}</h3>
+            <div style={{ marginTop: 12 }}><ExperienceList items={c.experience} /></div>
           </div>
 
           <div className="card">

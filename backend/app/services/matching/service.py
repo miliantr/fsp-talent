@@ -301,7 +301,8 @@ def candidate_detail(db: Session, employer: EmployerProfile, candidate_id: int, 
                                                Invitation.candidate_id == c.id).order_by(Invitation.created_at.desc()))
     match = explain(db, job, c) if job else None
     card.update({
-        "about": c.about, "education": c.education, "team_roles": c.team_roles or [],
+        "about": c.about, "experience": presenters.experience(c), "education": c.education,
+        "team_roles": c.team_roles or [],
         "soft_skills": c.soft_skills or [],
         "competencies": presenters.competency_list(card["category"]["competency_scores"]
                                                    if card["category"] else {}),

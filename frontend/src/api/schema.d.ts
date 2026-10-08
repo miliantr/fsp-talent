@@ -979,6 +979,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Точка входа API: ссылки на документацию */
+        get: operations["api_index_api_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1296,6 +1313,12 @@ export interface components {
             profile_strength?: number | null;
             /** About */
             about: string;
+            /**
+             * Experience
+             * @description Места работы (видны до контакта)
+             * @default []
+             */
+            experience: components["schemas"]["ExperienceItem"][];
             /** Education */
             education: string | null;
             /** Team Roles */
@@ -1351,6 +1374,11 @@ export interface components {
             declared_grade_id?: ("junior" | "middle" | "senior") | null;
             /** Skills */
             skills?: components["schemas"]["CandidateSkillIn"][] | null;
+            /**
+             * Experience
+             * @description Места работы — заменяют весь список
+             */
+            experience?: components["schemas"]["ExperienceItem"][] | null;
         };
         /** CandidateProfileOut */
         CandidateProfileOut: {
@@ -1390,6 +1418,11 @@ export interface components {
             declared_grade_id: string | null;
             /** Skills */
             skills: components["schemas"]["CandidateSkillView"][];
+            /**
+             * Experience
+             * @default []
+             */
+            experience: components["schemas"]["ExperienceItem"][];
             /** @description Основная категория */
             category: components["schemas"]["Category"] | null;
             /**
@@ -1839,6 +1872,25 @@ export interface components {
             /** Max Offers */
             max_offers: number;
             stats: components["schemas"]["TaskStats"];
+        };
+        /**
+         * ExperienceItem
+         * @description A place of work: period «YYYY» or «YYYY-MM»; no end — to the present.
+         */
+        ExperienceItem: {
+            /** Company */
+            company: string;
+            /** Position */
+            position: string;
+            /** Period From */
+            period_from: string;
+            /** Period To */
+            period_to?: string | null;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
         };
         /** FSPAchievementView */
         FSPAchievementView: {
@@ -2636,6 +2688,11 @@ export interface components {
             expected_salary: number | null;
             /** Skills */
             skills: components["schemas"]["SkillRef"][];
+            /**
+             * Experience
+             * @default []
+             */
+            experience: components["schemas"]["ExperienceItem"][];
             /** Text Preview */
             text_preview: string;
         };
@@ -6511,6 +6568,26 @@ export interface operations {
         };
     };
     health_api_health_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    api_index_api_get: {
         parameters: {
             query?: never;
             header?: never;

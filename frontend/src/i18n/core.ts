@@ -88,6 +88,16 @@ export interface Formatters {
   years: (y: number) => string
   experienceFrom: (y: number) => string
   activeAgo: (days: number) => string
+  /** A work period «YYYY» / «YYYY-MM» → «Feb 2023 — present» */
+  period: (from: string, to?: string | null) => string
+  /** Length of a work period: «1 year 8 mo» */
+  tenure: (from: string, to?: string | null, now?: Date) => string
+}
+
+/** «YYYY» or «YYYY-MM» → month index (year·12 + month); a bare year means January (start) or December (end). */
+const monthIndex = (p: string, end = false) => {
+  const [y, m] = p.split('-').map(Number)
+  return y * 12 + (m ? m - 1 : end ? 11 : 0)
 }
 
 export function createFormatters(lang: Lang): Formatters {
@@ -96,6 +106,8 @@ export function createFormatters(lang: Lang): Formatters {
   const longDate = new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'long', year: 'numeric' })
   const short = new Intl.DateTimeFormat(tag, { day: '2-digit', month: '2-digit', year: 'numeric' })
   const time = new Intl.DateTimeFormat(tag, { hour: '2-digit', minute: '2-digit' })
+  const monthYear = new Intl.DateTimeFormat(tag, { month: 'short', year: 'numeric' })
+  const periodText = (p: string) => (p.length === 4 ? p : monthYear.format(new Date(Number(p.slice(0, 4)), Number(p.slice(5, 7)) - 1, 1)))
   const tr = (key: MessageKey, params?: Params) => translate(key, params, lang)
   const round1 = (y: number) => Math.round(y * 10) / 10
   return {
@@ -116,5 +128,13 @@ export function createFormatters(lang: Lang): Formatters {
     experienceFrom: (y) => tr('time.experienceFrom', { n: round1(y) }),
     activeAgo: (days) => (days <= 0 ? tr('time.activeToday') : days === 1 ? tr('time.activeYesterday')
       : tr('time.activeDaysAgo', { n: days })),
+    period: (from, to) => `${periodText(from)} — ${to ? periodText(to) : tr('exp.present')}`,
+    tenure: (from, to, now = new Date()) => {
+      const end = to ? monthIndex(to, true) : now.getFullYear() * 12 + now.getMonth()
+      const months = Math.max(1, end - monthIndex(from) + 1)
+      const y = Math.floor(months / 12)
+      const m = months % 12
+      return [y ? tr('time.years', { n: y }) : '', m ? tr('time.months', { n: m }) : ''].filter(Boolean).join(' ')
+    },
   }
 }

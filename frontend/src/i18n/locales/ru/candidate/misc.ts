@@ -39,5 +39,5 @@ export const misc = {
   'cand.print.skills': 'Навыки',
   'cand.print.competencies': 'Компетенции по результатам теста',
   'cand.print.noFsp': 'Истории ФСП нет.',
-  'cand.print.footer': 'Сформировано FSP Talent {date}. Категория подтверждена тестированием платформы.',
+  'cand.print.footer': 'Сформировано FSP Talent · {date} · категория подтверждена тестированием платформы',
 } as const

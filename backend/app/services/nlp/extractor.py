@@ -146,6 +146,39 @@ def detect_salary(text: str) -> tuple[int | None, int | None]:
     return (min(vals), max(vals)) if len(vals) > 1 else (vals[0], None)
 
 
+_YEAR = r"(?:(?:0?[1-9]|1[0-2])[./])?(?:19|20)\d{2}"
+_NOW = r"н\.?\s?в\.?|по\s+наст\w*(?:\s+время)?|настоящее\s+время|сейчас|present|now|current"
+EXPERIENCE_RE = re.compile(
+    rf"(?P<from>{_YEAR})\s*(?:[–—-]|по|to)\s*(?P<to>{_YEAR}|{_NOW})\s*[·•,:|—–-]?\s*(?P<rest>[^\n]{{3,}})",
+    re.IGNORECASE)
+_SPLIT = re.compile(r"\s+[—–-]\s+|,\s+")
+
+
+def _period(value: str) -> str | None:
+    m = re.match(r"(?:(\d{1,2})[./])?((?:19|20)\d{2})$", value.strip())
+    if not m:
+        return None  # «по настоящее время»
+    return f"{m.group(2)}-{int(m.group(1)):02d}" if m.group(1) else m.group(2)
+
+
+def parse_experience(text: str) -> list[dict]:
+    """Places of work from CV lines like «2023–2026 · ООО «Платёжные решения» — backend-разработчик: …»
+    or «03.2021 – present, Acme — Backend developer». Company, then position; after «:» — description."""
+    out = []
+    for m in EXPERIENCE_RE.finditer(text):
+        rest = m.group("rest").strip()
+        head, _, desc = rest.partition(":")
+        parts = [p.strip(" .;·•") for p in _SPLIT.split(head, maxsplit=1) if p.strip(" .;·•")]
+        if len(parts) < 2 or len(parts[0]) > 128 or len(parts[1]) > 128:
+            continue
+        start, end = _period(m.group("from")), _period(m.group("to"))
+        if not start or (end and end < start):
+            continue
+        out.append({"company": parts[0], "position": parts[1], "period_from": start, "period_to": end,
+                    "description": desc.strip()[:2000]})
+    return out[:20]
+
+
 @dataclass
 class ParsedText:
     skills: list[str] = field(default_factory=list)  # must-have first, then nice-to-have
@@ -161,6 +194,7 @@ class ParsedText:
     email: str | None = None
     phone: str | None = None
     telegram: str | None = None
+    experience: list[dict] = field(default_factory=list)
 
 
 def parse_need_text(text: str) -> ParsedText:
@@ -189,6 +223,7 @@ def parse_resume_text(text: str) -> ParsedText:
         if nm:
             p.last_name, p.first_name = nm.group(1), nm.group(2)  # Russian CVs: "Фамилия Имя"
             break
+    p.experience = parse_experience(text)
     return p
 
 

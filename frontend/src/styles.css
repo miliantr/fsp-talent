@@ -414,3 +414,5 @@ table.table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .option .q-text { font-size: 15px; font-weight: 600; }
 .option .q-text pre { margin: 6px 0 0; font-size: 12.5px; }
 .badge.light { background: rgba(255,255,255,.15); color: #fff; }
+.exp-icon { flex: none; display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 10px;
+  background: var(--primary-50); color: var(--primary); }

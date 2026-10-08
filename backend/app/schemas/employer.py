@@ -11,6 +11,7 @@ from app.schemas.common import (
     CompetencyScore,
     Contacts,
     DeclaredGrade,
+    ExperienceItem,
     FSPProfileView,
     FSPSummaryView,
     GradeId,
@@ -291,6 +292,7 @@ class InvitationOut(BaseModel):
 
 class CandidateDetail(CandidateCard):
     about: str
+    experience: list[ExperienceItem] = Field(default=[], description="Места работы (видны до контакта)")
     education: str | None
     team_roles: list[str]
     soft_skills: list[str]

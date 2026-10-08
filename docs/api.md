@@ -36,9 +36,9 @@
 | Метод | Путь | Назначение |
 |---|---|---|
 | GET | `/api/candidate/dashboard` | Категория, заполненность, шаги, приглашения, последний тест, предложенное задание |
-| GET/PUT | `/api/candidate/profile` | Профиль, резюме, опрос (специализация, грейд), навыки; `categories` — все подтверждённые категории, `grade_status` — статус заявленного грейда |
+| GET/PUT | `/api/candidate/profile` | Профиль, резюме, опрос (специализация, грейд), навыки, `experience` — места работы (список заменяется целиком); `categories` — все подтверждённые категории, `grade_status` — статус заявленного грейда |
 | PUT | `/api/candidate/categories/{specialization_id}/primary` | Сделать категорию основной |
-| POST | `/api/candidate/resume/parse` | Распознавание PDF-резюме (без сохранения) |
+| POST | `/api/candidate/resume/parse` | Распознавание PDF-резюме (без сохранения): контакты, стек, грейд, стаж, места работы |
 | GET/PUT | `/api/candidate/settings` | Приватность и согласие на публикацию |
 | GET | `/api/candidate/fsp` | Достижения ФСП и сила сигнала |
 | POST | `/api/candidate/fsp/link` · `/fsp/confirm` · `/fsp/sync` | Привязка / подтверждение / синхронизация ФСП ID |

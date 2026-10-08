@@ -14,6 +14,7 @@ export const profile = {
   'cand.profile.parsed.spec': 'специализация: {value}',
   'cand.profile.parsed.grade': 'грейд: {value}',
   'cand.profile.parsed.experience': 'опыт: {value}',
+  'cand.profile.parsed.jobs': 'мест работы: {n}',
   'cand.profile.noContacts': 'Контактные данные не найдены',
   'cand.profile.apply': 'Применить',
   'cand.profile.parsedApplied': 'Данные из резюме подставлены — проверьте и сохраните',

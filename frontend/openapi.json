@@ -4710,6 +4710,25 @@
      }
     }
    }
+  },
+  "/api": {
+   "get": {
+    "tags": [
+     "Служебное"
+    ],
+    "summary": "Точка входа API: ссылки на документацию",
+    "operationId": "api_index_api_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     }
+    }
+   }
   }
  },
  "components": {
@@ -5548,6 +5567,15 @@
       "type": "string",
       "title": "About"
      },
+     "experience": {
+      "items": {
+       "$ref": "#/components/schemas/ExperienceItem"
+      },
+      "type": "array",
+      "title": "Experience",
+      "description": "Места работы (видны до контакта)",
+      "default": []
+     },
      "education": {
       "anyOf": [
        {
@@ -5886,6 +5914,22 @@
        }
       ],
       "title": "Skills"
+     },
+     "experience": {
+      "anyOf": [
+       {
+        "items": {
+         "$ref": "#/components/schemas/ExperienceItem"
+        },
+        "type": "array",
+        "maxItems": 20
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Experience",
+      "description": "Места работы — заменяют весь список"
      }
     },
     "type": "object",
@@ -6022,6 +6066,14 @@
       },
       "type": "array",
       "title": "Skills"
+     },
+     "experience": {
+      "items": {
+       "$ref": "#/components/schemas/ExperienceItem"
+      },
+      "type": "array",
+      "title": "Experience",
+      "default": []
      },
      "category": {
       "anyOf": [
@@ -7513,6 +7565,53 @@
      "stats"
     ],
     "title": "EmployerTaskOut"
+   },
+   "ExperienceItem": {
+    "properties": {
+     "company": {
+      "type": "string",
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Company"
+     },
+     "position": {
+      "type": "string",
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Position"
+     },
+     "period_from": {
+      "type": "string",
+      "pattern": "^(19|20)\\d{2}(-(0[1-9]|1[0-2]))?$",
+      "title": "Period From"
+     },
+     "period_to": {
+      "anyOf": [
+       {
+        "type": "string",
+        "pattern": "^(19|20)\\d{2}(-(0[1-9]|1[0-2]))?$"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Period To"
+     },
+     "description": {
+      "type": "string",
+      "maxLength": 2000,
+      "title": "Description",
+      "default": ""
+     }
+    },
+    "type": "object",
+    "required": [
+     "company",
+     "position",
+     "period_from"
+    ],
+    "title": "ExperienceItem",
+    "description": "A place of work: period «YYYY» or «YYYY-MM»; no end — to the present."
    },
    "FSPAchievementView": {
     "properties": {
@@ -9798,6 +9897,14 @@
       },
       "type": "array",
       "title": "Skills"
+     },
+     "experience": {
+      "items": {
+       "$ref": "#/components/schemas/ExperienceItem"
+      },
+      "type": "array",
+      "title": "Experience",
+      "default": []
      },
      "text_preview": {
       "type": "string",

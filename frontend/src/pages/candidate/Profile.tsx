@@ -3,12 +3,13 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { api, errorMessage } from '../../api/client'
 import { useApi } from '../../api/hooks'
-import type { CandidateProfile, ResumeParseOut } from '../../api/types'
+import type { CandidateProfile, ExperienceItem, ResumeParseOut } from '../../api/types'
+import { ExperienceEditor } from '../../components/Experience'
 import { SkillLevelEditor, type SkillLevel } from '../../components/SkillPicker'
 import { GradeStatusLine } from '../../components/GradeStatus'
 import { CategoryBadge, ErrorBox, Loading, MoreCategories, useToast } from '../../components/ui'
 import { useI18n } from '../../i18n/context'
-import { WORK_FORMATS, workFormatKey } from '../../lib/format'
+import { toMonth, WORK_FORMATS, workFormatKey } from '../../lib/format'
 import { useReference } from '../../lib/reference'
 
 interface Form {
@@ -34,6 +35,7 @@ export default function ProfilePage() {
   const toast = useToast()
   const [form, setForm] = useState<Form | null>(null)
   const [skills, setSkills] = useState<SkillLevel[]>([])
+  const [jobs, setJobs] = useState<ExperienceItem[]>([])
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [parsed, setParsed] = useState<ResumeParseOut | null>(null)
@@ -43,6 +45,7 @@ export default function ProfilePage() {
     if (data) {
       setForm(toForm(data))
       setSkills(data.skills.map((s) => ({ slug: s.slug, level: s.level, years: s.years })))
+      setJobs(data.experience)
     }
   }, [data])
 
@@ -67,6 +70,8 @@ export default function ProfilePage() {
           work_format: form.work_format, specialization_id: form.specialization_id || null,
           declared_grade_id: form.declared_grade_id || null, team_roles: splitList(form.team_roles),
           soft_skills: splitList(form.soft_skills), skills,
+          experience: jobs.filter((j) => j.company.trim() && j.position.trim() && j.period_from)
+            .map((j) => ({ ...j, period_to: j.period_to || null, description: j.description ?? '' })),
         },
       })
       setData(p)
@@ -106,6 +111,9 @@ export default function ProfilePage() {
     })
     const have = new Set(skills.map((s) => s.slug))
     setSkills([...skills, ...parsed.skills.filter((s) => !have.has(s.slug)).map((s) => ({ slug: s.slug, level: 3, years: 1 }))])
+    const known = new Set(jobs.map((j) => `${j.company}|${toMonth(j.period_from)}`))
+    setJobs([...jobs, ...parsed.experience.filter((j) => !known.has(`${j.company}|${toMonth(j.period_from)}`))
+      .map((j) => ({ ...j, period_from: toMonth(j.period_from), period_to: j.period_to ? toMonth(j.period_to) : null }))])
     setParsed(null)
     toast(t('cand.profile.parsedApplied'))
   }
@@ -118,6 +126,7 @@ export default function ProfilePage() {
     parsed.specialization_id && t('cand.profile.parsed.spec', { value: specName(parsed.specialization_id) }),
     parsed.declared_grade_id && t('cand.profile.parsed.grade', { value: gradeName(parsed.declared_grade_id) }),
     parsed.experience_years && t('cand.profile.parsed.experience', { value: fmt.years(parsed.experience_years) }),
+    parsed.experience.length > 0 && t('cand.profile.parsed.jobs', { n: parsed.experience.length }),
   ].filter(Boolean).join(' · ') : ''
 
   return (
@@ -178,6 +187,11 @@ export default function ProfilePage() {
               <div className="field"><label htmlFor="profile-f13">{t('cand.profile.softSkills')}</label><input id="profile-f13" className="input" value={form.soft_skills} onChange={set('soft_skills')} placeholder={t('cand.profile.softSkillsPlaceholder')} /></div>
             </div>
             <div className="field"><label htmlFor="profile-f14">{t('cand.profile.education')}</label><input id="profile-f14" className="input" value={form.education} onChange={set('education')} /></div>
+          </div>
+
+          <div className="card stack-lg">
+            <h3>{t('exp.title')}</h3>
+            <ExperienceEditor value={jobs} onChange={setJobs} />
           </div>
 
           <div className="card stack-lg">

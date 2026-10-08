@@ -17,6 +17,7 @@ export const profile: { readonly [K in keyof typeof ru]: Msg } = {
   'cand.profile.parsed.spec': 'specialization: {value}',
   'cand.profile.parsed.grade': 'grade: {value}',
   'cand.profile.parsed.experience': 'experience: {value}',
+  'cand.profile.parsed.jobs': 'places of work: {n}',
   'cand.profile.noContacts': 'No contact details found',
   'cand.profile.apply': 'Apply',
   'cand.profile.parsedApplied': 'Data from the CV has been filled in — review and save',

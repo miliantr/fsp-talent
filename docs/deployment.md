@@ -56,8 +56,8 @@ npm run dev                        # http://127.0.0.1:5173, /api проксир�
 ## Проверки качества
 
 ```bash
-cd backend && pytest -q && ruff check app tests scripts      # 435 тестов, линтер
-cd frontend && npm test                  # 119 тестов: i18n, API-клиент, язык, страницы, задания
+cd backend && pytest -q && ruff check app tests scripts      # 446 тестов, линтер
+cd frontend && npm test                  # 124 теста: i18n, API-клиент, язык, страницы, задания, опыт
 cd frontend && npm run typecheck && npm run lint && npm run build
 python evaluation/evaluate_tests.py      # валидация механики тестирования (~2 мин)
 python evaluation/evaluate_matching.py   # бенчмарк подбора (~30 с)

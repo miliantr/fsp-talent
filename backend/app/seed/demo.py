@@ -43,7 +43,14 @@ from app.seed.personas import (
     demo_personas,
 )
 from app.seed.reference import seed_reference
-from app.services import employer_service, fsp_service, invitation_service, jobs_service, tasks_service
+from app.services import (
+    candidate_service,
+    employer_service,
+    fsp_service,
+    invitation_service,
+    jobs_service,
+    tasks_service,
+)
 from app.services.fsp.registry import DATA_FILE, get_mock_registry
 from app.services.matching import service as matching
 from app.services.testing import service as testing
@@ -147,6 +154,7 @@ def seed_candidate(db: Session, p: Persona, skills: dict[str, Skill], now, rng: 
     for slug, level in p.skills.items():
         c.skills.append(CandidateSkill(skill_id=skills[slug].id, level=level,
                                        years=round(min(p.experience_years, 1 + level * 0.8), 1)))
+    candidate_service.set_experience(c, p.experience)
     db.flush()
     db.refresh(c)
     fsp_service.try_auto_link(db, c)  # same code path as e-mail verification

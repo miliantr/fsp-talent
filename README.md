@@ -134,7 +134,7 @@ python evaluation/tune_matching.py       # подбор гиперпарамет
 ```
 frontend/   React 19 + TypeScript + Vite; типы API генерируются из OpenAPI
   src/i18n/           словари RU / EN, плюрализация, форматирование, переключатель языка
-  src/**/*.test.ts*   119 тестов (Vitest + Testing Library)
+  src/**/*.test.ts*   124 теста (Vitest + Testing Library)
 backend/    FastAPI · SQLAlchemy 2 · Alembic · PostgreSQL (SQLite локально)
   app/api/            REST-роутеры (без бизнес-логики)
   app/services/       сценарии: auth, кандидат, категории, работодатель, приглашения, приватность, задания
@@ -144,10 +144,10 @@ backend/    FastAPI · SQLAlchemy 2 · Alembic · PostgreSQL (SQLite локал�
     nlp/              разбор PDF-резюме и текстового описания потребности (RU / EN)
   app/i18n/           язык запроса (Accept-Language), каталоги сообщений RU / EN
   app/repositories/   доступ к данным
-  app/models/         25 таблиц, миграции в alembic/
+  app/models/         26 таблиц, миграции в alembic/
   app/domain/         справочники и банк заданий
   app/seed/           демо-данные (кандидаты проходят настоящий движок тестирования)
-  tests/              435 тестов (pytest): движки, категории, задания, честность, приватность, локализация
+  tests/              446 тестов (pytest): движки, категории, задания, честность, приватность, локализация
   scripts/            экспорт OpenAPI, анализ заданий по реальным попыткам (item_analysis.py)
 evaluation/  офлайн-валидация тестирования и подбора
 docs/        архитектура, механики, интеграция ФСП, API, развёртывание

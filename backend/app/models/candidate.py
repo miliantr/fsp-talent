@@ -104,6 +104,10 @@ class CandidateProfile(Base):
     skills: Mapped[list["CandidateSkill"]] = relationship(
         back_populates="candidate", cascade="all, delete-orphan"
     )
+    experience: Mapped[list["CandidateExperience"]] = relationship(
+        back_populates="candidate", cascade="all, delete-orphan", lazy="selectin",
+        order_by="CandidateExperience.sort",
+    )
     task_submissions: Mapped[list["TaskSubmission"]] = relationship(  # noqa: F821
         back_populates="candidate", viewonly=True
     )
@@ -174,3 +178,23 @@ class CandidateCategory(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     candidate: Mapped[CandidateProfile] = relationship(back_populates="categories")
+
+
+class CandidateExperience(Base):
+    """A place of work. Employers see it before contact (client clarification: only contacts are
+    closed); periods are «YYYY» or «YYYY-MM», an empty end means «to the present»."""
+
+    __tablename__ = "candidate_experience"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    candidate_id: Mapped[int] = mapped_column(
+        ForeignKey("candidate_profiles.id", ondelete="CASCADE"), index=True
+    )
+    company: Mapped[str] = mapped_column(String(128))
+    position: Mapped[str] = mapped_column(String(128))
+    period_from: Mapped[str] = mapped_column(String(7))
+    period_to: Mapped[str | None] = mapped_column(String(7))
+    description: Mapped[str] = mapped_column(Text, default="")
+    sort: Mapped[int] = mapped_column(Integer, default=0)
+
+    candidate: Mapped[CandidateProfile] = relationship(back_populates="experience")

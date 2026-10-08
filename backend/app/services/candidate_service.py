@@ -5,7 +5,7 @@ from app.core.errors import ValidationFailed
 from app.db.base import utcnow
 from app.domain.catalog import GRADE_RANK, SPEC_NAMES
 from app.i18n import t
-from app.models import CandidateProfile, CandidateSkill, InvitationStatus, Skill, WorkFormat
+from app.models import CandidateExperience, CandidateProfile, CandidateSkill, InvitationStatus, Skill, WorkFormat
 from app.repositories.reference import skill_graph
 from app.services import categories, fsp_service, invitation_service, presenters, tasks_service
 from app.services.nlp.extractor import parse_resume_text, pdf_to_text
@@ -28,6 +28,8 @@ def update_profile(db: Session, c: CandidateProfile, data: dict) -> CandidatePro
             setattr(c, k, data[k])
     if data.get("skills") is not None:
         set_skills(db, c, data["skills"])
+    if data.get("experience") is not None:
+        set_experience(c, data["experience"])
     c.profile_updated_at = c.last_active_at = utcnow()
     db.commit()
     db.refresh(c)
@@ -48,6 +50,20 @@ def set_skills(db: Session, c: CandidateProfile, items: list[dict]) -> None:
     db.flush()
     for i in items:
         c.skills.append(CandidateSkill(skill_id=known[i["slug"]].id, level=i["level"], years=i["years"]))
+
+
+def set_experience(c: CandidateProfile, items: list[dict]) -> None:
+    """Replaces the list of places of work; the most recent first."""
+    for i in items:
+        # «YYYY» < «YYYY-MM» of the same year compares correctly as strings
+        if i.get("period_to") and i["period_to"] < i["period_from"]:
+            raise ValidationFailed(t("error.experience_period", company=i["company"]))
+    c.experience.clear()
+    ordered = sorted(items, key=lambda i: (i.get("period_to") or "9999", i["period_from"]), reverse=True)
+    for k, i in enumerate(ordered):
+        c.experience.append(CandidateExperience(
+            company=i["company"].strip(), position=i["position"].strip(), period_from=i["period_from"],
+            period_to=i.get("period_to") or None, description=(i.get("description") or "").strip(), sort=k))
 
 
 def update_settings(db: Session, c: CandidateProfile, data: dict) -> CandidateProfile:
@@ -86,6 +102,7 @@ def profile_view(db: Session, c: CandidateProfile) -> dict:
         **{k: getattr(c, k) for k in PROFILE_FIELDS},
         "team_roles": c.team_roles or [], "soft_skills": c.soft_skills or [],
         "skills": presenters.skills(c, graph),
+        "experience": presenters.experience(c),
         "category": presenters.category(c),
         "categories": presenters.categories(c),
         "grade_status": categories.grade_status(db, c),
@@ -160,5 +177,6 @@ def parse_resume(c: CandidateProfile, filename: str, data: bytes) -> dict:
         "experience_years": p.experience_years, "work_format": p.work_format,
         "expected_salary": p.salary_from,
         "skills": [{"slug": s, "name": graph.name(s)} for s in p.skills[:20]],
+        "experience": p.experience,
         "text_preview": text[:600],
     }

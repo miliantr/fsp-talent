@@ -30,6 +30,7 @@ MESSAGES: dict[str, str | dict[str, str]] = {
     "error.skills_duplicate": "Skills must not repeat",
     "error.skills_limit": "No more than 30 skills",
     "error.skills_unknown": "Unknown skills: {skills}",
+    "error.experience_period": "Experience at “{company}”: the end is earlier than the start",
     "error.file_too_large": "The file is larger than 5 MB",
     "error.pdf_expected": "A PDF file is expected",
     "error.pdf_unreadable": "Could not read the PDF",
