@@ -162,7 +162,7 @@ def build_html() -> str:
         "<section class='cover'><div><div style='font-size:12pt;opacity:.85'>Федерация спортивного "
         "программирования России · спецтрек</div><h1>FSP Talent</h1><div class='sub'>Цифровая платформа подбора "
         "ИТ-специалистов с обратной механикой и верифицированным профилем достижений участника ФСП"
-        "</div></div><div class='meta'>Команда Mytischi Dynamics · Сопроводительная документация · "
+        "</div></div><div class='meta'>Команда HAHATYR · Сопроводительная документация · "
         f"{dt.date.today():%d.%m.%Y}</div></section>"
     )
     toc = "".join(f"<li>{i}. {title}</li>" for i, (_, title) in enumerate(CHAPTERS + [(None, 'Интерфейс')], 1))

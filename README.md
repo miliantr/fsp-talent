@@ -186,7 +186,7 @@ python scripts/smoke_test.py --base http://localhost:8080
 
 ## Команда
 
-**Mytischi Dynamics** — Мытищи, Московская область.
+**HAHATYR** — Мытищи, Московская область.
 
 | Участник | Роль |
 |---|---|
