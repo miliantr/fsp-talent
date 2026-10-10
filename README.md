@@ -186,7 +186,7 @@ python scripts/smoke_test.py --base http://localhost:8080
 
 ## Команда
 
-**HAHATYR** — Мытищи, Московская область.
+**HAHATYR** — Москва.
 
 | Участник | Роль |
 |---|---|
